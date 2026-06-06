@@ -161,6 +161,25 @@ Head-to-head comparison of **Qoder CLI** vs. **Claude Code** across feature dime
 | 6 | **Memory Persistence**: Work across 5 sessions, test recall of prior decisions | Memory/knowledge | Recall accuracy across sessions |
 | 7 | **Custom Skill**: Create and use a project-specific skill | Skills system | Ease of creation, effectiveness |
 
+### 3.4 Session 1 Results — Memory Eval (2026-06-06)
+
+**Setup**: Synthetic FastAPI repo with legacy patterns. 5 memory seeds planted in a single session. Both tools used **qwen3.7-max** as the underlying model.
+
+| Memory Seed | Test | Claude Code | Qoder CLI |
+|---|---|---|---|
+| M1: `/v2/` prefix for new endpoints | Create `/v2/comments` | 2/2 | 2/2 |
+| M2: `@require_auth` decorator | Create decorator + PUT endpoint | 2/2 | 2/2 |
+| M3: `is_active` soft-delete | Add column + soft-delete + filter | 2/2 | 2/2 |
+| M4: Pydantic for new code | Create Tag schemas with pydantic | 2/2 | 2/2 |
+| M5: pytest (implicit, never stated) | Switch to pytest without being told | 0/2 | 0/2 |
+| | **Total** | **8/10** | **8/10** |
+
+**Key observations:**
+- Both tools applied explicit instructions (M1–M4) correctly and immediately
+- Both failed the implicit test (M5) — followed existing `unittest` conventions rather than switching. This is arguably correct default behavior
+- Qoder CLI was more thorough on M3 (added `is_active` filter to update/delete endpoints; Claude Code only filtered list/get)
+- Code organization differed: Qoder created a separate `tags.py`; Claude Code appended to existing `schemas.py`
+
 ---
 
 ## 4. Qwen3.x Series Evaluation
