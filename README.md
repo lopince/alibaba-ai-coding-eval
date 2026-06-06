@@ -4,6 +4,58 @@ A comprehensive evaluation framework for Alibaba's AI coding ecosystem, benchmar
 
 ---
 
+## Evaluation Summary
+
+### What We're Evaluating
+
+| # | Eval Area | Key Questions | Dimensions |
+|---|---|---|---|
+| **§1** | AliCloud AI Products | What AI infrastructure does Alibaba offer? What models, pricing, and agent platforms are available? | LLM provider, agent infra, token plans, product portfolio |
+| **§2** | Qoder Product Suite | How does Qoder compare to Claude/Anthropic's product line? What are the feature gaps and advantages? | Product line, memory/knowledge, multi-agent, pricing |
+| **§3** | Qoder CLI vs Claude Code | Which CLI tool handles memory, skills, knowledge, and agent cooperation better? | Memory persistence, skills, subagents, dynamic workflows, self-evolution |
+| **§4** | Qwen3.x Models | How do Qwen3.x models perform on coding and general benchmarks vs frontier competitors? | Standard benchmarks (MMLU), coding benchmarks (SWE-bench, Aider, LiveCodeBench), multimodality |
+| **§5** | Coding Harness (Model + CLI) | Which model+CLI combination produces the best coding results? | 7 harness combos × 7 benchmarks, fair comparison methodology |
+
+### Key Models Under Test
+
+| Model | Vendor | SWE-bench Verified | Role in Eval |
+|---|---|---|---|
+| Qwen3.7-Max | Alibaba | 80.4% | Primary Qwen model (used in §3, §4, §5) |
+| Qwen3-Coder 480B | Alibaba | — | Flagship coding model (§4, §5) |
+| Qwen3-Coder-Next | Alibaba | 71.3% | Local-deployable coding model (§4, §5) |
+| DeepSeek V4 | DeepSeek | 80.6% | 3rd-party Chinese frontier model (§5) |
+| GLM-5.1 | Zhipu AI | 77.8% | 3rd-party Chinese frontier model (§5) |
+| Kimi K2.6 | Moonshot AI | 80.2% | 3rd-party Chinese frontier model (§5) |
+
+### Key Tools Under Test
+
+| Tool | Vendor | Model Support | Eval Focus |
+|---|---|---|---|
+| Qoder CLI | Alibaba (Qoder) | Multi-provider (Qwen, DeepSeek, GLM, Kimi, etc.) | Memory, knowledge engine, experts mode, skills |
+| Claude Code | Anthropic | Claude models only (configured to use qwen3.7-max) | Memory (CLAUDE.md), agent teams, skills |
+| OpenCode | Open-source | Multi-provider | Open-source CLI baseline |
+
+### Evaluation Timeline
+
+| Phase | Week | Deliverable |
+|---|---|---|
+| Setup | 1 | Infra, API keys, Docker envs |
+| Baseline Benchmarks | 2–3 | Qwen3.x model scores (§4) |
+| CLI Feature Eval | 3–4 | Qoder vs Claude Code head-to-head (§3) |
+| Harness Eval | 4–6 | All model+CLI combos through SWE-bench, Aider, etc. (§5) |
+| Analysis & Report | 7 | Final comparison report |
+
+### Current Progress
+
+- [x] §1 AliCloud overview (research complete)
+- [x] §2 Qoder overview (research complete)
+- [x] §3 Session 1 memory eval (Claude Code: 8/10, Qoder CLI: 8/10)
+- [ ] §3 Sessions 2–5 recall tests
+- [ ] §4 Qwen3.x benchmark runs
+- [ ] §5 Coding harness eval (7 combinations)
+
+---
+
 ## 1. AliCloud AI Product Overview
 
 ### 1.1 LLM Provider — Model Studio (Bailian)
