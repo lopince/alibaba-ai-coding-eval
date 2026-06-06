@@ -180,6 +180,50 @@ Head-to-head comparison of **Qoder CLI** vs. **Claude Code** across feature dime
 - Qoder CLI was more thorough on M3 (added `is_active` filter to update/delete endpoints; Claude Code only filtered list/get)
 - Code organization differed: Qoder created a separate `tags.py`; Claude Code appended to existing `schemas.py`
 
+### 3.5 Industry Evaluation Methodology — CLI Coding Tools
+
+#### Enterprise Evaluation Process (4 Phases)
+
+| Phase | Duration | Activities |
+|---|---|---|
+| **Requirements Definition** | 1 week | Cross-functional team (eng, security, legal, procurement). Define 3-5 measurable success criteria |
+| **Controlled Pilot** | 4-6 weeks | A/B test: one group uses the tool, control group doesn't. Single workflow/team scope |
+| **Measurement** | Ongoing | Compare AI-touched code vs human-only code. Trace output to specific PRs |
+| **Security & Procurement** | Parallel | SOC 2 Type II, zero-retention policy, no-training-on-data clauses, regional data residency |
+
+#### Key Metrics to Track
+
+| Category | Metrics |
+|---|---|
+| **Velocity** | Lead time, deployment frequency, cycle duration |
+| **Throughput** | PR volume, suggestion acceptance rate, task completion count |
+| **Quality** | Change failure rate, defect frequency, code review velocity, revision loops |
+| **Adoption** | Daily active users, seat utilization, engagement depth by team |
+| **Cost** | Cost per useful outcome (not lines of code generated) |
+
+#### Industry Frameworks
+
+- **DORA** (delivery health): lead time, deploy frequency, failure rate, recovery time
+- **SPACE** (developer experience): satisfaction, performance, activity, communication, efficiency
+- **Gartner Magic Quadrant** for AI Code Assistants (published Sep 2025) — leaders: GitHub, Amazon, GitLab, Google Cloud
+- **DX ROI Calculator** — financial modeling for AI coding tool investment
+
+#### ROI Reality
+
+- Industry average: ~25% cycle time improvement, ~12% PR throughput gain
+- Typical 100-developer annual spend: **$400K–$600K** (seats + tokens + training + verification tax)
+- Companies with systematic evaluation achieve **3-4x more value** than ad-hoc adoption
+- **Critical warning**: faster code generation doesn't mean faster delivery — automation can shift bottlenecks into review/testing. Track where delays migrate
+
+#### Security Non-Negotiables
+
+- SOC 2 Type II certification
+- Zero-retention for code inputs
+- Explicit contractual prohibition on training on customer data
+- Regional data residency guarantees
+- Air-gapped deployment option for regulated environments
+- SAST/SCA scans on AI-generated code
+
 ---
 
 ## 4. Qwen3.x Series Evaluation
@@ -261,6 +305,72 @@ Head-to-head comparison of **Qoder CLI** vs. **Claude Code** across feature dime
 - Qwen3-VL and Qwen3-Omi on vision-language tasks (MMMU, MathVision)
 - GUI understanding and screenshot-based coding tasks
 
+### 4.7 Industry Benchmark Reliability & Enterprise Evaluation Practices
+
+#### Benchmark Trust Hierarchy
+
+From most to least trustworthy:
+
+| Tier | Benchmark Type | Examples | Use For |
+|---|---|---|---|
+| **1 (Highest)** | Private benchmarks on proprietary code | Internal PR history tasks | Final decision |
+| **2** | Temporally-gated benchmarks | LiveCodeBench, LiveBench | Reliable comparison |
+| **3** | Fresh public benchmarks | SWE-bench Pro, Aider (new exercises) | Pre-filtering |
+| **4 (Lowest)** | Established benchmarks | HumanEval, MBPP, original SWE-bench | Sanity checks only |
+
+#### Known Contamination Issues
+
+| Benchmark | Problem | Status |
+|---|---|---|
+| **SWE-bench Verified** | OpenAI [abandoned it](https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/) — frontier models reproduce exact historical patches from training data | Use SWE-bench Pro instead |
+| **HumanEval / MBPP** | Saturated (95%+ for frontier models) | Can't differentiate models |
+| **MMLU** | Score inflation; lost differentiating power | Use MMLU-Pro or GPQA Diamond |
+| **SWE-bench (original)** | 12 public repos almost certainly in all training corpora | Replaced by Verified/Pro |
+
+#### Enterprise Model Evaluation Process (5 Steps)
+
+1. **Clarify requirements** — primary use case (completion, debugging, refactoring, agents?), constraints (data residency, latency, token limits)
+2. **Public benchmarks as filter** — 2-3 benchmarks to narrow 20+ → 5-6 candidates
+3. **Private bake-off** — build custom test suite from your own PR history (50-200 tasks). Test all candidates in identical conditions
+4. **Custom weighting** — rank by your criteria, not public standings. A model excelling on your workload may rank poorly on leaderboards
+5. **Quarterly re-evaluation** — models upgrade, tests saturate, data leakage inflates public metrics
+
+#### Cost Efficiency: The Key Metric
+
+The industry is shifting from **cost per token** to **cost per successful task**:
+
+```
+Cost per Success = (Run Cost + Human Review Cost + Overhead) / Successful Tasks
+```
+
+A cheap model that fails often costs MORE than an expensive model that succeeds. **Dynamic routing** (cheap models for simple tasks, premium for complex) is industry best practice — reduces costs 5-10x.
+
+#### Private Benchmarking Platforms
+
+| Platform | Strength |
+|---|---|
+| **Braintrust** | Eval-centric, CI/CD-native testing |
+| **LangSmith** (LangChain) | Tracing + eval, multi-method scoring |
+| **Langfuse** | Open-source, $300/mo enterprise tier |
+| **SonarQube** | Static analysis: defect density, security, complexity of generated code |
+
+#### What Benchmarks Miss
+
+| Real-World Need | Benchmark Coverage |
+|---|---|
+| Navigating proprietary codebases | None |
+| Vague/evolving requirements | None |
+| Multi-step architectural decisions | None |
+| Long-term code maintainability | SonarQube only |
+| Integration with internal tools/APIs | None |
+| Iterative debugging across sessions | Minimal |
+
+#### Bridging the Real-World Gap
+
+- **Production telemetry**: Track suggestion acceptance rate, code survival rate (persists after 1 week/1 month), iteration count before success
+- **Blind A/B deployments**: Deploy multiple models simultaneously; developers don't know which model they're using
+- **Multi-signal evaluation**: Combine 2-3 public benchmarks + private benchmarks + code quality analysis + human preference + production KPIs
+
 ---
 
 ## 5. Coding Harness Evaluation (Model + CLI)
@@ -331,6 +441,62 @@ To ensure fair comparison across model+CLI combinations:
 | Kimi K2.6 + Qoder | — | — | — | — | — | — |
 | Qwen3-Coder-Next + OpenCode | — | — | — | — | — | — |
 | Qwen3-Coder-Next + Claude Code | — | — | — | — | — | — |
+
+### 5.7 Industry Harness Evaluation Practices
+
+#### The Harness Effect (Critical Finding)
+
+A 2025 study ([arXiv 2605.27922](https://arxiv.org/html/2605.27922v1)) measured a **23.8-point gap** between the best and worst harness for the same model. Performance must be reported at the **model+harness** level, not attributed to the model alone.
+
+#### Agent Evaluation Platforms
+
+| Platform | Description | URL |
+|---|---|---|
+| **SWE-bench** | Foundational benchmark + evaluation harness + public leaderboard | [swebench.com](https://swebench.com) |
+| **HAL** (Princeton) | 9 benchmarks; tracks cost-performance, consistency, robustness, self-awareness | [hal.cs.princeton.edu](https://hal.cs.princeton.edu) |
+| **Artificial Analysis** | 30+ coding tools tracked with token/cost data | [artificialanalysis.ai/agents/coding](https://artificialanalysis.ai/agents/coding) |
+| **Kilo.ai** | Ranks by actual developer usage (token consumption); refreshes every 5 min | [kilo.ai/leaderboard](https://kilo.ai/leaderboard) |
+| **Codesota** | Aggregates 8 benchmarks; no composite scores, full transparency | [codesota.com/llm](https://www.codesota.com/llm) |
+
+#### Agent Frameworks for Evaluation
+
+| Framework | Use Case | Setup Complexity |
+|---|---|---|
+| **mini-SWE-agent** | Fairest harness for model comparison (100 lines, no framework bias) | `pip install mini-swe-agent` |
+| **SWE-Agent** (full) | Custom tool configurations, advanced memory | Moderate; requires x86, Docker, YAML config |
+| **OpenHands** | Distributed cloud eval at 30x speedup (32 concurrent workers) | Docker-based; remote runtime in beta |
+
+#### Infrastructure & Cost
+
+| Component | Option | Cost |
+|---|---|---|
+| **Compute** | Modal (serverless, SWE-bench integration) or 32-core/128GB VM | $20-50 |
+| **Sandbox** | Docker per task (Epoch AI optimized images: 67 GiB vs 684 GiB raw) | Included |
+| **GPU** | **Not needed** for API-based models; only CPU for Docker | $0 |
+| **API (frontier models)** | 500 tasks × 7 combos | $500-1,500 |
+| **API (budget models)** | DeepSeek, Qwen | $10-50 |
+| **Engineering time** | Full evaluation | 4-6 days |
+| **Total** | 5-7 combinations with statistical rigor | **$520-1,600** |
+
+#### Recommended Execution Plan
+
+| Phase | Time | Activities |
+|---|---|---|
+| **Setup** | 1-2 days | Choose mini-SWE-agent as baseline harness. Provision Modal or 32-core VM. Pre-build Docker images |
+| **Pilot** | 1 day | Run SWE-bench Lite (534 tasks) with one combo as dry run. Validate pipeline, check cost/task |
+| **Full Eval** | 2-3 days | Run SWE-bench Verified (500 tasks) per combo in parallel. 3-5 repetitions for statistical significance |
+| **Analysis** | 1 day | Comparison matrix: resolve rate, cost/task, tokens, consistency, time. Identify Pareto frontier |
+
+#### Fair Comparison Methodology
+
+1. **Fix the harness, vary the model** — use mini-SWE-agent for all models to isolate model quality
+2. **Fix the model, vary the harness** — test same model across harnesses to understand tooling impact
+3. **Measure beyond pass/fail** (HAL approach): cost, efficiency, consistency (3-5 runs), robustness, self-awareness
+4. **Report model+harness together** — never attribute performance to the model alone
+
+#### Quick-Start Tip
+
+Run **SWE-bench Lite** (534 tasks) first — gives directional results in under a day at ~1/4 the cost. Then run full SWE-bench Verified only on the top 2-3 contenders.
 
 ---
 
