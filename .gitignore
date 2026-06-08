@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 *.db
 .qoder/
+# Submodule-like dirs without .gitmodules entries (would break GitHub Pages builds)
+eval-repos/memory-test-repo/
+# Local Qoder notes and vibe-coded screenshots (not part of the docs site)
+CLAUDE.md
+vibe_images/
