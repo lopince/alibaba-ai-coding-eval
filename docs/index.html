@@ -4,469 +4,67 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Alibaba AI Coding Evaluation</title>
-<style>
-:root {
-  --bg: #fafaf7; --surface: #fff; --ink: #1a1a1f; --ink-soft: #555560;
-  --rule: #e7e5df; --accent: #8b5cf6;
-  --pass: #15803d; --pass-bg: #dcfce722;
-  --fail: #b45309; --fail-bg: #fef3c722;
-  --total-bg: rgba(139,92,246,.1);
-  --serif: Charter, "Iowan Old Style", "Source Serif 4", ui-serif, Georgia, serif;
-  --sans: Inter, ui-sans-serif, system-ui, sans-serif;
-  --mono: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root { --bg:#0e0e12; --surface:#16161c; --ink:#f1f1f4; --ink-soft:#a8a8b3; --rule:#2a2a32;
-          --pass-bg: #14532d33; --fail-bg: #78350f33; --total-bg: rgba(139,92,246,.15); }
-}
-* { box-sizing: border-box; }
-html, body { background: var(--bg); color: var(--ink); margin: 0; }
-body { font: 16px/1.55 var(--serif); }
-
-.wrap { max-width: 920px; margin: 3rem auto; padding: 0 1.5rem; }
-
-/* Header */
-header.top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--rule); }
-header.top h1 { font-size: 1.8rem; margin: 0; letter-spacing: -.005em; }
-header.top .meta { color: var(--ink-soft); font: 13px/1 var(--sans); }
-
-.tldr { color: var(--ink-soft); font-size: 1.05rem; margin: 0 0 2.5rem; padding-left: 1em; border-left: 3px solid var(--accent); }
-
-/* Sticky nav */
-nav.rail { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--rule); z-index: 100; padding: .5rem 0; margin-bottom: 2rem; }
-nav.rail .inner { max-width: 920px; margin: 0 auto; padding: 0 1.5rem; display: flex; gap: .25rem; overflow-x: auto; scrollbar-width: none; }
-nav.rail .inner::-webkit-scrollbar { display: none; }
-nav.rail a { display: inline-block; padding: .5em .85em; font: 500 13px/1 var(--sans); color: var(--ink-soft); text-decoration: none; border-radius: 3px; white-space: nowrap; transition: all .12s; }
-nav.rail a:hover, nav.rail a.active { color: var(--accent); background: var(--total-bg); }
-
-/* Sections */
-section.eval { margin-bottom: 3.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--rule); }
-section.eval:last-child { border-bottom: none; }
-
-.crumb { color: var(--ink-soft); font: 600 12px/1 var(--sans); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .6em; }
-
-h2 { font-size: 1.5rem; line-height: 1.2; letter-spacing: -.005em; margin: 0 0 1.2em; }
-h3 { font-size: 1.15rem; margin: 2em 0 .6em; }
-h4 { font: 600 12px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); margin: 1.8em 0 .7em; }
-
-p { margin: .7em 0; }
-
-/* Tables */
-.tbl { overflow-x: auto; margin: 0 0 1.5rem; }
-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
-th, td { padding: .55em .75em; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
-th { font: 600 12px/1 var(--sans); color: var(--ink-soft); text-transform: uppercase; letter-spacing: .05em; }
-tr:hover td { background: var(--total-bg); }
-
-/* Score badges */
-.s-pass { display: inline-block; background: var(--pass-bg); color: var(--pass); font: 600 13px var(--mono); padding: .15em .5em; border-radius: 2px; }
-.s-fail { display: inline-block; background: var(--fail-bg); color: var(--fail); font: 600 13px var(--mono); padding: .15em .5em; border-radius: 2px; }
-.s-total { display: inline-block; background: var(--total-bg); color: var(--accent); font: 700 14px var(--mono); padding: .15em .55em; border-radius: 2px; }
-
-/* Code */
-code { font: 13px var(--mono); padding: 0 .25em; background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; }
-pre { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 1em 1.25em; margin: 1em 0 1.5em; overflow-x: auto; font: 13.5px/1.5 var(--mono); }
-pre code { background: none; border: none; padding: 0; }
-
-/* Lists */
-ul, ol { margin: .6em 0; padding-left: 1.4em; }
-li { margin-bottom: .3em; }
-
-/* Callout (summary / warning) */
-.callout { background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--accent); padding: 1em 1.4em; margin: 1.5em 0; border-radius: 3px; }
-.callout.warn { border-left-color: var(--fail); }
-
-/* Links */
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-/* Footer */
-footer.foot { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font: 13px/1.4 var(--sans); color: var(--ink-soft); display: flex; justify-content: space-between; }
-
-@media (max-width: 640px) {
-  header.top h1 { font-size: 1.4rem; }
-  .wrap { margin: 1.5rem auto; }
-}
-</style>
+<link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 <div class="wrap">
 
 <header class="top">
-  <h1>Alibaba AI Coding Evaluation</h1>
-  <div class="meta">Evaluation framework &middot; 6 sections</div>
+  <h1><a href="index.html">Alibaba AI Coding Evaluation</a></h1>
+  <div class="meta">Evaluation framework &middot; 5 sections</div>
 </header>
 
 <p class="tldr">A comprehensive evaluation framework for Alibaba&rsquo;s AI coding ecosystem, benchmarking models, tools, and agent harnesses against the frontier landscape. Both Qoder CLI and Claude Code tested with the same model (qwen3.7-max) for fair comparison.</p>
 
-</div>
-
 <nav class="rail"><div class="inner">
-  <a href="#s1">AliCloud</a>
-  <a href="#s2">Qoder</a>
-  <a href="#s3">CLI Eval</a>
-  <a href="#s4">Qwen3.x</a>
-  <a href="#s5">Harness Eval</a>
-  <a href="#s6">Timeline</a>
+  <a href="index.html" class="active">Overview</a>
+  <a href="alicloud.html">AliCloud</a>
+  <a href="qoder.html">Qoder</a>
+  <a href="cli-eval.html">Qoder CLI</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="harness-eval.html">Harness Eval</a>
 </div></nav>
 
-<div class="wrap">
+<div class="card-grid">
 
-<!-- §1 -->
-<section class="eval" id="s1">
-  <div class="crumb">Section 1</div>
-  <h2>AliCloud AI Product Overview</h2>
+  <a class="card" href="alicloud.html">
+    <div class="card-crumb">Section 1</div>
+    <h3>AliCloud AI Product Overview</h3>
+    <p>Model Studio (Bailian), Qwen model family, agent infrastructure, API pricing, AI Guardrails &amp; Qwen3Guard safety model.</p>
+  </a>
 
-  <h3>1.1 &ensp;LLM Provider &mdash; Model Studio (Bailian)</h3>
-  <p>Alibaba Cloud&rsquo;s central AI platform is <strong>Model Studio (&#30334;&#28860;/Bailian)</strong>, hosting 300+ models via an OpenAI-compatible API through DashScope.</p>
+  <a class="card" href="qoder.html">
+    <div class="card-crumb">Section 2</div>
+    <h3>Qoder Product Overview</h3>
+    <p>Agentic coding platform, product line, Experts Mode multi-agent, vs Claude Code comparison, and self-evolution loop.</p>
+  </a>
 
-  <div class="tbl"><table>
-    <thead><tr><th>Category</th><th>Key Models</th><th>Context</th><th>Notes</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Qwen3.7-Max</strong></td><td>Proprietary flagship</td><td>128K+</td><td>80.4% SWE-bench Verified, 60.6% SWE-bench Pro</td></tr>
-      <tr><td><strong>Qwen3.6</strong></td><td>Open-weight latest gen</td><td>128K+</td><td>Stability + real-world utility focus</td></tr>
-      <tr><td><strong>Qwen3.5</strong></td><td>27B, 35B-A3B, 0.8B&ndash;9B</td><td>262K (~1M)</td><td>Native vision (early fusion), MCP support, 201 languages</td></tr>
-      <tr><td><strong>Qwen3</strong></td><td>0.6B&ndash;235B (dense + MoE)</td><td>32K&ndash;128K</td><td>Hybrid thinking, 119 languages, Apache 2.0</td></tr>
-      <tr><td><strong>Qwen3-Coder</strong></td><td>480B (flagship), 80B-Next</td><td>128K+</td><td>480B matches Claude Sonnet 4 on agentic benchmarks</td></tr>
-      <tr><td><strong>Qwen3-VL</strong></td><td>2B&ndash;235B-A22B</td><td>256K (1M)</td><td>Vision-language; images, video, GUI, OCR</td></tr>
-      <tr><td><strong>Qwen3-Omni</strong></td><td>30B-A3B</td><td>128K+</td><td>Full multimodal: text + vision + audio in/out</td></tr>
-    </tbody>
-  </table></div>
+  <a class="card" href="cli-eval.html">
+    <div class="card-crumb">Section 3</div>
+    <h3>Qoder CLI</h3>
+    <p>Feature comparison matrix, Session 1 memory eval results (8/10 both tools), and industry evaluation methodology.</p>
+  </a>
 
-  <h4>API Pricing (DashScope)</h4>
-  <div class="tbl"><table>
-    <thead><tr><th>Tier</th><th>Input / 1M tokens</th><th>Output / 1M tokens</th></tr></thead>
-    <tbody>
-      <tr><td>Qwen3.5-Flash</td><td>~$0.03</td><td>~$0.06</td></tr>
-      <tr><td>Qwen3-Coder (Coding Plan)</td><td>~$0.05</td><td>~$0.10</td></tr>
-      <tr><td>Qwen3.7-Max</td><td>~$1.00</td><td>~$3.00</td></tr>
-    </tbody>
-  </table></div>
-  <p><strong>Coding Plan</strong>: ~$3&ndash;5/month subscription bundling multiple coding-optimized models.</p>
+  <a class="card" href="benchmark.html">
+    <div class="card-crumb">Section 4</div>
+    <h3>Benchmark</h3>
+    <p>LLM benchmark comparison (Anthropic vs Qwen vs Chinese Frontier), harness benchmarks (Claude Code vs Qoder vs OpenCode), SWE-bench scores, and cost per successful task.</p>
+  </a>
 
-  <h3>1.2 &ensp;Agent Infrastructure</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Layer</th><th>Product</th><th>Description</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Open-source</strong></td><td>Qwen-Agent</td><td>Lightweight agent orchestration SDK</td></tr>
-      <tr><td><strong>Enterprise</strong></td><td>ADK / ADP</td><td>Agent build + deploy</td></tr>
-      <tr><td><strong>Cloud Runtime</strong></td><td>AgentBay</td><td>Sandboxed execution for agents</td></tr>
-      <tr><td><strong>Platform</strong></td><td>Model Studio Builders</td><td>No-code/low-code workflow + RAG builders</td></tr>
-    </tbody>
-  </table></div>
+  <a class="card" href="harness-eval.html">
+    <div class="card-crumb">Section 5</div>
+    <h3>Coding Harness Evaluation</h3>
+    <p>Model + CLI evaluation matrix, third-party models, the harness effect (23.8-point gap), and execution plan.</p>
+  </a>
 
-  <h3>1.3 &ensp;AI Products Portfolio</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Product</th><th>Category</th><th>Description</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Tongyi Qianwen (Qwen)</strong></td><td>LLM</td><td>Foundation model family</td></tr>
-      <tr><td><strong>Tongyi Wanxiang</strong></td><td>Image Gen</td><td>Text-to-image / video generation</td></tr>
-      <tr><td><strong>Tongyi Lingma</strong></td><td>AI Coding</td><td>IDE plugin: VS Code / JetBrains</td></tr>
-      <tr><td><strong>Qwen Code</strong></td><td>Terminal Agent</td><td>Open-source terminal coding agent</td></tr>
-      <tr><td><strong>PAI</strong></td><td>MLOps</td><td>Training, fine-tuning, deployment</td></tr>
-      <tr><td><strong>Model Studio</strong></td><td>AI Platform</td><td>Model marketplace, API gateway, agent builder</td></tr>
-    </tbody>
-  </table></div>
 
-  <h3>1.4 &ensp;Strategic Investment</h3>
-  <ul>
-    <li><strong>RMB 380 billion (~$52B)</strong> three-year AI infrastructure commitment</li>
-    <li>Global expansion: Singapore, Germany, US East</li>
-    <li>All open-source models under <strong>Apache 2.0</strong></li>
-  </ul>
-</section>
-
-<!-- §2 -->
-<section class="eval" id="s2">
-  <div class="crumb">Section 2</div>
-  <h2>Qoder Product Overview</h2>
-
-  <h3>2.1 &ensp;What is Qoder?</h3>
-  <p>Qoder is an <strong>agentic coding platform</strong> (founded 2024, Alibaba ecosystem). It positions as an &ldquo;Autonomous Development Desktop&rdquo; &mdash; not just code completion, but a full platform integrating context engineering with intelligent agents.</p>
-
-  <h3>2.2 &ensp;Product Line</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Product</th><th>Description</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Qoder IDE</strong></td><td>Standalone autonomous desktop (VS Code-based)</td></tr>
-      <tr><td><strong>VS Code Extension</strong></td><td>Agentic features inside VS Code</td></tr>
-      <tr><td><strong>JetBrains Extension</strong></td><td>Plugin for IntelliJ, PyCharm, etc.</td></tr>
-      <tr><td><strong>Qoder CLI</strong></td><td>Terminal-based AI coding agent (direct competitor to Claude Code)</td></tr>
-      <tr><td><strong>Qoder CN</strong></td><td>Chinese-localized version</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>2.3 &ensp;Qoder vs. Claude Series</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Dimension</th><th>Qoder</th><th>Claude Code / Anthropic</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Model Support</strong></td><td>Multi-provider with auto-routing</td><td>Claude models only</td></tr>
-      <tr><td><strong>Memory</strong></td><td>Knowledge Engine: Repo Wiki + Knowledge Cards + Conversation Memory</td><td>CLAUDE.md files + Auto-Memory + modular rules</td></tr>
-      <tr><td><strong>Skills</strong></td><td>Skills + MCP + Plugin marketplace</td><td>Skills + MCP + slash commands</td></tr>
-      <tr><td><strong>Multi-Agent</strong></td><td>Experts Mode: DAG-based, 5 specialized roles</td><td>Agent Teams: peer-to-peer, shared registry</td></tr>
-      <tr><td><strong>IDE</strong></td><td>Full standalone IDE + VS Code + JetBrains</td><td>VS Code + JetBrains only</td></tr>
-      <tr><td><strong>Delegation</strong></td><td>Quest Mode: kanban, progress tracking</td><td>Headless mode + GitHub Actions</td></tr>
-      <tr><td><strong>Context</strong></td><td>Not publicly disclosed</td><td>1M tokens</td></tr>
-      <tr><td><strong>Pricing</strong></td><td>Free tier; $20&ndash;$200/mo</td><td>$0&ndash;$200/mo</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>2.4 &ensp;Experts Mode (Multi-Agent)</h3>
-  <ul>
-    <li><strong>Experts Leader</strong> &mdash; orchestrator; breaks down, assigns, tracks; does NOT code</li>
-    <li><strong>Expert Team</strong> &mdash; domain-specific agents with isolated toolsets; Leader-routed only</li>
-    <li><strong>Task Graph</strong> &mdash; lightweight DAG for dependency-aware parallel scheduling</li>
-  </ul>
-  <div class="tbl"><table>
-    <thead><tr><th>Expert</th><th>Function</th></tr></thead>
-    <tbody>
-      <tr><td>Research</td><td>Tech selection, root-cause analysis, risk assessment</td></tr>
-      <tr><td>Coding</td><td>Feature dev, bug fixes, refactoring</td></tr>
-      <tr><td>QA (Verify)</td><td>Regression testing, pre-commit gates</td></tr>
-      <tr><td>Code Review</td><td>PR review, architecture/security/performance</td></tr>
-      <tr><td>Browser</td><td>Frontend E2E, visual regression, cross-browser</td></tr>
-    </tbody>
-  </table></div>
-  <p><strong>Self-Evolution Loop</strong>: <code>Complete &rarr; Extract &rarr; Store &rarr; Recall &rarr; Execute</code></p>
-
-  <h3>2.5 &ensp;Claude Code Agent Teams</h3>
-  <ul>
-    <li>One session as <strong>team lead</strong> coordinating work</li>
-    <li>Workers with <strong>isolated memory</strong>, communicating <strong>peer-to-peer</strong></li>
-    <li>Shared registry with automatic dependency resolution</li>
-  </ul>
-  <div class="callout">
-    <strong>Key difference:</strong> Qoder uses centralized orchestration (Leader-routed); Claude uses decentralized peer-to-peer. Qoder has predefined expert roles; Claude uses generic workers with role profiles.
-  </div>
-</section>
-
-<!-- §3 -->
-<section class="eval" id="s3">
-  <div class="crumb">Section 3</div>
-  <h2>Qoder CLI Evaluation</h2>
-
-  <h3>3.1 &ensp;Feature Comparison Matrix</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Feature</th><th>Qoder CLI</th><th>Claude Code</th><th>Eval Method</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Memory</strong></td><td>Knowledge Engine (Wiki + Cards + Conversation)</td><td>CLAUDE.md + Auto-Memory + rules</td><td>Multi-session recall</td></tr>
-      <tr><td><strong>Skills</strong></td><td>Skills + marketplace + MCP</td><td>Skills + MCP + slash commands</td><td>Create, install, invoke</td></tr>
-      <tr><td><strong>Subagents</strong></td><td>5 roles, isolated toolsets, Leader-routed</td><td>Single-window, originator-only</td><td>Parallel task completion</td></tr>
-      <tr><td><strong>Agent Teams</strong></td><td>DAG scheduling (Experts Mode)</td><td>Peer-to-peer (experimental)</td><td>Multi-agent collaboration</td></tr>
-      <tr><td><strong>Dynamic Workflows</strong></td><td>Quest Mode + kanban</td><td>Headless + GitHub Actions</td><td>End-to-end feature dev</td></tr>
-      <tr><td><strong>Self-Evolution</strong></td><td>Skill extraction + reuse loop</td><td>Auto-memory pattern persistence</td><td>Repeated task improvement</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>3.2 &ensp;Session 1 Results &mdash; Memory Eval</h3>
-  <p><strong>Setup</strong>: Synthetic FastAPI repo, 5 memory seeds, single session, both tools on <code>qwen3.7-max</code>.</p>
-
-  <div class="tbl"><table>
-    <thead><tr><th>Memory Seed</th><th>Test</th><th>Claude Code</th><th>Qoder CLI</th></tr></thead>
-    <tbody>
-      <tr><td>M1: <code>/v2/</code> prefix</td><td>Create <code>/v2/comments</code></td><td><span class="s-pass">2/2</span></td><td><span class="s-pass">2/2</span></td></tr>
-      <tr><td>M2: <code>@require_auth</code></td><td>Decorator + PUT endpoint</td><td><span class="s-pass">2/2</span></td><td><span class="s-pass">2/2</span></td></tr>
-      <tr><td>M3: <code>is_active</code> soft-delete</td><td>Column + filter + soft-delete</td><td><span class="s-pass">2/2</span></td><td><span class="s-pass">2/2</span></td></tr>
-      <tr><td>M4: Pydantic migration</td><td>Tag schemas with pydantic</td><td><span class="s-pass">2/2</span></td><td><span class="s-pass">2/2</span></td></tr>
-      <tr><td>M5: pytest (implicit)</td><td>Switch without being told</td><td><span class="s-fail">0/2</span></td><td><span class="s-fail">0/2</span></td></tr>
-      <tr><td></td><td><strong>Total</strong></td><td><span class="s-total">8/10</span></td><td><span class="s-total">8/10</span></td></tr>
-    </tbody>
-  </table></div>
-
-  <ul>
-    <li>Both tools applied explicit instructions (M1&ndash;M4) correctly and immediately</li>
-    <li>Both failed M5 &mdash; followed existing <code>unittest</code> conventions (arguably correct default)</li>
-    <li>Qoder CLI more thorough on M3: added <code>is_active</code> filter to update/delete endpoints too</li>
-  </ul>
-
-  <h3>3.3 &ensp;Industry Evaluation Methodology</h3>
-
-  <h4>Enterprise Process (4 Phases)</h4>
-  <div class="tbl"><table>
-    <thead><tr><th>Phase</th><th>Duration</th><th>Activities</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Requirements</strong></td><td>1 week</td><td>Cross-functional team, 3&ndash;5 measurable criteria</td></tr>
-      <tr><td><strong>Controlled Pilot</strong></td><td>4&ndash;6 weeks</td><td>A/B test, single team, comparable tasks</td></tr>
-      <tr><td><strong>Measurement</strong></td><td>Ongoing</td><td>AI-touched vs human-only code, trace to PRs</td></tr>
-      <tr><td><strong>Security</strong></td><td>Parallel</td><td>SOC 2 Type II, zero-retention, no-training clauses</td></tr>
-    </tbody>
-  </table></div>
-
-  <h4>Key Metrics</h4>
-  <div class="tbl"><table>
-    <thead><tr><th>Category</th><th>Metrics</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Velocity</strong></td><td>Lead time, deployment frequency, cycle duration</td></tr>
-      <tr><td><strong>Throughput</strong></td><td>PR volume, suggestion acceptance rate</td></tr>
-      <tr><td><strong>Quality</strong></td><td>Change failure rate, defect frequency, review velocity</td></tr>
-      <tr><td><strong>Cost</strong></td><td>Cost per useful outcome (not lines of code)</td></tr>
-    </tbody>
-  </table></div>
-
-  <div class="callout warn"><strong>Warning:</strong> Faster code generation doesn&rsquo;t mean faster delivery &mdash; automation shifts bottlenecks into review/testing. Track where delays migrate.</div>
-
-  <p><strong>ROI reality:</strong> Industry average ~25% cycle time improvement, ~12% PR throughput gain. 100-developer annual spend: <strong>$400K&ndash;$600K</strong>. Systematic evaluation yields <strong>3&ndash;4x more value</strong> than ad-hoc adoption.</p>
-</section>
-
-<!-- §4 -->
-<section class="eval" id="s4">
-  <div class="crumb">Section 4</div>
-  <h2>Qwen3.x Series Evaluation</h2>
-
-  <h3>4.1 &ensp;Model Lineup</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Model</th><th>Type</th><th>Params</th><th>Key Strength</th></tr></thead>
-    <tbody>
-      <tr><td>Qwen3.7-Max</td><td>Proprietary API</td><td>Undisclosed</td><td>80.4% SWE-bench Verified</td></tr>
-      <tr><td>Qwen3-Coder 480B</td><td>Open-weight</td><td>480B</td><td>Flagship coding model</td></tr>
-      <tr><td>Qwen3-Coder-Next</td><td>MoE</td><td>80B / 3B active</td><td>Local-deployable agent</td></tr>
-      <tr><td>Qwen3.5-27B</td><td>Dense</td><td>27B</td><td>General + coding + vision</td></tr>
-      <tr><td>Qwen3-235B-A22B</td><td>MoE</td><td>235B / 22B active</td><td>Flagship reasoning</td></tr>
-      <tr><td>Qwen3-Omni 30B-A3B</td><td>MoE</td><td>30B / 3B active</td><td>Full multimodal</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>4.2 &ensp;Coding Benchmark Scores</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Model</th><th>SWE-bench Verified</th><th>SWE-bench Pro</th><th>Aider Polyglot</th><th>LiveCodeBench v6</th></tr></thead>
-    <tbody>
-      <tr><td>Qwen3.7-Max</td><td>80.4%</td><td>60.6%</td><td>&mdash;</td><td>&mdash;</td></tr>
-      <tr><td>Qwen3-Coder-Next</td><td>71.3%</td><td>42.7%</td><td>66.2%</td><td>58.9</td></tr>
-      <tr><td>Qwen3.5-27B</td><td>72.4%</td><td>&mdash;</td><td>&mdash;</td><td>80.7</td></tr>
-    </tbody>
-  </table></div>
-
-  <p><strong>Frontier comparisons:</strong></p>
-  <div class="tbl"><table>
-    <thead><tr><th>Model</th><th>SWE-bench Verified</th><th>SWE-bench Pro</th></tr></thead>
-    <tbody>
-      <tr><td>Claude Opus 4.5</td><td>~78.2%</td><td>&mdash;</td></tr>
-      <tr><td>DeepSeek V4</td><td>80.6%</td><td>&mdash;</td></tr>
-      <tr><td>GLM-5.1</td><td>77.8%</td><td>58.4%</td></tr>
-      <tr><td>Kimi K2.6</td><td>80.2%</td><td>58.6%</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>4.3 &ensp;Benchmark Trust Hierarchy</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Tier</th><th>Type</th><th>Examples</th><th>Use For</th></tr></thead>
-    <tbody>
-      <tr><td><strong>1 (Highest)</strong></td><td>Private benchmarks</td><td>Internal PR tasks</td><td>Final decision</td></tr>
-      <tr><td><strong>2</strong></td><td>Temporally-gated</td><td>LiveCodeBench, LiveBench</td><td>Reliable comparison</td></tr>
-      <tr><td><strong>3</strong></td><td>Fresh public</td><td>SWE-bench Pro, Aider</td><td>Pre-filtering</td></tr>
-      <tr><td><strong>4 (Lowest)</strong></td><td>Established</td><td>HumanEval, MBPP</td><td>Sanity checks only</td></tr>
-    </tbody>
-  </table></div>
-
-  <div class="callout warn"><strong>Contamination:</strong> OpenAI abandoned SWE-bench Verified &mdash; frontier models reproduce exact historical patches from training data. HumanEval/MBPP are saturated (95%+). Use <strong>SWE-bench Pro</strong> for frontier differentiation.</div>
-
-  <h3>4.4 &ensp;Cost per Successful Task</h3>
-  <pre><code>Cost per Success = (Run Cost + Human Review Cost + Overhead) / Successful Tasks</code></pre>
-  <p>A cheap model that fails often costs MORE than an expensive model that succeeds. <strong>Dynamic routing</strong> (cheap for simple, premium for complex) reduces costs 5&ndash;10x.</p>
-</section>
-
-<!-- §5 -->
-<section class="eval" id="s5">
-  <div class="crumb">Section 5</div>
-  <h2>Coding Harness Evaluation (Model + CLI)</h2>
-
-  <h3>5.1 &ensp;Evaluation Matrix</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Combination</th><th>Model</th><th>CLI Tool</th><th>Purpose</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Qwen3.x + Qoder</strong></td><td>Qwen3.7-Max, Qwen3-Coder</td><td>Qoder CLI</td><td>Native stack</td></tr>
-      <tr><td><strong>3rd Models + Qoder</strong></td><td>DeepSeek V4, GLM-5.1, Kimi K2.6</td><td>Qoder CLI</td><td>Model-agnostic tool</td></tr>
-      <tr><td><strong>Qwen3.x + OpenCode</strong></td><td>Qwen3.7-Max, Qwen3-Coder-Next</td><td>OpenCode</td><td>Open-source baseline</td></tr>
-      <tr><td><strong>Qwen3.x + Claude Code</strong></td><td>Qwen3.7-Max, Qwen3-Coder-Next</td><td>Claude Code</td><td>Cross-vendor comparison</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>5.2 &ensp;Third-Party Models</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Model</th><th>Vendor</th><th>Params</th><th>SWE-bench Verified</th><th>API (1M tokens)</th></tr></thead>
-    <tbody>
-      <tr><td><strong>DeepSeek V4</strong></td><td>DeepSeek</td><td>1.6T MoE</td><td>80.6%</td><td>$1.74 / $3.48</td></tr>
-      <tr><td><strong>GLM-5.1</strong></td><td>Zhipu AI</td><td>744B MoE</td><td>77.8%</td><td>$1.00 / $3.20</td></tr>
-      <tr><td><strong>Kimi K2.6</strong></td><td>Moonshot AI</td><td>1T MoE (32B active)</td><td>80.2%</td><td>&mdash;</td></tr>
-    </tbody>
-  </table></div>
-
-  <div class="callout"><strong>The Harness Effect:</strong> A 2025 study measured a <strong>23.8-point gap</strong> between the best and worst harness for the same model. Always report model+harness together.</div>
-
-  <h3>5.3 &ensp;Agent Evaluation Platforms</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Platform</th><th>Description</th></tr></thead>
-    <tbody>
-      <tr><td><strong>SWE-bench</strong></td><td>Foundational benchmark + harness + leaderboard</td></tr>
-      <tr><td><strong>HAL</strong> (Princeton)</td><td>9 benchmarks; cost-performance, consistency, robustness</td></tr>
-      <tr><td><strong>Artificial Analysis</strong></td><td>30+ tools with token/cost data</td></tr>
-      <tr><td><strong>Kilo.ai</strong></td><td>Ranks by actual developer usage; 5-min refresh</td></tr>
-      <tr><td><strong>Codesota</strong></td><td>8 benchmarks aggregated, no composite scores</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>5.4 &ensp;Infrastructure &amp; Cost</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Component</th><th>Option</th><th>Cost</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Compute</strong></td><td>Modal or 32-core/128GB VM</td><td>$20&ndash;50</td></tr>
-      <tr><td><strong>GPU</strong></td><td>Not needed for API models</td><td>$0</td></tr>
-      <tr><td><strong>API (frontier)</strong></td><td>500 tasks &times; 7 combos</td><td>$500&ndash;1,500</td></tr>
-      <tr><td><strong>API (budget)</strong></td><td>DeepSeek, Qwen</td><td>$10&ndash;50</td></tr>
-      <tr><td><strong>Total</strong></td><td>5&ndash;7 combos with rigor</td><td><strong>$520&ndash;1,600</strong></td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>5.5 &ensp;Execution Plan</h3>
-  <div class="tbl"><table>
-    <thead><tr><th>Phase</th><th>Time</th><th>Activities</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Setup</strong></td><td>1&ndash;2 days</td><td>mini-SWE-agent baseline, Modal/VM, Docker images</td></tr>
-      <tr><td><strong>Pilot</strong></td><td>1 day</td><td>SWE-bench Lite dry run, validate pipeline</td></tr>
-      <tr><td><strong>Full Eval</strong></td><td>2&ndash;3 days</td><td>SWE-bench Verified per combo, 3&ndash;5 repetitions</td></tr>
-      <tr><td><strong>Analysis</strong></td><td>1 day</td><td>Matrix: resolve rate, cost/task, tokens, consistency</td></tr>
-    </tbody>
-  </table></div>
-
-  <div class="callout"><strong>Quick-start:</strong> Run SWE-bench Lite (534 tasks) first for directional results in under a day at ~1/4 cost. Then run full Verified on top 2&ndash;3 contenders.</div>
-</section>
-
-<!-- §6 -->
-<section class="eval" id="s6">
-  <div class="crumb">Section 6</div>
-  <h2>Execution Timeline</h2>
-  <div class="tbl"><table>
-    <thead><tr><th>Phase</th><th>Duration</th><th>Activities</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Setup</strong></td><td>Week 1</td><td>SWE-bench harness, Docker envs, API keys</td></tr>
-      <tr><td><strong>Baseline Benchmarks</strong></td><td>Week 2&ndash;3</td><td>Standard benchmarks on all Qwen3.x models</td></tr>
-      <tr><td><strong>CLI Feature Eval</strong></td><td>Week 3&ndash;4</td><td>Qoder CLI vs Claude Code head-to-head</td></tr>
-      <tr><td><strong>Harness Eval</strong></td><td>Week 4&ndash;6</td><td>All model+CLI combos through coding benchmarks</td></tr>
-      <tr><td><strong>Analysis &amp; Report</strong></td><td>Week 7</td><td>Compile results, statistical analysis, final report</td></tr>
-    </tbody>
-  </table></div>
-</section>
+</div>
 
 <footer class="foot">
   <span>Alibaba AI Coding Evaluation</span>
-  <span>Last updated 2026-06-06</span>
+  <span>Last updated 2026-06-07</span>
 </footer>
 
 </div>
-
-<script>
-const sections = document.querySelectorAll('section.eval');
-const links = document.querySelectorAll('nav.rail a');
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      links.forEach(l => l.classList.remove('active'));
-      const a = document.querySelector(`nav.rail a[href="#${e.target.id}"]`);
-      if (a) a.classList.add('active');
-    }
-  });
-}, { threshold: .15, rootMargin: '-60px 0px -55% 0px' });
-sections.forEach(s => obs.observe(s));
-</script>
 </body>
 </html>

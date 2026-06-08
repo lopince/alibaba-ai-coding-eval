@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Coding Harness Evaluation &mdash; Alibaba AI Coding Evaluation</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Alibaba AI Coding Evaluation</a></h1>
+  <div class="meta">Section 5 of 5</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="alicloud.html">AliCloud</a>
+  <a href="qoder.html">Qoder</a>
+  <a href="cli-eval.html">Qoder CLI</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="harness-eval.html" class="active">Harness Eval</a>
+</div></nav>
+
+</div>
+
+<div class="wrap">
+
+<section class="eval">
+  <div class="crumb">Section 5</div>
+  <h2>Coding Harness Evaluation (Model + CLI)</h2>
+
+  <h3>5.1 &ensp;Evaluation Matrix</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Combination</th><th>Model</th><th>CLI Tool</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Qwen3.x + Qoder</strong></td><td>Qwen3.7-Max, Qwen3-Coder</td><td>Qoder CLI</td><td>Native stack</td></tr>
+      <tr><td><strong>3rd Models + Qoder</strong></td><td>DeepSeek V4, GLM-5.1, Kimi K2.6</td><td>Qoder CLI</td><td>Model-agnostic tool</td></tr>
+      <tr><td><strong>Qwen3.x + OpenCode</strong></td><td>Qwen3.7-Max, Qwen3-Coder-Next</td><td>OpenCode</td><td>Open-source baseline</td></tr>
+      <tr><td><strong>Qwen3.x + Claude Code</strong></td><td>Qwen3.7-Max, Qwen3-Coder-Next</td><td>Claude Code</td><td>Cross-vendor comparison</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>5.2 &ensp;Third-Party Models</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Model</th><th>Vendor</th><th>Params</th><th>SWE-bench Verified</th><th>API (1M tokens)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>DeepSeek V4</strong></td><td>DeepSeek</td><td>1.6T MoE</td><td>80.6%</td><td>$1.74 / $3.48</td></tr>
+      <tr><td><strong>GLM-5.1</strong></td><td>Zhipu AI</td><td>744B MoE</td><td>77.8%</td><td>$1.00 / $3.20</td></tr>
+      <tr><td><strong>Kimi K2.6</strong></td><td>Moonshot AI</td><td>1T MoE (32B active)</td><td>80.2%</td><td>&mdash;</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout"><strong>The Harness Effect:</strong> A 2025 study measured a <strong>23.8-point gap</strong> between the best and worst harness for the same model. Always report model+harness together.</div>
+
+  <h3>5.3 &ensp;Agent Evaluation Platforms</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Platform</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>SWE-bench</strong></td><td>Foundational benchmark + harness + leaderboard</td></tr>
+      <tr><td><strong>HAL</strong> (Princeton)</td><td>9 benchmarks; cost-performance, consistency, robustness</td></tr>
+      <tr><td><strong>Artificial Analysis</strong></td><td>30+ tools with token/cost data</td></tr>
+      <tr><td><strong>Kilo.ai</strong></td><td>Ranks by actual developer usage; 5-min refresh</td></tr>
+      <tr><td><strong>Codesota</strong></td><td>8 benchmarks aggregated, no composite scores</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>5.4 &ensp;Infrastructure &amp; Cost</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Component</th><th>Option</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Compute</strong></td><td>Modal or 32-core/128GB VM</td><td>$20&ndash;50</td></tr>
+      <tr><td><strong>GPU</strong></td><td>Not needed for API models</td><td>$0</td></tr>
+      <tr><td><strong>API (frontier)</strong></td><td>500 tasks &times; 7 combos</td><td>$500&ndash;1,500</td></tr>
+      <tr><td><strong>API (budget)</strong></td><td>DeepSeek, Qwen</td><td>$10&ndash;50</td></tr>
+      <tr><td><strong>Total</strong></td><td>5&ndash;7 combos with rigor</td><td><strong>$520&ndash;1,600</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>5.5 &ensp;Execution Plan</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Phase</th><th>Time</th><th>Activities</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Setup</strong></td><td>1&ndash;2 days</td><td>mini-SWE-agent baseline, Modal/VM, Docker images</td></tr>
+      <tr><td><strong>Pilot</strong></td><td>1 day</td><td>SWE-bench Lite dry run, validate pipeline</td></tr>
+      <tr><td><strong>Full Eval</strong></td><td>2&ndash;3 days</td><td>SWE-bench Verified per combo, 3&ndash;5 repetitions</td></tr>
+      <tr><td><strong>Analysis</strong></td><td>1 day</td><td>Matrix: resolve rate, cost/task, tokens, consistency</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout"><strong>Quick-start:</strong> Run SWE-bench Lite (534 tasks) first for directional results in under a day at ~1/4 cost. Then run full Verified on top 2&ndash;3 contenders.</div>
+</section>
+
+<div class="page-nav">
+  <a href="benchmark.html">&larr; Benchmark</a>
+  <a href="index.html" class="next">Overview &rarr;</a>
+</div>
+
+<footer class="foot">
+  <span>Alibaba AI Coding Evaluation</span>
+  <span>Last updated 2026-06-06</span>
+</footer>
+
+</div>
+</body>
+</html>

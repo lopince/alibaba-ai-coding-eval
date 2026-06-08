@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AliCloud AI Product Overview &mdash; Alibaba AI Coding Evaluation</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Alibaba AI Coding Evaluation</a></h1>
+  <div class="meta">Section 1 of 5</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="alicloud.html" class="active">AliCloud</a>
+  <a href="qoder.html">Qoder</a>
+  <a href="cli-eval.html">Qoder CLI</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="harness-eval.html">Harness Eval</a>
+</div></nav>
+
+</div>
+
+<div class="wrap">
+
+<section class="eval">
+  <div class="crumb">Section 1</div>
+  <h2>AliCloud AI Product Overview</h2>
+
+  <h3>1.1 &ensp;LLM Provider &mdash; Model Studio (Bailian)</h3>
+  <p>Alibaba Cloud&rsquo;s central AI platform is <strong>Model Studio (&#30334;&#28860;/Bailian)</strong>, hosting 300+ models via an OpenAI-compatible API through DashScope.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Category</th><th>Key Models</th><th>Context</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Qwen3.7-Max</strong></td><td>Proprietary flagship (params undisclosed)</td><td>1M</td><td>80.4% SWE-bench Verified, 60.6% SWE-bench Pro; reasoning agent model</td></tr>
+      <tr><td><strong>Qwen3.6</strong></td><td>27B (dense), 35B-A3B (MoE)</td><td>262K</td><td>Agentic coding + thinking preservation; real-world utility focus</td></tr>
+      <tr><td><strong>Qwen3.5</strong></td><td>0.8B&ndash;397B-A17B (8 sizes)</td><td>262K (~1M)</td><td>Multimodal (text+vision), thinking mode, 201 languages, MCP support</td></tr>
+      <tr><td><strong>Qwen3</strong></td><td>0.6B&ndash;235B-A22B (dense + MoE)</td><td>262K</td><td>Hybrid thinking, 119 languages, Apache 2.0</td></tr>
+      <tr><td><strong>Qwen3-Coder</strong></td><td>480B-A35B, 30B-A3B</td><td>256K (~1M)</td><td>Open-weight; 358 coding languages; matches Claude Sonnet 4 on agentic benchmarks</td></tr>
+      <tr><td><strong>Qwen3-VL</strong></td><td>Plus, Flash (API)</td><td>262K</td><td>Vision-language; images, video, GUI, OCR, math reasoning</td></tr>
+      <tr><td><strong>Qwen3.5-Omni</strong></td><td>Plus, Flash (API)</td><td>262K</td><td>Full multimodal: text + vision + audio + video in, text/audio out</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>API Pricing (DashScope, per 1M tokens)</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>Model</th><th>Input</th><th>Output</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Qwen3.5-Flash</td><td>$0.029</td><td>$0.287</td><td>Tiered by prompt length; higher rates above 128K</td></tr>
+      <tr><td>Qwen3-Coder-Plus</td><td>$1.00</td><td>$5.00</td><td>Tiered; up to $6/$60 for 256K&ndash;1M prompts</td></tr>
+      <tr><td>Qwen3.6-Plus</td><td>$0.28</td><td>$1.67</td><td>Tiered; ¥2/¥12 for &le;256K, higher above</td></tr>
+      <tr><td>Qwen3.7-Max</td><td>$1.65</td><td>$4.97</td><td>¥12/¥36; Batch API 50% off; context cache available</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Coding Plan</strong>: Subscription bundling multiple coding-optimized models (Qwen3-Coder, etc.) at reduced rates. <strong>Batch API</strong> offers 50% off for non-real-time workloads.</p>
+
+  <h3>1.2 &ensp;Agent Infrastructure</h3>
+  <p>Alibaba Cloud provides a layered agent stack &mdash; from open-source SDKs for developers who want full control, to managed cloud runtimes for production safety, to no-code builders for rapid prototyping. The common thread: everything routes through <strong>Model Studio (Bailian)</strong> as the unified model gateway.</p>
+
+  <!-- Qwen-Agent -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon olive">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#788C5D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>Qwen-Agent</h4>
+        <span class="tag oss">Open Source</span>
+        <span class="tag oss">Python</span>
+      </div>
+    </div>
+    <p>A lightweight Python framework for building LLM-powered agent applications on top of Qwen models. Provides modular building blocks &mdash; base model, tool registry, and specialized agent classes &mdash; for constructing systems that perform multi-step tool use, planning, and memory management. Ideal for developers who want programmatic control over agent orchestration without platform lock-in.</p>
+    <div class="product-img"><img src="images/qwen-agent-web-qa.png" alt="Qwen-Agent using browsing history to answer questions" loading="lazy"/><div class="caption">Source: <a href="https://github.com/QwenLM/Qwen-Agent">github.com/QwenLM/Qwen-Agent</a></div></div>
+    <ul class="product-features">
+      <li>Native Function Calling, MCP, Code Interpreter, RAG, and Chrome extension support</li>
+      <li>Parallel, multi-step, and multi-turn tool interactions out of the box</li>
+      <li>Sandboxed code execution via Docker containers</li>
+      <li>Document analysis workflows supporting up to 1M tokens</li>
+      <li>Custom tool registration via Python decorators</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://github.com/QwenLM/Qwen-Agent">GitHub</a>
+      <a href="https://qwenlm.github.io/Qwen-Agent/en/">Documentation</a>
+    </div>
+  </div>
+
+  <!-- Agentic ADK -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon clay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#D97757" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>Agentic ADK</h4>
+        <span class="tag oss">Open Source</span>
+        <span class="tag enterprise">Java</span>
+      </div>
+    </div>
+    <p>A Java-based agent development framework from Alibaba International (AIDC) for building, evaluating, and deploying multi-agent systems with streaming interaction and visual debugging. Unlike Qwen-Agent&rsquo;s Python-first approach, ADK targets Java enterprise environments and natively connects to Bailian for model access. Built on RxJava3 reactive patterns with a DAG-based process engine.</p>
+    <div class="product-img"><img src="images/agentic-adk.png" alt="Agentic ADK architecture diagram" loading="lazy"/><div class="caption">Source: <a href="https://github.com/AIDC-AI/Agentic-ADK">github.com/AIDC-AI/Agentic-ADK</a></div></div>
+    <ul class="product-features">
+      <li>Four agent types: LLM Agent, Sequential Agent, Loop Agent, Parallel Agent</li>
+      <li>Node-based process system with SYNC, ASYNC, and BIDI communication modes</li>
+      <li>MCP gateway for third-party tool integration</li>
+      <li>Streaming interaction with visualization debugging</li>
+      <li>Context extensions for memory management and prompt automation</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://github.com/AIDC-AI/Agentic-ADK">GitHub</a>
+    </div>
+  </div>
+
+  <!-- Spring AI Alibaba -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon clay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#D97757" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0l1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>Spring AI Alibaba</h4>
+        <span class="tag oss">Open Source</span>
+        <span class="tag enterprise">Java / Spring</span>
+      </div>
+    </div>
+    <p>An agentic AI framework built on Spring AI, designed for Java developers building generative AI applications on Alibaba Cloud. Provides a graph-based orchestration engine (DAG structure) for single-agent, multi-agent, and complex workflow orchestration. Integrates with Bailian for model access and includes an MCP registry for external tool integration &mdash; the Spring-native alternative to Agentic ADK.</p>
+    <div class="product-slideshow" data-autoplay="4000">
+      <button class="slide-arrow prev" aria-label="Previous">&lsaquo;</button>
+      <div class="slides">
+        <div class="slide active"><div class="product-img"><img src="images/spring-ai-admin.png" alt="Spring AI Alibaba Admin - application management" loading="lazy"/><div class="caption">Source: <a href="https://github.com/alibaba/spring-ai-alibaba">github.com/alibaba/spring-ai-alibaba</a></div></div></div>
+        <div class="slide"><div class="product-img"><img src="images/spring-ai-alibaba.png" alt="Spring AI Alibaba architecture overview" loading="lazy"/><div class="caption">Source: <a href="https://github.com/alibaba/spring-ai-alibaba">github.com/alibaba/spring-ai-alibaba</a></div></div></div>
+      </div>
+      <button class="slide-arrow next" aria-label="Next">&rsaquo;</button>
+      <div class="slide-dots"><button class="active" aria-label="Slide 1"></button><button aria-label="Slide 2"></button></div>
+    </div>
+    <ul class="product-features">
+      <li>Graph-based DAG orchestration for single and multi-agent workflows</li>
+      <li>Native Spring Boot auto-configuration</li>
+      <li>MCP registry for external tool integration</li>
+      <li>Direct integration with Bailian/Model Studio</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://java2ai.com/en/">Website</a>
+      <a href="https://github.com/alibaba/spring-ai-alibaba">GitHub</a>
+    </div>
+  </div>
+
+  <!-- AgentBay -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon sky">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6A8CAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h.01"/><path d="M10 12h.01"/><path d="M14 12h4"/><path d="M6 2h12l-2 4H8L6 2z"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>AgentBay</h4>
+        <span class="tag managed">Managed Service</span>
+        <span class="tag managed">Cloud Runtime</span>
+      </div>
+    </div>
+    <p>A fully managed, cloud-native automation execution platform that provides isolated sandbox environments for AI agents to safely control browsers, desktops, mobile devices, and code execution. Each operation runs in a dedicated, hardened container with network segmentation and strict privilege boundaries &mdash; suitable for running untrusted or autonomous agent workloads at scale without exposing host systems.</p>
+    <div class="product-slideshow" data-autoplay="4000">
+      <button class="slide-arrow prev" aria-label="Previous">&lsaquo;</button>
+      <div class="slides">
+        <div class="slide active"><div class="product-img"><img src="images/agentbay-browser.png" alt="AgentBay - AI agent controlling a browser to search and analyze data" loading="lazy"/><div class="caption">Source: <a href="https://github.com/aliyun/wuying-agentbay-sdk">github.com/aliyun/wuying-agentbay-sdk</a></div></div></div>
+        <div class="slide"><div class="product-img"><img src="images/agentbay-computer.png" alt="AgentBay - AI agent controlling a desktop calendar application" loading="lazy"/><div class="caption">Source: <a href="https://github.com/aliyun/wuying-agentbay-sdk">github.com/aliyun/wuying-agentbay-sdk</a></div></div></div>
+      </div>
+      <button class="slide-arrow next" aria-label="Next">&rsaquo;</button>
+      <div class="slide-dots"><button class="active" aria-label="Slide 1"></button><button aria-label="Slide 2"></button></div>
+    </div>
+    <ul class="product-features">
+      <li>Four execution contexts: browser automation, desktop control, code execution, mobile simulation</li>
+      <li>Connect via SDK, MCP protocol, or ASP (Agent Session Protocol)</li>
+      <li>Second-level elastic scaling with high concurrency support</li>
+      <li>Fully isolated containers &mdash; blocks cross-task interference</li>
+      <li>Session persistence for resuming workflows across states</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://www.alibabacloud.com/en/product/agentbay">Product Page</a>
+      <a href="https://www.alibabacloud.com/help/en/agentbay/product-overview/what-is-eds-agentbay">Documentation</a>
+      <a href="https://github.com/aliyun/wuying-agentbay-sdk">SDK (GitHub)</a>
+    </div>
+    <div class="callout" style="margin-top:1rem;margin-bottom:0">
+      <strong>OpenSandbox</strong> &mdash; The open-source, self-hosted sibling of AgentBay. Built on Python FastAPI + Docker/Kubernetes with microVM and sandboxed container runtimes. Client libraries for Python, Java, JavaScript, C#, and Go. <a href="https://github.com/alibaba/OpenSandbox">GitHub &rarr;</a>
+    </div>
+  </div>
+
+  <!-- Model Studio Builders -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon sky">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6A8CAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>Model Studio Builders</h4>
+        <span class="tag managed">Managed Service</span>
+        <span class="tag managed">No-Code</span>
+      </div>
+    </div>
+    <p>Bailian&rsquo;s no-code application builders for creating AI-powered solutions without writing code. Two builder types: the <strong>Agent application</strong> (prompt-driven, autonomous tool selection) and the <strong>Workflow application</strong> (drag-and-drop visual node editor for deterministic multi-step pipelines). Both integrate with Model Studio&rsquo;s RAG knowledge base, native tools, and third-party extensions.</p>
+    <div class="product-slideshow" data-autoplay="4000">
+      <button class="slide-arrow prev" aria-label="Previous">&lsaquo;</button>
+      <div class="slides">
+        <div class="slide active"><div class="product-img"><img src="images/bailian-workflow.png" alt="Model Studio Workflow Builder - visual node editor with LLM configuration" loading="lazy"/><div class="caption">Source: <a href="https://www.alibabacloud.com/help/en/model-studio/workflow-application/">Alibaba Cloud Model Studio Docs</a></div></div></div>
+        <div class="slide"><div class="product-img"><img src="images/model-studio-agent.png" alt="Model Studio - create Agent or Workflow application" loading="lazy"/><div class="caption">Source: <a href="https://www.alibabacloud.com/help/en/model-studio/single-agent-application">Alibaba Cloud Model Studio Docs</a></div></div></div>
+      </div>
+      <button class="slide-arrow next" aria-label="Next">&rsaquo;</button>
+      <div class="slide-dots"><button class="active" aria-label="Slide 1"></button><button aria-label="Slide 2"></button></div>
+    </div>
+    <ul class="product-features">
+      <li><strong>Agent builder</strong>: Prompt-driven intention recognition with autonomous tool selection</li>
+      <li><strong>Workflow builder</strong>: Visual canvas with LLM nodes, API connectors, decision routers, code executors</li>
+      <li>Built-in RAG via knowledge base (ingest proprietary documents)</li>
+      <li>Extension system: code interpreter, image generation, web search</li>
+      <li>Deploy via API or integrate into third-party ecosystems</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://www.alibabacloud.com/help/en/model-studio/application-introduction">App Types</a>
+      <a href="https://www.alibabacloud.com/help/en/model-studio/single-agent-application">Agent App</a>
+      <a href="https://www.alibabacloud.com/help/en/model-studio/workflow-application/">Workflow App</a>
+      <a href="https://www.alibabacloud.com/help/en/model-studio/rag-knowledge-base">RAG / Knowledge Base</a>
+    </div>
+  </div>
+
+  <!-- MCP & Skills -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon olive">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#788C5D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4"/><path d="M12 19v4"/><path d="M4.22 4.22l2.83 2.83"/><path d="M16.95 16.95l2.83 2.83"/><path d="M1 12h4"/><path d="M19 12h4"/><path d="M4.22 19.78l2.83-2.83"/><path d="M16.95 7.05l2.83-2.83"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>MCP &amp; Agent Skills Portal</h4>
+        <span class="tag oss">Open Source</span>
+        <span class="tag managed">Managed Service</span>
+      </div>
+    </div>
+    <p>Two complementary tool ecosystems for agent capability extension. <strong>MCP (Model Context Protocol)</strong> support on Model Studio allows AI models to connect to external tools and datasets through MCP endpoints &mdash; Alibaba Cloud provides official open-source MCP servers for cloud infrastructure. The <strong>Agent Skills Portal</strong> is a centralized catalog of pre-validated capability packs that grant AI agents standardized, secure access to cloud infrastructure through plain text prompts.</p>
+    <ul class="product-features">
+      <li><strong>Official MCP Servers</strong>: Cloud Ops, DataWorks, DevOps, API Gateway (all open-source)</li>
+      <li>MCP support in Model Studio API: inject configuration, auto-route via SSE streaming</li>
+      <li><strong>Skills Portal</strong>: Install skill packs for Cursor, Claude Code, Qwen Code, Qoder, and more</li>
+      <li>Skills cover elastic computing, databases, storage, and cloud networking</li>
+      <li>Legacy REST endpoints auto-transformed into MCP-compatible services</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://www.alibabacloud.com/help/en/model-studio/mcp">MCP Docs</a>
+      <a href="https://github.com/aliyun/alibaba-cloud-ops-mcp-server">Cloud Ops MCP</a>
+      <a href="https://github.com/aliyun/alibabacloud-devops-mcp-server">DevOps MCP</a>
+      <a href="https://github.com/aliyun/alibabacloud-api-mcp-server">API Gateway MCP</a>
+      <a href="https://skills.aliyun.com/">Skills Portal</a>
+    </div>
+  </div>
+
+  <h3>1.3 &ensp;AI Security &amp; Guardrails</h3>
+  <p>All Model Studio (DashScope) API requests undergo <strong>mandatory content moderation</strong> on both input and output (cannot be disabled; returns <code>400 DataInspectionFailed</code> when flagged). For configurable, production-grade safety enforcement, Alibaba Cloud offers two complementary layers:</p>
+
+  <!-- AI Guardrails -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon sky">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6A8CAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>AI Guardrails</h4>
+        <span class="tag managed">Managed Service</span>
+        <span class="tag managed">Content Moderation</span>
+      </div>
+    </div>
+    <p>A comprehensive content safety platform that integrates with Model Studio via API, AI Gateway, or WAF 3.0. Provides real-time (&lt;1s latency) filtering across 10+ categories with customizable thresholds, whitelist/blacklist management, and proprietary dataset training. Covers text, image, audio, and video moderation.</p>
+    <div class="product-img"><img src="images/ai-guardrails-architecture.png" alt="AI Guardrails three-layer protection architecture" loading="lazy"/><div class="caption">Source: <a href="https://www.alibabacloud.com/help/en/content-moderation/latest/product-overview">Alibaba Cloud Content Moderation Docs</a></div></div>
+    <ul class="product-features">
+      <li><strong>Content filtering</strong>: Violence, pornography, political sensitivity, toxic output, spam (100+ subcategories)</li>
+      <li><strong>Attack prevention</strong>: Jailbreak detection, prompt injection defense, system instruction tampering protection</li>
+      <li><strong>Data protection</strong>: PII/sensitive data detection, hallucination detection, digital watermarking for provenance</li>
+      <li><strong>Integration</strong>: Model Studio native, TextModerationPlus API, WAF 3.0 edge protection</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://www.alibabacloud.com/en/product/ai_guardrails">Product Page</a>
+      <a href="https://www.alibabacloud.com/help/en/content-moderation/latest/product-overview">Documentation</a>
+      <a href="https://www.alibabacloud.com/blog/how-alibaba-cloud-protects-ai-usage_602551">Blog: How Alibaba Cloud Protects AI Usage</a>
+    </div>
+  </div>
+
+  <!-- Qwen3Guard -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon olive">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#788C5D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>Qwen3Guard</h4>
+        <span class="tag oss">Open Source</span>
+        <span class="tag oss">Safety Model</span>
+      </div>
+    </div>
+    <p>A dedicated safety guardrail model in the Qwen family for self-hosted deployments. Available in 0.6B, 4B, and 8B parameter sizes with support for 119 languages. Uses a three-tier classification system (Safe / Unsafe / <em>Controversial</em>) rather than binary classification, enabling more nuanced content moderation decisions.</p>
+    <div class="product-slideshow" data-autoplay="4000">
+      <button class="slide-arrow prev" aria-label="Previous">&lsaquo;</button>
+      <div class="slides">
+        <div class="slide active"><div class="product-img"><img src="images/qwen3guard-architecture.png" alt="Qwen3Guard transformer classification heads architecture" loading="lazy"/><div class="caption">Source: <a href="https://www.alibabacloud.com/blog/qwen3guard-real-time-safety-for-your-token-stream_602582">Qwen3Guard Blog Post</a></div></div></div>
+        <div class="slide"><div class="product-img"><img src="images/qwen3guard-severity.png" alt="Qwen3Guard three-tier vs binary severity classification" loading="lazy"/><div class="caption">Source: <a href="https://www.alibabacloud.com/blog/qwen3guard-real-time-safety-for-your-token-stream_602582">Qwen3Guard Blog Post</a></div></div></div>
+        <div class="slide"><div class="product-img"><img src="images/qwen3guard-benchmark.png" alt="Qwen3Guard performance benchmark chart across languages" loading="lazy"/><div class="caption">Source: <a href="https://github.com/QwenLM/Qwen3Guard">github.com/QwenLM/Qwen3Guard</a></div></div></div>
+      </div>
+      <button class="slide-arrow next" aria-label="Next">&rsaquo;</button>
+      <div class="slide-dots"><button class="active" aria-label="Slide 1"></button><button aria-label="Slide 2"></button><button aria-label="Slide 3"></button></div>
+    </div>
+    <ul class="product-features">
+      <li><strong>Two variants</strong>: Qwen3Guard-Gen (offline annotation + RL rewards) + Qwen3Guard-Stream (token-by-token real-time moderation)</li>
+      <li><strong>Detection categories</strong>: Violence, illegal acts, sexual content, PII, self-harm, unethical acts, political sensitivity, copyright, jailbreak</li>
+      <li><strong>Lightweight architecture</strong>: Classification heads attached to transformer layers for efficient inference</li>
+      <li><strong>Availability</strong>: Hugging Face, ModelScope (open weights), and via AI Guardrails service (managed)</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://github.com/QwenLM/Qwen3Guard">GitHub</a>
+      <a href="https://huggingface.co/Qwen/Qwen3Guard-8B">Hugging Face (8B)</a>
+      <a href="https://www.alibabacloud.com/blog/qwen3guard-real-time-safety-for-your-token-stream_602582">Technical Blog</a>
+      <a href="https://arxiv.org/html/2510.14276v1">Technical Report</a>
+    </div>
+  </div>
+
+  <h4>Data Privacy &amp; Compliance</h4>
+  <p><strong>Data Privacy</strong>: Model Studio guarantees data is never used for model training. Zero retention for direct API calls (&#9888;&#65039; Assistant API retains conversation history). AES-256 encryption in transit and at rest.</p>
+  <p><strong>Certifications</strong>: SOC 2 Type 2, ISO 27001/27017/27018/27701, GDPR-aligned, HIPAA. Regional: MLPS 2.0 (China), MTCS (Singapore), C5 (Germany), K-ISMS (Korea). AI-specific: AIC4 (German AI Cloud Compliance). <strong>VPC access</strong>: PrivateLink in Singapore and China (Beijing); not yet US (Virginia).</p>
+
+  <h4>vs. Amazon Bedrock Guardrails</h4>
+  <p><strong>Alibaba advantage</strong>: Open-source guardrail model (Qwen3Guard) for self-hosted/on-prem; digital watermarking; broader multi-modal coverage; three-tier severity classification; strong Asia-Pacific compliance coverage.</p>
+  <p><strong>Bedrock advantage</strong>: Automated Reasoning Checks with mathematical verification (unique); more granular PII entity types with structured redaction; code-specific protections; more mature safety transparency and documentation.</p>
+
+  <div class="callout">
+    <strong>&#9888;&#65039; Transparency gaps</strong>: Stanford FMTI (Dec 2025) noted limited transparency on risk taxonomies and external red-teaming for Qwen 3. Independent red-teaming (Promptfoo) reported Qwen 2.5 72B passed only 48.1% of 50+ security tests. No standalone &ldquo;Responsible AI&rdquo; page comparable to Google Cloud, Microsoft, or AWS.
+  </div>
+</section>
+
+<div class="page-nav">
+  <a href="index.html">&larr; Overview</a>
+  <a href="qoder.html" class="next">Qoder &rarr;</a>
+</div>
+
+<footer class="foot">
+  <span>Alibaba AI Coding Evaluation</span>
+  <span>Last updated 2026-06-07</span>
+</footer>
+
+</div>
+<script>
+document.querySelectorAll('.product-slideshow').forEach(function(el) {
+  var slides = el.querySelectorAll('.slide');
+  var dots = el.querySelectorAll('.slide-dots button');
+  var current = 0;
+  var interval = parseInt(el.dataset.autoplay) || 4000;
+  var timer;
+
+  function go(idx) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = (idx + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+  }
+
+  function start() { timer = setInterval(function() { go(current + 1); }, interval); }
+  function reset() { clearInterval(timer); start(); }
+
+  el.querySelector('.prev').addEventListener('click', function() { go(current - 1); reset(); });
+  el.querySelector('.next').addEventListener('click', function() { go(current + 1); reset(); });
+  dots.forEach(function(dot, i) { dot.addEventListener('click', function() { go(i); reset(); }); });
+
+  el.addEventListener('mouseenter', function() { clearInterval(timer); });
+  el.addEventListener('mouseleave', start);
+  start();
+});
+</script>
+</body>
+</html>

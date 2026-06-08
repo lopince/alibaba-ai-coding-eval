@@ -38,22 +38,17 @@ Alibaba Cloud's central AI platform is **Model Studio (百炼/Bailian)**, hostin
 | **Cloud Runtime** | AgentBay | Sandboxed cloud execution environment for agents |
 | **Platform Builders** | Model Studio Workflow / Agent / RAG Builders | No-code/low-code agent, workflow, and RAG pipeline builders inside Bailian |
 
-### 1.3 AI Products Portfolio
+### 1.3 AI Security & Guardrails
 
-| Product | Category | Description |
-|---|---|---|
-| **Tongyi Qianwen (Qwen)** | LLM | Foundation model family (see above) |
-| **Tongyi Wanxiang** | Image Generation | Text-to-image / video generation |
-| **Tongyi Lingma** | AI Coding | IDE plugin for VS Code / JetBrains; inline completion + chat |
-| **Qwen Code** | Terminal Agent | Open-source terminal coding agent (comparable to Claude Code) |
-| **PAI (Platform for AI)** | MLOps | Training, fine-tuning, deployment platform |
-| **Model Studio (Bailian)** | AI Platform | Unified model marketplace, API gateway, agent builder |
+All Model Studio (DashScope) API requests undergo **mandatory content moderation** on both input and output (cannot be disabled; returns `400 DataInspectionFailed` when flagged). For configurable, production-grade safety enforcement, Alibaba Cloud offers two complementary layers:
 
-### 1.4 Strategic Investment
+**AI Guardrails** — A managed content safety platform that integrates with Model Studio via API, AI Gateway, or WAF 3.0. Provides real-time (<1s latency) filtering across 10+ categories (violence, pornography, political sensitivity, toxic output), PII detection, jailbreak/prompt-injection defense, hallucination detection, and digital watermarking for AI-generated content. Covers text, image, audio, and video.
 
-- **RMB 380 billion (~$52B)** three-year AI infrastructure commitment
-- Global expansion: Singapore, Germany, US East, and other regions
-- All open-source models under **Apache 2.0** license
+**Qwen3Guard** — An open-source safety model (0.6B/4B/8B parameters, 119 languages) for self-hosted deployments. Uses a three-tier classification system (Safe / Unsafe / Controversial) rather than binary. Includes Qwen3Guard-Stream for token-by-token real-time moderation and Qwen3Guard-Gen for offline annotation and RL reward modeling.
+
+**Data Privacy**: Model Studio guarantees data is never used for model training. Zero retention for direct API calls (⚠️ Assistant API retains conversation history). AES-256 encryption. SOC 2 Type 2, ISO 27001/27017/27018/27701, GDPR, HIPAA certified. PrivateLink available in Singapore and China (not yet US).
+
+**vs. Amazon Bedrock Guardrails**: Alibaba offers an open-source guardrail model and digital watermarking; Bedrock offers Automated Reasoning Checks (mathematical verification) and more granular PII entity types. Both provide content filtering, topic blocking, jailbreak detection, and model-independent APIs.
 
 ---
 
@@ -233,40 +228,28 @@ Head-to-head comparison of **Qoder CLI** vs. **Claude Code** across feature dime
 | Model | Type | Params (Total / Active) | Key Strength |
 |---|---|---|---|
 | Qwen3.7-Max | Proprietary API | Undisclosed | 80.4% SWE-bench Verified |
-| Qwen3-Coder 480B | Open-weight | 480B | Flagship coding model |
-| Qwen3-Coder-Next | MoE | 80B / 3B active | Local-deployable coding agent |
-| Qwen3.5-27B | Dense | 27B | General + coding + vision |
-| Qwen3.5-35B-A3B | MoE | 35B / 3B active | Efficient general model |
-| Qwen3-235B-A22B | MoE | 235B / 22B active | Flagship reasoning |
-| Qwen3-Omni 30B-A3B | MoE | 30B / 3B active | Full multimodal |
 
-### 4.2 Standard Benchmark Scores
+### 4.2 Coding — SWE-bench + LiveCodeBench
 
-| Model | MMLU | GPQA Diamond | MATH | AIME25 |
-|---|---|---|---|---|
-| Qwen3-235B-A22B (Thinking) | 90.6% | — | — | — |
-| Qwen3-235B-A22B | 87.8% | — | — | — |
-| Qwen3.5-27B | 86.1% (MMLU-Pro) | 85.5% | — | — |
-| Qwen3-Omni 30B-A3B | 86.6% (MMLU-Redux) | — | — | 65.0 |
+**SWE-bench** tests real-world GitHub issue resolution (500 tasks); **SWE-bench Pro** is a harder variant by Scale AI with stricter evaluation. **LiveCodeBench** uses continuously updated competitive programming problems (contamination-free).
 
-### 4.3 Coding Benchmark Scores
-
-| Model | SWE-bench Verified | SWE-bench Pro | Aider Polyglot | LiveCodeBench v6 | EvalPlus |
+| Model | Vendor | SWE-bench Verified | SWE-bench Pro | LiveCodeBench v6 | Notes |
 |---|---|---|---|---|---|
-| Qwen3.7-Max | 80.4% | 60.6% | — | — | — |
-| Qwen3-Coder-Next | 71.3% | 42.7% | 66.2% | 58.9 | 86.6 |
-| Qwen3.5-27B | 72.4% | — | — | 80.7 | — |
+| **Qwen3.7-Max** | Alibaba | **80.4%** | **60.6%** (#4 global) | **91.6** | Top-tier; within 0.5pts of frontier leaders |
+| DeepSeek V4 | DeepSeek | 83.7% ⚠️ (unverified) | — | 93.5 (V4-Pro) | Self-reported; treat skeptically |
+| Claude Opus 4.5 | Anthropic | 80.9% | — | 73.8 | |
+| Claude Sonnet 4.6 | Anthropic | 79.6% | — | — | |
+| Kimi K2.6 | Moonshot | 80.2% | 58.6% | 89.6 | |
+| GPT-5 | OpenAI | 74.9% | — | — | |
+| Gemini 2.5 Pro | Google | 63.8% | — | 73.6 | |
+| GLM-5.1 | Zhipu | — | **58.4%** (#1 Pro) | — | |
 
-**Reference — Frontier Comparisons:**
+**Key observations:**
+- SWE-bench scores vary dramatically by scaffold (e.g., Qwen3-Coder 480B: 55.4% bash-only → 69.6% multi-turn). Always note the evaluation setup
+- SWE-bench Pro is much harder — top scores range 38–61% vs. 55–84% on Verified
+- DeepSeek V4 scores are self-reported/leaked and should be treated skeptically until independently verified
 
-| Model | SWE-bench Verified | SWE-bench Pro |
-|---|---|---|
-| Claude Opus 4.5 | ~78.2% | — |
-| DeepSeek V4 | 80.6% | — |
-| GLM-5.1 | 77.8% | 58.4% |
-| Kimi K2.6 | 80.2% | 58.6% |
-
-### 4.4 Multimodality Matrix
+### 4.3 Multimodality Matrix
 
 | Model | Text | Vision | Audio | Video | Speech Out |
 |---|---|---|---|---|---|
@@ -276,7 +259,7 @@ Head-to-head comparison of **Qoder CLI** vs. **Claude Code** across feature dime
 | Qwen3-Omni | Yes | Yes | Yes | Yes | Yes |
 | Qwen3.5 | Yes | Yes (native) | No | Yes | No |
 
-### 4.5 Benchmark Frameworks to Use
+### 4.4 Benchmark Frameworks to Use
 
 | Framework | What It Tests | Setup | Why Use It |
 |---|---|---|---|
@@ -288,7 +271,7 @@ Head-to-head comparison of **Qoder CLI** vs. **Claude Code** across feature dime
 | **EvalPlus** | HumanEval + MBPP with 80x/35x more test cases | `pip install evalplus` | More rigorous version of classic benchmarks |
 | **Terminal-Bench 2.0** | CLI/terminal-based coding + agentic interaction | Terminal harness | Tests agent-style terminal workflows |
 
-### 4.6 Evaluation Plan
+### 4.5 Evaluation Plan
 
 **Phase 1 — Baseline Benchmarks:**
 - Run SWE-bench Verified on: Qwen3.7-Max, Qwen3-Coder 480B, Qwen3-Coder-Next, Qwen3.5-27B
@@ -305,7 +288,7 @@ Head-to-head comparison of **Qoder CLI** vs. **Claude Code** across feature dime
 - Qwen3-VL and Qwen3-Omi on vision-language tasks (MMMU, MathVision)
 - GUI understanding and screenshot-based coding tasks
 
-### 4.7 Industry Benchmark Reliability & Enterprise Evaluation Practices
+### 4.6 Industry Benchmark Reliability & Enterprise Evaluation Practices
 
 #### Benchmark Trust Hierarchy
 

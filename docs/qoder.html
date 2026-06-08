@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Qoder Product Overview &mdash; Alibaba AI Coding Evaluation</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Alibaba AI Coding Evaluation</a></h1>
+  <div class="meta">Section 2 of 5</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="alicloud.html">AliCloud</a>
+  <a href="qoder.html" class="active">Qoder</a>
+  <a href="cli-eval.html">Qoder CLI</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="harness-eval.html">Harness Eval</a>
+</div></nav>
+
+</div>
+
+<div class="wrap">
+
+<section class="eval">
+  <div class="crumb">Section 2</div>
+  <h2>Qoder Product Overview</h2>
+
+  <h3>2.1 &ensp;What is Qoder?</h3>
+  <p>Qoder is an <strong>agentic coding platform</strong> (founded 2024, Alibaba ecosystem) positioning as an &ldquo;Autonomous Development Desktop.&rdquo; Beyond code completion, it provides a full platform integrating context engineering with intelligent agents &mdash; supporting multi-agent orchestration, autonomous task delegation, persistent knowledge, and extensible tool integration. Available as a standalone IDE, VS Code/JetBrains extensions, and a terminal CLI. 5M+ users globally, with 70% revenue from enterprise customers.</p>
+
+  <h3>2.2 &ensp;Product Surfaces</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Surface</th><th>Description</th><th>Platforms</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Qoder IDE</strong></td><td>AI-native standalone desktop IDE (VS Code-based) with Editor + Quest workspaces</td><td>Windows, macOS, Linux</td></tr>
+      <tr><td><strong>VS Code Extension</strong></td><td>Agentic features inside VS Code: Chat, Agent, Quest, NEXT, Experts</td><td>VS Code Marketplace</td></tr>
+      <tr><td><strong>JetBrains Extension</strong></td><td>Plugin for IntelliJ, PyCharm, GoLand, Android Studio, CLion (2020.3+)</td><td>JetBrains Marketplace</td></tr>
+      <tr><td><strong>Qoder CLI</strong></td><td>Terminal-based AI coding agent with headless mode for CI/CD (competes with Claude Code)</td><td>npm, Homebrew</td></tr>
+      <tr><td><strong>Cloud Agents</strong></td><td>API-driven agent sessions with environments, memory stores, vaults, and skills</td><td>REST API</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>2.3 &ensp;Core Features</h3>
+  <p>Qoder&rsquo;s feature set spans six pillars: an AI-native IDE editor, autonomous task delegation (Quest), multi-agent orchestration (Experts), persistent knowledge engineering, a terminal agent (CLI), and an extensible integration layer.</p>
+
+  <!-- Qoder IDE -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon olive">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#788C5D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>Qoder IDE &mdash; Editor &amp; Agentic Chat</h4>
+        <span class="tag oss">AI-Native IDE</span>
+        <span class="tag oss">VS Code-based</span>
+      </div>
+    </div>
+    <p>The primary coding workspace combining a full IDE with AI-powered agentic chat. The editor features <strong>NEXT</strong> (intent-aware code completion and Next Edit Suggestions) that predicts your next editing action based on code context and intent. The <strong>Agentic Chat</strong> panel provides conversational AI with task decomposition and autonomous execution &mdash; switch between Agent mode (autonomous multi-step) and Auto mode (inline assistance). Chat sessions are code-aware, with automatic file context from open tabs.</p>
+    <div class="product-img"><img src="images/qoder-aliyun-ui.png" alt="Qoder IDE workspace - code editor with TypeScript, task panel, terminal output, and to-do checklist" loading="lazy"/><div class="caption">Source: <a href="https://www.aliyun.com/product/qoder">aliyun.com/product/qoder</a></div></div>
+    <ul class="product-features">
+      <li><strong>NEXT completions</strong>: Intent-aware suggestions that go beyond autocomplete &mdash; predicts next edit actions</li>
+      <li><strong>Agentic Chat</strong>: Conversational AI with file-context awareness from open editor tabs</li>
+      <li><strong>Agent vs Auto mode</strong>: Toggle between autonomous multi-step execution and inline assistance</li>
+      <li><strong>Plan Agent</strong>: Breaks complex requests into structured plans before execution</li>
+      <li><strong>Browser Agent &amp; Computer Use Agent</strong>: Control browsers and desktops directly from chat</li>
+      <li><strong>Inline Chat</strong>: Edit code in-place without leaving the editor cursor position</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://qoder.com/download">Download</a>
+      <a href="https://docs.qoder.com/user-guide/chat/agent">Agentic Chat Docs</a>
+      <a href="https://docs.qoder.com/user-guide/next-edit-suggestion">NEXT Docs</a>
+    </div>
+  </div>
+
+  <!-- Quest Mode -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon clay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#D97757" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>Quest Mode</h4>
+        <span class="tag managed">Autonomous Delegation</span>
+        <span class="tag managed">Spec-Driven</span>
+      </div>
+    </div>
+    <p>An asynchronous, autonomous delegation workspace where you describe what to build and Qoder plans and executes independently. Two modes: <strong>Write Spec First</strong> (AI generates a technical specification you review before execution) and <strong>Execute Directly</strong> (skip spec, go straight to implementation). Quest provides a three-column kanban (Running / Waiting / Completed), a Plan and Action checklist for execution transparency, and detailed Task Reports showing file changes, test results, and completion status. Comparable to Claude Code&rsquo;s headless mode but with richer visual task management.</p>
+    <div class="product-slideshow" data-autoplay="4000">
+      <button class="slide-arrow prev" aria-label="Previous">&lsaquo;</button>
+      <div class="slides">
+        <div class="slide active"><div class="product-img"><img src="images/qoder-quest-specdriven.png" alt="Quest Mode - Write Spec First or Execute Directly" loading="lazy"/><div class="caption">Source: <a href="https://docs.qoder.com/user-guide/quest/overview">docs.qoder.com/user-guide/quest</a></div></div></div>
+        <div class="slide"><div class="product-img"><img src="images/qoder-mode-compare.png" alt="Quest Mode execution - code changes with Plan and Action checklist, terminal, and to-do progress" loading="lazy"/><div class="caption">Source: <a href="https://qoder.com/blog/qoder-introduction">qoder.com/blog/qoder-introduction</a></div></div></div>
+      </div>
+      <button class="slide-arrow next" aria-label="Next">&rsaquo;</button>
+      <div class="slide-dots"><button class="active" aria-label="Slide 1"></button><button aria-label="Slide 2"></button></div>
+    </div>
+    <ul class="product-features">
+      <li><strong>Spec-Driven</strong>: AI writes technical specs (Overview, Architecture, Components) before coding</li>
+      <li><strong>Plan and Action</strong>: Transparent checklist of planned steps with real-time progress</li>
+      <li><strong>Task Reports</strong>: Detailed logs of file changes, test results, and execution summary</li>
+      <li><strong>Three-column kanban</strong>: Running / Waiting / Completed task management</li>
+      <li><strong>Quest Remote</strong>: Manage Quest tasks from mobile or another device</li>
+      <li><strong>Execution Environments</strong>: Sandboxed cloud environments for autonomous builds</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://docs.qoder.com/user-guide/quest/overview">Quest Overview</a>
+      <a href="https://docs.qoder.com/user-guide/quest/spec-driven">Spec-Driven Mode</a>
+      <a href="https://docs.qoder.com/user-guide/quest/task-management">Task Management</a>
+    </div>
+  </div>
+
+  <!-- Experts Mode -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon sky">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6A8CAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>Experts Mode (Multi-Agent)</h4>
+        <span class="tag oss">Centralized Orchestration</span>
+        <span class="tag enterprise">DAG-based</span>
+      </div>
+    </div>
+    <p>A multi-agent collaboration system where a <strong>Team Lead</strong> agent decomposes tasks and assigns them to specialized expert roles running in parallel. Unlike single-agent coding, Experts Mode enables parallel execution across research, frontend, backend, QA, code review, and DevOps &mdash; converging into unified engineering delivery. Benchmarks show +67% quality improvement over single-agent approaches. The centralized orchestration model (Leader-routed) contrasts with Claude Code&rsquo;s decentralized peer-to-peer Agent Teams.</p>
+    <div class="product-img"><img src="images/qoder-experts-arch.png" alt="Traditional AI Coding vs Qoder Experts Team Mode - serial vs parallel execution" loading="lazy"/><div class="caption">Source: <a href="https://docs.qoder.com/user-guide/quest/experts-mode">docs.qoder.com/user-guide/quest/experts-mode</a></div></div>
+    <ul class="product-features">
+      <li><strong>Experts Leader</strong>: Orchestrator that decomposes, assigns, and tracks &mdash; does NOT code itself</li>
+      <li><strong>Expert Team</strong>: Domain-specific agents (Research, Coding, QA, Code Review, Browser) with isolated toolsets</li>
+      <li><strong>Task Graph (DAG)</strong>: Lightweight dependency-aware parallel scheduling</li>
+      <li><strong>Custom Sub-Agents</strong>: Define your own expert roles with specialized configurations</li>
+      <li><strong>Self-Evolution Loop</strong>: Complete &rarr; Extract &rarr; Store &rarr; Recall &rarr; Execute</li>
+      <li><strong>Canvas View</strong>: Visual artifact rendering for dashboards, reports, and architecture diagrams</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://docs.qoder.com/user-guide/quest/experts-mode">Experts Mode Docs</a>
+      <a href="https://qoder.com/blog/experts-mode">Experts Mode Blog</a>
+      <a href="https://qoder.com/blog/experts-mode-tech">Technical Deep-Dive</a>
+    </div>
+    <div class="callout" style="margin-top:1rem;margin-bottom:0">
+      <strong>Qoder vs Claude Code Agent Teams:</strong> Qoder uses centralized orchestration (Leader-routed) with predefined expert roles; Claude Code uses decentralized peer-to-peer workers with role profiles communicating via a shared registry.
+    </div>
+  </div>
+
+  <!-- Knowledge Engine -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon olive">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#788C5D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>Knowledge Engine</h4>
+        <span class="tag oss">Context Engineering</span>
+        <span class="tag managed">Persistent Memory</span>
+      </div>
+    </div>
+    <p>A three-layer context system that gives Qoder persistent understanding of your codebase across sessions. <strong>Repo Wiki</strong> auto-generates architecture documentation from your repository (surfacing implicit knowledge that&rsquo;s usually undocumented). <strong>Knowledge Cards</strong> extract reusable specs, standards, and conventions from your code. <strong>Conversation Memory</strong> accumulates decisions, pitfalls, and patterns from chat history. Together, they eliminate the &ldquo;cold start&rdquo; problem where AI assistants forget everything between sessions.</p>
+    <div class="product-slideshow" data-autoplay="4000">
+      <button class="slide-arrow prev" aria-label="Previous">&lsaquo;</button>
+      <div class="slides">
+        <div class="slide active"><div class="product-img"><img src="images/ke-architecture.png" alt="Knowledge Engine architecture - User Query, Agent Execution Flow, Engineering Knowledge layer with RepoWiki, Memory, Commit Graph, Code Chunk, Code Graph" loading="lazy"/><div class="caption">Source: <a href="https://qoder.com/blog/engineering-knowledge-engine">qoder.com/blog/engineering-knowledge-engine</a></div></div></div>
+        <div class="slide"><div class="product-img"><img src="images/ke-memory-panel.png" alt="Knowledge Engine Memories panel - User Language Preference with keywords, project scope, and management controls" loading="lazy"/><div class="caption">Source: <a href="https://docs.qoder.com/user-guide/chat/memory">docs.qoder.com/user-guide/chat/memory</a></div></div></div>
+      </div>
+      <button class="slide-arrow next" aria-label="Next">&rsaquo;</button>
+      <div class="slide-dots"><button class="active" aria-label="Slide 1"></button><button aria-label="Slide 2"></button></div>
+    </div>
+    <ul class="product-features">
+      <li><strong>Repo Wiki</strong>: Auto-generated architecture docs (Project Overview, Technical Architecture, Core Components)</li>
+      <li><strong>Knowledge Cards</strong>: Extracted specs, coding standards, and domain conventions from codebase</li>
+      <li><strong>Conversation Memory</strong>: Accumulated decisions, pitfalls, and patterns from chat sessions</li>
+      <li><strong>Automatic Generation</strong>: Memories auto-build as you use Qoder &mdash; no manual curation required</li>
+      <li><strong>Memory References</strong>: AI automatically fetches relevant memories when executing tasks</li>
+      <li><strong>Cross-session persistence</strong>: Knowledge survives IDE restarts and team member changes</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://docs.qoder.com/user-guide/knowledge-engine">Knowledge Engine Docs</a>
+      <a href="https://docs.qoder.com/user-guide/repo-wiki">Repo Wiki</a>
+      <a href="https://docs.qoder.com/user-guide/knowledge-engine/knowledge-cards">Knowledge Cards</a>
+      <a href="https://qoder.com/blog/engineering-knowledge-engine">Engineering Blog</a>
+    </div>
+  </div>
+
+  <!-- Qoder CLI -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon clay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#D97757" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>Qoder CLI</h4>
+        <span class="tag oss">Terminal Agent</span>
+        <span class="tag enterprise">CI/CD Ready</span>
+      </div>
+    </div>
+    <p>A terminal-native AI coding agent that brings Qoder&rsquo;s agentic capabilities to the command line. Direct competitor to Claude Code &mdash; accepts natural language requests to read/write files, run commands, search codebases, and execute multi-step tasks. Features a <strong>headless mode</strong> for non-interactive CI/CD integration (GitHub Actions via <code>qoder-action</code>), and programmatic SDKs for TypeScript and Python. Uses 70% less idle memory than comparable CLI tools with sub-200ms response times.</p>
+    <div class="product-img"><img src="images/qoder-cli-terminal.png" alt="Qoder CLI creating a crypto tracker app with task execution and code generation" loading="lazy"/><div class="caption">Source: <a href="https://docs.qoder.com/en/cli/quick-start">docs.qoder.com/en/cli/quick-start</a></div></div>
+    <ul class="product-features">
+      <li><strong>Natural language interface</strong>: Ask questions, edit files, or run commands in plain English</li>
+      <li><strong>Headless mode</strong>: Non-interactive execution for CI/CD pipelines and automation</li>
+      <li><strong>GitHub Actions</strong>: <code>qoder-action</code> for automated PR reviews, code generation, and issue triage</li>
+      <li><strong>TypeScript &amp; Python SDKs</strong>: Programmatic agent integration (<code>@qoder-ai/qoder-agent-sdk</code>)</li>
+      <li><strong>Multi-provider model routing</strong>: Auto-selects optimal model (Qwen, DeepSeek, etc.)</li>
+      <li><strong>Skills support</strong>: Load SKILL.md files for domain-specific CLI expertise</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://docs.qoder.com/en/cli/quick-start">CLI Quick Start</a>
+      <a href="https://docs.qoder.com/en/cli/using-cli">Using Guide</a>
+      <a href="https://github.com/QoderAI/qoder-action">GitHub Action</a>
+      <a href="https://docs.qoder.com/en/cli/sdk/quick-start">TypeScript SDK</a>
+    </div>
+  </div>
+
+  <!-- Extensions & Integrations -->
+  <div class="product">
+    <div class="product-header">
+      <div class="product-icon sky">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6A8CAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <div class="product-title">
+        <h4>Extensions &amp; Integrations</h4>
+        <span class="tag oss">Skills</span>
+        <span class="tag oss">MCP</span>
+        <span class="tag managed">Plugins</span>
+      </div>
+    </div>
+    <p>Three extension mechanisms for customizing Qoder&rsquo;s capabilities. <strong>Skills</strong> are reusable, modular domain expertise packaged as <code>SKILL.md</code> files &mdash; installable from the skills marketplace or GitHub. <strong>MCP (Model Context Protocol)</strong> connects Qoder to external tools and data sources (GitHub, Figma, Slack, and more) through a one-click install marketplace. <strong>Plugins</strong> extend IDE functionality with custom UI panels, commands, and integrations. <strong>Hooks</strong> allow custom shell commands to run in response to agent events.</p>
+    <div class="product-slideshow" data-autoplay="4000">
+      <button class="slide-arrow prev" aria-label="Previous">&lsaquo;</button>
+      <div class="slides">
+        <div class="slide active"><div class="product-img"><img src="images/ext-mcp-marketplace.png" alt="MCP Marketplace - browse and install GitHub, Puppeteer, MasterGo, Content Extractor services with one-click install and environment variable configuration" loading="lazy"/><div class="caption">Source: <a href="https://docs.qoder.com/user-guide/chat/model-context-protocol">docs.qoder.com/user-guide/chat/mcp</a></div></div></div>
+        <div class="slide"><div class="product-img"><img src="images/ext-mcp-config.png" alt="MCP service configuration - Add MCP Service dialog with STDIO/SSE type, command/args/env fields, and JSON config preview" loading="lazy"/><div class="caption">Source: <a href="https://docs.qoder.com/user-guide/chat/model-context-protocol">docs.qoder.com/user-guide/chat/mcp</a></div></div></div>
+        <div class="slide"><div class="product-img"><img src="images/ext-mcp-tools.png" alt="MCP tool integration in JetBrains IDE - fetch service with URL, max_length, raw, start_index parameters alongside project structure" loading="lazy"/><div class="caption">Source: <a href="https://docs.qoder.com/user-guide/chat/model-context-protocol">docs.qoder.com/user-guide/chat/mcp</a></div></div></div>
+      </div>
+      <button class="slide-arrow next" aria-label="Next">&rsaquo;</button>
+      <div class="slide-dots"><button class="active" aria-label="Slide 1"></button><button aria-label="Slide 2"></button><button aria-label="Slide 3"></button></div>
+    </div>
+    <ul class="product-features">
+      <li><strong>Skills</strong>: Packaged as <code>SKILL.md</code> &mdash; install from marketplace or write your own</li>
+      <li><strong>MCP Integration</strong>: One-click install for GitHub, Figma, Slack, Context7, and more</li>
+      <li><strong>Plugins</strong>: Extend IDE with custom panels, commands, and third-party integrations</li>
+      <li><strong>Hooks</strong>: Run custom shell commands on agent events (pre-commit, post-task, etc.)</li>
+      <li><strong>Sub-Agents</strong>: Define custom specialist agents for domain-specific workflows</li>
+      <li><strong>BYOK (Bring Your Own Key)</strong>: Use your own API keys for model providers</li>
+    </ul>
+    <div class="product-links">
+      <a href="https://docs.qoder.com/extensions/skills">Skills Docs</a>
+      <a href="https://docs.qoder.com/user-guide/chat/model-context-protocol">MCP Docs</a>
+      <a href="https://docs.qoder.com/extensions/plugins">Plugins Docs</a>
+      <a href="https://docs.qoder.com/extensions/hooks">Hooks Docs</a>
+    </div>
+  </div>
+
+</section>
+
+<div class="page-nav">
+  <a href="alicloud.html">&larr; AliCloud</a>
+  <a href="cli-eval.html" class="next">Qoder CLI &rarr;</a>
+</div>
+
+<footer class="foot">
+  <span>Alibaba AI Coding Evaluation</span>
+  <span>Last updated 2026-06-07</span>
+</footer>
+
+</div>
+<script>
+document.querySelectorAll('.product-slideshow').forEach(function(el) {
+  var slides = el.querySelectorAll('.slide');
+  var dots = el.querySelectorAll('.slide-dots button');
+  var current = 0;
+  var interval = parseInt(el.dataset.autoplay) || 4000;
+  var timer;
+
+  function go(idx) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = (idx + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+  }
+
+  function start() { timer = setInterval(function() { go(current + 1); }, interval); }
+  function reset() { clearInterval(timer); start(); }
+
+  el.querySelector('.prev').addEventListener('click', function() { go(current - 1); reset(); });
+  el.querySelector('.next').addEventListener('click', function() { go(current + 1); reset(); });
+  dots.forEach(function(dot, i) { dot.addEventListener('click', function() { go(i); reset(); }); });
+
+  el.addEventListener('mouseenter', function() { clearInterval(timer); });
+  el.addEventListener('mouseleave', start);
+  start();
+});
+</script>
+</body>
+</html>

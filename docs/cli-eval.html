@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Qoder CLI &mdash; Alibaba AI Coding Evaluation</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Alibaba AI Coding Evaluation</a></h1>
+  <div class="meta">Section 3 of 5</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="alicloud.html">AliCloud</a>
+  <a href="qoder.html">Qoder</a>
+  <a href="cli-eval.html" class="active">Qoder CLI</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="harness-eval.html">Harness Eval</a>
+</div></nav>
+
+</div>
+
+<div class="wrap">
+
+<section class="eval">
+  <div class="crumb">Section 3</div>
+  <h2>Qoder CLI</h2>
+
+  <h3>3.1 &ensp;Qoder CLI vs. Claude Code vs. OpenCode</h3>
+  <p><strong>Qoder CLI</strong> leads in structured multi-agent orchestration (<a href="https://docs.qoder.com/user-guide/quest/experts-mode">Experts Mode</a>, <a href="https://docs.qoder.com/user-guide/quest/overview">Quest Mode</a>, <a href="https://docs.qoder.com/user-guide/quest/execution-environments">Quest Remote</a>) and persistent team knowledge (<a href="https://docs.qoder.com/user-guide/repo-wiki">Repo Wiki</a>, <a href="https://docs.qoder.com/user-guide/knowledge-engine/knowledge-cards">Knowledge Cards</a>), but trails in model quality and context window. <strong>Claude Code</strong> leads in model capability (Opus 4.7/Sonnet 4.6), context window (200K&ndash;1M), and flexible peer-to-peer agent coordination, but lacks a standalone IDE, Knowledge Engine, and cloud execution. <strong><a href="https://opencode.ai/docs/zh-cn">OpenCode</a></strong> wins on openness (MIT-licensed, multi-provider, zero cost) but has no multi-agent support, no IDE integrations, and minimal memory &mdash; best suited for solo developers who value provider freedom over orchestration.</p>
+
+  <div class="feat-group">Core Platform</div>
+  <div class="tbl"><table>
+    <thead><tr><th>Feature</th><th>Qoder CLI</th><th>Claude Code</th><th>OpenCode</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Terminal CLI</strong></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td></tr>
+      <tr><td><strong>Standalone IDE</strong></td><td><span class="cmp new">Qoder Only</span></td><td><span class="cmp no">No</span></td><td><span class="cmp no">No</span></td></tr>
+      <tr><td><strong>VS Code Extension</strong></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp no">No</span></td></tr>
+      <tr><td><strong>JetBrains Plugin</strong></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp no">No</span></td></tr>
+      <tr><td><strong>Model Providers</strong></td><td>Multi-provider (Qwen, DeepSeek, etc.)</td><td>Claude only</td><td>Multi-provider (OpenAI, Anthropic, Google, OSS)</td></tr>
+      <tr><td><strong>Context Window</strong></td><td>Not disclosed</td><td>200K (1M experimental)</td><td>Per-model (varies by provider)</td></tr>
+      <tr><td><strong>Open Source</strong></td><td><span class="cmp no">No</span></td><td><span class="cmp no">No</span></td><td><span class="cmp oss">OSS</span></td></tr>
+      <tr><td><strong>Free Tier</strong></td><td><span class="cmp new">Qoder Only</span></td><td><span class="cmp no">No</span> (from $20/mo)</td><td><span class="cmp oss">Free</span> (BYOK)</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="feat-group">Memory &amp; Knowledge</div>
+  <div class="tbl"><table>
+    <thead><tr><th>Feature</th><th>Qoder CLI</th><th>Claude Code</th><th>OpenCode</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Project Config</strong></td><td><a href="https://docs.qoder.com/user-guide/knowledge-engine"><code>.qoder/</code> rules</a></td><td><a href="https://code.claude.com/docs/en/memory"><code>CLAUDE.md</code></a> (multi-level)</td><td><a href="https://opencode.ai/docs/zh-cn/agents/"><code>AGENTS.md</code></a></td></tr>
+      <tr><td><strong>Auto-Memory</strong></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp no">No</span></td></tr>
+      <tr class="highlight"><td><strong><a href="https://docs.qoder.com/user-guide/repo-wiki">Repo Wiki</a></strong></td><td><span class="cmp new">Qoder Only</span></td><td><span class="cmp no">No</span></td><td><span class="cmp no">No</span></td></tr>
+      <tr class="highlight"><td><strong><a href="https://docs.qoder.com/user-guide/knowledge-engine/knowledge-cards">Knowledge Cards</a></strong></td><td><span class="cmp new">Qoder Only</span></td><td><span class="cmp no">No</span></td><td><span class="cmp no">No</span></td></tr>
+      <tr><td><strong>Team-Wide Knowledge</strong></td><td><span class="cmp partial">Cloud sync</span></td><td><span class="cmp partial">Org-wide CLAUDE.md</span></td><td><span class="cmp no">No</span></td></tr>
+    </tbody>
+  </table></div>
+
+
+
+  <div class="feat-group">Extensions &amp; Ecosystem</div>
+  <div class="tbl"><table>
+    <thead><tr><th>Feature</th><th>Qoder CLI</th><th>Claude Code</th><th>OpenCode</th></tr></thead>
+    <tbody>
+      <tr><td><strong><a href="https://docs.qoder.com/extensions/skills">Skills (SKILL.md)</a></strong></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp no">No</span></td></tr>
+      <tr><td><strong><a href="https://docs.qoder.com/user-guide/chat/model-context-protocol">MCP Integration</a></strong></td><td><span class="cmp yes">Yes</span> (<a href="https://docs.qoder.com/user-guide/chat/model-context-protocol">marketplace</a>)</td><td><span class="cmp yes">Yes</span> (<a href="https://code.claude.com/docs/en/mcp">manual JSON</a>)</td><td><span class="cmp yes">Yes</span> (<a href="https://opencode.ai/docs/zh-cn/mcp-servers/">config file</a>)</td></tr>
+      <tr><td><strong><a href="https://docs.qoder.com/extensions/hooks">Hooks</a></strong></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp no">No</span></td></tr>
+      <tr><td><strong>SDK</strong></td><td>TS + Python</td><td>TS + <a href="https://code.claude.com/docs/en/agent-sdk/overview">Python Agent SDK</a></td><td>Go (extensible)</td></tr>
+      <tr class="highlight"><td><strong><a href="https://docs.qoder.com/extensions/plugins">Plugin System</a></strong></td><td><span class="cmp new">Qoder Only</span></td><td><span class="cmp no">No</span></td><td><span class="cmp no">No</span></td></tr>
+      <tr class="highlight"><td><strong><a href="https://docs.qoder.com/extensions/subagent">Custom Sub-Agents</a></strong></td><td><span class="cmp new">Qoder Only</span></td><td><span class="cmp no">No</span></td><td><span class="cmp no">No</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="feat-group">Unique Qoder Features (Not in Claude Code or OpenCode)</div>
+  <div class="tbl"><table>
+    <thead><tr><th>Feature</th><th>What It Does</th><th>Why It Matters</th></tr></thead>
+    <tbody>
+      <tr class="highlight"><td><strong>Canvas</strong></td><td>Structured, interactive agent output UI (code review dashboards, test reports, architecture diagrams) instead of raw chat text</td><td>Turns agent output from &ldquo;conversation to read&rdquo; into &ldquo;workbench to act on&rdquo; with one-click fix actions</td></tr>
+      <tr class="highlight"><td><strong><a href="https://docs.qoder.com/qoderwake/quick-start">QoderWake</a></strong></td><td>Persistent AI &ldquo;digital employees&rdquo; (Wakers) that run 24/7 with defined roles, memory, and event-driven triggers</td><td>Automate ongoing tasks: auto-investigate bugs, monitor test coverage, generate PRDs from feedback</td></tr>
+      <tr class="highlight"><td><strong><a href="https://docs.qoder.com/en/cli/remote-control">Remote Control</a></strong></td><td>Monitor and intervene on running agent tasks from mobile/web with structured task views</td><td>Unblock agent work from anywhere; approve or redirect decisions without being at your desk</td></tr>
+      <tr class="highlight"><td><strong>QoderWork</strong></td><td>Desktop AI assistant for non-coding tasks: file organization, data analysis, document creation</td><td>One platform for coding + operational work; shares account credits</td></tr>
+      <tr class="highlight"><td><strong><a href="https://docs.qoder.com/cloud-agents/overview">Cloud Agents API</a></strong></td><td>Fully managed agent runtime: define agents, provision environments, stream events via SSE</td><td>Turnkey agent platform for internal tools, CI/CD, and batch processing without custom infrastructure</td></tr>
+      <tr class="highlight"><td><strong>Mobile App</strong></td><td>Native iOS &amp; Android apps for Remote Control and task monitoring</td><td>Stay connected to running agent tasks during commutes or meetings</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="feat-group">Where Claude Code Leads</div>
+  <div class="tbl"><table>
+    <thead><tr><th>Advantage</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Model quality</strong></td><td>Claude Opus 4.7 and Sonnet 4.6 are among the top-tier coding models; Qoder relies on Qwen/DeepSeek which may lag on complex reasoning tasks</td></tr>
+      <tr><td><strong>Context window</strong></td><td>200K default, 1M experimental; Qoder context window is not publicly disclosed</td></tr>
+      <tr><td><strong>Maturity &amp; stability</strong></td><td>Claude Code has been in production longer with extensive community, third-party tooling, and documented best practices</td></tr>
+      <tr><td><strong><a href="https://code.claude.com/docs/en/memory">CLAUDE.md</a> ecosystem</strong></td><td>Multi-level config (enterprise &rarr; personal &rarr; team &rarr; private) with glob-pattern scoping; more granular than Qoder rules</td></tr>
+      <tr><td><strong>Rate limit transparency</strong></td><td>Despite issues, Claude Code&rsquo;s usage model is well-understood; Qoder&rsquo;s credit system is newer and less proven at scale</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="feat-group">Where OpenCode Leads</div>
+  <div class="tbl"><table>
+    <thead><tr><th>Advantage</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Fully open source</strong></td><td>MIT-licensed, transparent development on <a href="https://github.com/opencode-ai/opencode">GitHub</a>. Community contributions welcome and roadmap is user-influenced</td></tr>
+      <tr><td><strong>Provider freedom</strong></td><td>No vendor lock-in: switch between OpenAI, Anthropic, Google, and open-source models freely. Supports any provider with an API key</td></tr>
+      <tr><td><strong>Zero cost</strong></td><td>Completely free to use; pay only for your own API keys. No subscriptions, credits, or usage tiers to manage</td></tr>
+      <tr><td><strong>Lightweight</strong></td><td>Single Go binary, no runtime dependencies. Installs in seconds, runs anywhere with minimal resource overhead</td></tr>
+    </tbody>
+  </table></div>
+
+
+  <h3>3.2 &ensp;Multi-Agent Architecture Deep-Dive</h3>
+
+  <div class="feat-group">Multi-Agent &amp; Task Delegation</div>
+  <div class="tbl"><table>
+    <thead><tr><th style="width:15%">Aspect</th><th style="width:30%">Qoder CLI</th><th style="width:30%">Claude Code</th><th style="width:25%">OpenCode</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Multi-Agent</strong></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp no">No</span></td></tr>
+      <tr><td><strong>Architecture</strong></td><td><strong>Centralized (<a href="https://docs.qoder.com/user-guide/quest/experts-mode">Experts Mode</a>)</strong><br>Team Lead decomposes tasks and delegates to specialist roles (Research, Coding, QA, Review, Browser) via a lightweight DAG. All experts report back to the Lead.</td><td><strong>Decentralized (<a href="https://code.claude.com/docs/en/sub-agents">Agent Teams</a>)</strong><br>Coordinator delegates to independent worker sessions that communicate peer-to-peer through a shared task board. Each worker has isolated context.</td><td><strong>None</strong><br>Single-agent architecture only. All work happens in one session with Tab-toggled planning and execution phases.</td></tr>
+      <tr><td><strong>Workflow</strong></td><td><strong><a href="https://docs.qoder.com/user-guide/quest/overview">Quest Mode</a></strong>: spec-driven, kanban board, Plan &amp; Action checklist, Task Reports</td><td><strong>Dynamic</strong>: shared task board with dependency chains, workers create subtasks on the fly</td><td><strong>Single-agent</strong>: Tab key toggles planning &harr; execution; no orchestration</td></tr>
+      <tr><td><strong>Execution</strong></td><td><strong><a href="https://docs.qoder.com/user-guide/quest/execution-environments">Quest Remote</a></strong>: cloud sandbox, runs even with laptop closed</td><td><strong>Headless</strong> (<code>-p</code> flag): stdin/stdout for CI/CD pipelines</td><td><strong>Local only</strong>: runs in terminal on local machine</td></tr>
+      <tr><td><strong>Coordination</strong></td><td>Leader-routed: all communication flows through the Lead</td><td>Peer-to-peer: workers message each other directly on shared task board</td><td>N/A</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>Key Architectural Difference:</strong> Qoder uses <em>centralized orchestration</em> (a single Lead coordinates predefined specialists), while Claude Code uses <em>decentralized peer-to-peer</em> (coordinator + independent workers). OpenCode is single-agent only. Qoder trades flexibility for structure and observability; Claude Code trades structure for flexibility and emergent behavior.
+  </div>
+
+  <div class="feat-group">Claude Code Multi-Agent Deep-Dive</div>
+  <p>Claude Code&rsquo;s multi-agent system operates through <strong>sub-agents</strong> (isolated worker sessions) and <strong>Agent Teams</strong> (experimental peer-to-peer coordination). The main agent delegates work by matching requests to agent descriptions. Each worker gets a fresh context window with only a task summary, <code>CLAUDE.md</code>, and a tailored system prompt &mdash; it does <em>not</em> inherit the coordinator&rsquo;s chat history. &ldquo;Fork&rdquo; variants can inherit the full parent history and share prompt caching. The <strong>Agent View</strong> provides a terminal dashboard showing all sessions with status (Needs Input, Working, Completed).</p>
+
+  <div class="product-slideshow" data-autoplay="4000">
+    <button class="slide-arrow prev" aria-label="Previous">&lsaquo;</button>
+    <div class="slides">
+      <div class="slide active"><div class="product-img"><img src="images/cc-agent-view.png" alt="Claude Code Agent View - terminal dashboard showing task management with Needs Input, Working, and Completed sections, Opus 4.7 with 1M context" loading="lazy"/><div class="caption">Source: <a href="https://code.claude.com/docs/en/agent-view">code.claude.com/docs/en/agent-view</a></div></div></div>
+    </div>
+    <div class="slide-dots"><button class="active" aria-label="Slide 1"></button></div>
+  </div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Capability</th><th>How It Works</th><th>Limitations</th></tr></thead>
+    <tbody>
+      <tr><td><strong><a href="https://code.claude.com/docs/en/sub-agents">Sub-Agents</a></strong></td><td>Workers spawned as isolated sessions with unique context windows. Each loads <a href="https://code.claude.com/docs/en/memory"><code>CLAUDE.md</code></a> and plugins but NOT the coordinator&rsquo;s chat history. Can be assigned specific toolsets via allowlists/blocklists and role descriptions. &ldquo;Fork&rdquo; variant inherits full parent history.</td><td>Cannot resume paused workers. One team per coordinator; no nesting. Optimal: 3&ndash;5 workers with separated file responsibilities.</td></tr>
+      <tr><td><strong><a href="https://code.claude.com/docs/en/sub-agents">Agent Teams</a></strong></td><td>Experimental (requires <code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code>). Coordinator delegates to workers via a shared task board. Workers can create subtasks, resolve dependencies, and communicate peer-to-peer. Reuses subagent configs as team member templates.</td><td>Experimental flag required. Cannot reassign leadership. Completion markers occasionally delayed. No team persistence between sessions.</td></tr>
+      <tr><td><strong><a href="https://code.claude.com/docs/en/sub-agents">Dynamic Workflows</a></strong></td><td>Workers create subtasks on the fly, assign them to other workers, and resolve dependency chains automatically. Supports parallel execution, sequential chaining, and background processes. Pre-execution hooks for conditional tool validation.</td><td>Debugging distributed state is difficult. Quality depends on worker coordination. Manual intervention needed for complex dependency resolution.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="feat-group">Qoder Multi-Agent Deep-Dive</div>
+  <p>Qoder&rsquo;s multi-agent system is built around <strong>Experts Mode</strong> (centralized orchestration) and <strong>Quest Mode</strong> (spec-driven delegation). The <strong>Lead Agent</strong> acts as the brain &mdash; understanding goals, decomposing tasks, coordinating globally, and dynamically pulling specialists from a predefined pipeline. Experts execute in parallel without blocking each other, while the Lead aligns and integrates results in real-time. The <strong>Expert Team Canvas</strong> provides a real-time visualization panel showing every expert&rsquo;s progress side by side.</p>
+
+  <div class="product-slideshow" data-autoplay="4500">
+    <button class="slide-arrow prev" aria-label="Previous">&lsaquo;</button>
+    <div class="slides">
+      <div class="slide active"><div class="product-img"><img src="images/qoder-experts-mode.png" alt="Qoder Experts Mode architecture diagram - Developer to Lead Agent to specialist roles (Researcher, Full-Stack Engineer, QA, Debug Engineer, Code Reviewer, UI Operator) with parallel execution converging to Engineering Delivery" loading="lazy"/><div class="caption">Source: <a href="https://docs.qoder.com/user-guide/quest/experts-mode">docs.qoder.com/user-guide/quest/experts-mode</a></div></div></div>
+      <div class="slide"><div class="product-img"><img src="images/qoder-experts-canvas.png" alt="Qoder Expert Team Canvas - real-time visualization of 10 experts (Researcher Alex, Full-Stack Engineer Tyler, etc.) with task list showing Completed/Failed status and code diff review panel" loading="lazy"/><div class="caption">Source: <a href="https://docs.qoder.com/user-guide/quest/experts-mode">docs.qoder.com/user-guide/quest/experts-mode</a> &mdash; Expert Team Canvas</div></div></div>
+      <div class="slide"><div class="product-img"><img src="images/qoder-quest-overview.png" alt="Qoder Quest workspace - three-column layout with task management (My Quests board, workspaces), conversation area, and function area (Summary, Review, Terminal)" loading="lazy"/><div class="caption">Source: <a href="https://docs.qoder.com/user-guide/quest/overview">docs.qoder.com/user-guide/quest/overview</a> &mdash; Quest workspace</div></div></div>
+    </div>
+    <button class="slide-arrow next" aria-label="Next">&rsaquo;</button>
+    <div class="slide-dots"><button class="active" aria-label="Slide 1"></button><button aria-label="Slide 2"></button><button aria-label="Slide 3"></button></div>
+  </div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Expert Role</th><th>Responsibilities</th><th>When Scheduled</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Lead Agent</strong></td><td>Understand requirements, decompose tasks, coordinate scheduling, ensure quality</td><td>Always active &mdash; the orchestrator</td></tr>
+      <tr><td><strong>Researcher</strong></td><td>Research analysis, code location, dependency mapping, environment inspection, report generation</td><td>Exploration and analysis tasks</td></tr>
+      <tr><td><strong>Full-Stack Engineer</strong></td><td>Implement/modify frontend and backend code, cross-stack and general coding</td><td>Implementation tasks</td></tr>
+      <tr><td><strong>QA</strong></td><td>Run tests and builds, collect validation evidence</td><td>Verification and testing</td></tr>
+      <tr><td><strong>Code Reviewer</strong></td><td>Review code, identify potential risks, provide improvement recommendations</td><td>Quality assurance</td></tr>
+      <tr><td><strong>Debug Engineer</strong></td><td>Reproduce failures, locate root causes, diagnose defects with fix recommendations</td><td>Bug diagnosis and fixing</td></tr>
+      <tr><td><strong>UI Operator</strong></td><td>Browser and UI end-to-end validation, visual bug reproduction</td><td>UI/UX verification</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Capability</th><th>How It Works</th><th>Limitations</th></tr></thead>
+    <tbody>
+      <tr><td><strong><a href="https://docs.qoder.com/user-guide/quest/experts-mode">Experts Mode</a></strong></td><td>Built-in specialist pipeline with 7 roles. Lead Agent decomposes tasks and routes to experts in parallel. All experts report to the Lead; no direct peer communication. Each expert can be assigned a specific model (e.g. Qwen3.7-Max for complex, DeepSeek-V4-Flash for fast). Benchmark: +67% quality over single-agent.</td><td>Less flexible than generic workers. Lead is a bottleneck for very large tasks. Mode cannot be switched after task creation.</td></tr>
+      <tr><td><strong><a href="https://docs.qoder.com/extensions/subagent">Custom Sub-Agents</a></strong></td><td>Define specialist agents via <a href="https://docs.qoder.com/extensions/skills"><code>SKILL.md</code></a> files with custom tools, knowledge bases, system prompts, Skills, and MCP servers. Installable from marketplace or authored locally. Invoked on demand by the Lead Agent.</td><td>Requires upfront configuration. No dynamic role creation at runtime. Lead Agent itself cannot be customized.</td></tr>
+      <tr><td><strong><a href="https://docs.qoder.com/user-guide/quest/overview">Quest Mode</a></strong></td><td>Three-column workspace: task management (kanban with Running/Waiting/Completed), conversation area, and function area (Summary, Review/Diff, Terminal, Browser). Supports tiled layout for parallel task monitoring. My Quests board aggregates tasks across workspaces.</td><td>Cannot switch between Agent/Experts mode after task start. Editing messages triggers file rollback.</td></tr>
+      <tr><td><strong><a href="https://docs.qoder.com/user-guide/quest/execution-environments">Quest Remote</a></strong></td><td>Cloud sandbox execution: tasks run in isolated containers on Qoder&rsquo;s infrastructure. Continue even with laptop closed. Results delivered via notification.</td><td>Requires cloud connectivity. Task duration limited by plan quota. Not suitable for local files not in repo.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="feat-group">Head-to-Head: Multi-Agent Comparison</div>
+  <div class="tbl"><table>
+    <thead><tr><th>Aspect</th><th>Claude Code</th><th>Qoder CLI</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Agent isolation</strong></td><td>Fresh context per worker; only task summary + <code>CLAUDE.md</code> + system prompt loaded. Fork variant inherits parent history.</td><td>Each expert has isolated toolsets and context; Lead Agent aggregates and shares results across experts.</td></tr>
+      <tr><td><strong>Role definition</strong></td><td>Runtime &mdash; workers described by natural-language profiles. No hardcoded roles. Flexible but unstructured.</td><td>Predefined 7-role pipeline (Lead, Researcher, Full-Stack, QA, Code Reviewer, Debug, UI). Structured and predictable.</td></tr>
+      <tr><td><strong>Communication</strong></td><td>Peer-to-peer via shared task board. Workers message each other directly.</td><td>Hub-and-spoke via Lead Agent. No direct expert-to-expert communication.</td></tr>
+      <tr><td><strong>Workflow creation</strong></td><td>Emergent &mdash; workers create and assign subtasks dynamically. Coordinator doesn&rsquo;t pre-define the flow.</td><td>Planned &mdash; Lead generates structured plan before execution. User can review and modify.</td></tr>
+      <tr><td><strong>Observability</strong></td><td>Agent View terminal dashboard (Needs Input / Working / Completed). Detailed state fragmented across sessions.</td><td>Expert Team Canvas: real-time side-by-side visualization of all experts. Unified task list with status.</td></tr>
+      <tr><td><strong>Execution environment</strong></td><td>Local machine or CI server. Headless mode (<code>-p</code> flag) for stdin/stdout pipelines.</td><td>Local IDE, local CLI, or <a href="https://docs.qoder.com/user-guide/quest/execution-environments">Quest Remote</a> cloud sandbox.</td></tr>
+      <tr><td><strong>Customization</strong></td><td>Worker toolsets via allowlists/blocklists. Role descriptions in natural language.</td><td>Per-expert model selection, custom prompts (up to 10K chars), Skills, and MCP servers. <a href="https://docs.qoder.com/extensions/subagent">Custom sub-agents</a> via <code>SKILL.md</code>.</td></tr>
+      <tr><td><strong>Quality control</strong></td><td>Depends on worker coordination quality. No built-in review step.</td><td>Built-in Code Reviewer + QA roles. Benchmark: +67% quality over single-agent.</td></tr>
+      <tr><td><strong>Maturity</strong></td><td>Sub-agents: GA. Agent Teams: experimental (requires env flag).</td><td>Experts Mode: GA. Quest Mode: GA. Quest Remote: GA.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>When to Choose Which:</strong> Use <strong>Qoder Experts Mode</strong> when you want structured, repeatable multi-agent workflows with clear oversight and built-in quality gates (architecture tasks, full-stack feature delivery, complex debugging). Use <strong>Claude Code Agent Teams</strong> when you need exploratory, open-ended collaboration where workers self-organize (research spikes, broad refactoring, parallel investigation). Key tradeoff: Qoder gives you predictability and observability; Claude Code gives you flexibility and emergent behavior.
+  </div>
+
+  <h3>3.3 &ensp;Feature Comparison Matrix</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Feature</th><th>Qoder CLI</th><th>Claude Code</th><th>Eval Method</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Memory</strong></td><td>Knowledge Engine (Wiki + Cards + Conversation)</td><td>CLAUDE.md + Auto-Memory + rules</td><td>Multi-session recall</td></tr>
+      <tr><td><strong>Skills</strong></td><td>Skills + marketplace + MCP</td><td>Skills + MCP + slash commands</td><td>Create, install, invoke</td></tr>
+      <tr><td><strong>Subagents</strong></td><td>5 roles, isolated toolsets, Leader-routed</td><td>Single-window, originator-only</td><td>Parallel task completion</td></tr>
+      <tr><td><strong>Agent Teams</strong></td><td>DAG scheduling (Experts Mode)</td><td>Peer-to-peer (experimental)</td><td>Multi-agent collaboration</td></tr>
+      <tr><td><strong>Dynamic Workflows</strong></td><td>Quest Mode + kanban</td><td>Headless + GitHub Actions</td><td>End-to-end feature dev</td></tr>
+      <tr><td><strong>Self-Evolution</strong></td><td>Skill extraction + reuse loop</td><td>Auto-memory pattern persistence</td><td>Repeated task improvement</td></tr>
+    </tbody>
+  </table></div>
+
+</section>
+
+<div class="page-nav">
+  <a href="qoder.html">&larr; Qoder</a>
+  <a href="benchmark.html" class="next">Benchmark &rarr;</a>
+</div>
+
+<footer class="foot">
+  <span>Alibaba AI Coding Evaluation</span>
+  <span>Last updated 2026-06-06</span>
+</footer>
+
+</div>
+<script>
+document.querySelectorAll('.product-slideshow').forEach(function(el) {
+  var slides = el.querySelectorAll('.slide');
+  var dots = el.querySelectorAll('.slide-dots button');
+  var current = 0;
+  var interval = parseInt(el.dataset.autoplay) || 4000;
+  var timer;
+
+  function go(idx) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = (idx + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+  }
+
+  function start() { timer = setInterval(function() { go(current + 1); }, interval); }
+  function reset() { clearInterval(timer); start(); }
+
+  var prev = el.querySelector('.prev');
+  var next = el.querySelector('.next');
+  if (prev) prev.addEventListener('click', function() { go(current - 1); reset(); });
+  if (next) next.addEventListener('click', function() { go(current + 1); reset(); });
+  dots.forEach(function(dot, i) { dot.addEventListener('click', function() { go(i); reset(); }); });
+
+  el.addEventListener('mouseenter', function() { clearInterval(timer); });
+  el.addEventListener('mouseleave', start);
+  start();
+});
+</script>
+</body>
+</html>
