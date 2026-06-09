@@ -20,6 +20,7 @@
   <a href="qoder.html">Qoder</a>
   <a href="cli-eval.html" class="active">Qoder CLI</a>
   <a href="benchmark.html">Benchmark</a>
+  <a href="cost.html">Cost</a>
 </div></nav>
 
 </div>
@@ -42,7 +43,7 @@
       <tr><td><strong>VS Code Extension</strong></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp no">No</span></td></tr>
       <tr><td><strong>JetBrains Plugin</strong></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp no">No</span></td></tr>
       <tr><td><strong>Model Providers</strong></td><td>Multi-provider (Qwen, DeepSeek, etc.)</td><td>Claude only</td><td>Multi-provider (OpenAI, Anthropic, Google, OSS)</td></tr>
-      <tr><td><strong>Context Window</strong></td><td>Not disclosed</td><td>200K (1M experimental)</td><td>Per-model (varies by provider)</td></tr>
+      <tr><td><strong>Context Window</strong></td><td>Not disclosed</td><td>200K default (1M GA)</td><td>Per-model (varies by provider)</td></tr>
       <tr><td><strong>Open Source</strong></td><td><span class="cmp no">No</span></td><td><span class="cmp no">No</span></td><td><span class="cmp oss">OSS</span></td></tr>
       <tr><td><strong>Free Tier</strong></td><td><span class="cmp new">Qoder Only</span></td><td><span class="cmp no">No</span> (from $20/mo)</td><td><span class="cmp oss">Free</span> (BYOK)</td></tr>
     </tbody>
@@ -93,7 +94,7 @@
     <thead><tr><th>Advantage</th><th>Details</th></tr></thead>
     <tbody>
       <tr><td><strong>Model quality</strong></td><td>Claude Opus 4.7 and Sonnet 4.6 are among the top-tier coding models; Qoder relies on Qwen/DeepSeek which may lag on complex reasoning tasks</td></tr>
-      <tr><td><strong>Context window</strong></td><td>200K default, 1M experimental; Qoder context window is not publicly disclosed</td></tr>
+      <tr><td><strong>Context window</strong></td><td>200K default, 1M (GA); Qoder context window is not publicly disclosed</td></tr>
       <tr><td><strong>Maturity &amp; stability</strong></td><td>Claude Code has been in production longer with extensive community, third-party tooling, and documented best practices</td></tr>
       <tr><td><strong><a href="https://code.claude.com/docs/en/memory">CLAUDE.md</a> ecosystem</strong></td><td>Multi-level config (enterprise &rarr; personal &rarr; team &rarr; private) with glob-pattern scoping; more granular than Qoder rules</td></tr>
       <tr><td><strong>Rate limit transparency</strong></td><td>Despite issues, Claude Code&rsquo;s usage model is well-understood; Qoder&rsquo;s credit system is newer and less proven at scale</td></tr>
@@ -104,7 +105,7 @@
   <div class="tbl"><table>
     <thead><tr><th>Advantage</th><th>Details</th></tr></thead>
     <tbody>
-      <tr><td><strong>Fully open source</strong></td><td>MIT-licensed, transparent development on <a href="https://github.com/opencode-ai/opencode">GitHub</a>. Community contributions welcome and roadmap is user-influenced</td></tr>
+      <tr><td><strong>Fully open source</strong></td><td>MIT-licensed, transparent development on <a href="https://github.com/anomalyco/opencode">GitHub</a>. Community contributions welcome and roadmap is user-influenced</td></tr>
       <tr><td><strong>Provider freedom</strong></td><td>No vendor lock-in: switch between OpenAI, Anthropic, Google, and open-source models freely. Supports any provider with an API key</td></tr>
       <tr><td><strong>Zero cost</strong></td><td>Completely free to use; pay only for your own API keys. No subscriptions, credits, or usage tiers to manage</td></tr>
       <tr><td><strong>Lightweight</strong></td><td>Single Go binary, no runtime dependencies. Installs in seconds, runs anywhere with minimal resource overhead</td></tr>

@@ -20,6 +20,7 @@
   <a href="qoder.html">Qoder</a>
   <a href="cli-eval.html">Qoder CLI</a>
   <a href="benchmark.html">Benchmark</a>
+  <a href="cost.html">Cost</a>
 </div></nav>
 
 </div>
@@ -39,8 +40,8 @@
       <tr><td><strong>Qwen3.7-Max</strong></td><td>Proprietary flagship (params undisclosed)</td><td>1M</td><td>80.4% SWE-bench Verified, 60.6% SWE-bench Pro; reasoning agent model</td></tr>
       <tr><td><strong>Qwen3.6</strong></td><td>27B (dense), 35B-A3B (MoE)</td><td>262K</td><td>Agentic coding + thinking preservation; real-world utility focus</td></tr>
       <tr><td><strong>Qwen3.5</strong></td><td>0.8B&ndash;397B-A17B (8 sizes)</td><td>262K (~1M)</td><td>Multimodal (text+vision), thinking mode, 201 languages, MCP support</td></tr>
-      <tr><td><strong>Qwen3</strong></td><td>0.6B&ndash;235B-A22B (dense + MoE)</td><td>262K</td><td>Hybrid thinking, 119 languages, Apache 2.0</td></tr>
-      <tr><td><strong>Qwen3-Coder</strong></td><td>480B-A35B, 30B-A3B</td><td>256K (~1M)</td><td>Open-weight; 358 coding languages; matches Claude Sonnet 4 on agentic benchmarks</td></tr>
+      <tr><td><strong>Qwen3</strong></td><td>0.6B&ndash;235B-A22B (dense + MoE)</td><td>32K&ndash;128K <small>(-2507: 256K)</small></td><td>Hybrid thinking, 119 languages, Apache 2.0</td></tr>
+      <tr><td><strong>Qwen3-Coder</strong></td><td>480B-A35B, 30B-A3B</td><td>256K (~1M)</td><td>Open-weight; 358 coding languages; comparable to Claude Sonnet 4 on agentic benchmarks</td></tr>
       <tr><td><strong>Qwen3-VL</strong></td><td>Plus, Flash (API)</td><td>262K</td><td>Vision-language; images, video, GUI, OCR, math reasoning</td></tr>
       <tr><td><strong>Qwen3.5-Omni</strong></td><td>Plus, Flash (API)</td><td>262K</td><td>Full multimodal: text + vision + audio + video in, text/audio out</td></tr>
     </tbody>
@@ -314,7 +315,7 @@
     </ul>
     <div class="product-links">
       <a href="https://github.com/QwenLM/Qwen3Guard">GitHub</a>
-      <a href="https://huggingface.co/Qwen/Qwen3Guard-8B">Hugging Face (8B)</a>
+      <a href="https://huggingface.co/Qwen/Qwen3Guard-Gen-8B">Hugging Face (8B)</a>
       <a href="https://www.alibabacloud.com/blog/qwen3guard-real-time-safety-for-your-token-stream_602582">Technical Blog</a>
       <a href="https://arxiv.org/html/2510.14276v1">Technical Report</a>
     </div>
@@ -329,7 +330,7 @@
   <p><strong>Bedrock advantage</strong>: Automated Reasoning Checks with mathematical verification (unique); more granular PII entity types with structured redaction; code-specific protections; more mature safety transparency and documentation.</p>
 
   <div class="callout">
-    <strong>&#9888;&#65039; Transparency gaps</strong>: Stanford FMTI (Dec 2025) noted limited transparency on risk taxonomies and external red-teaming for Qwen 3. Independent red-teaming (Promptfoo) reported Qwen 2.5 72B passed only 48.1% of 50+ security tests. No standalone &ldquo;Responsible AI&rdquo; page comparable to Google Cloud, Microsoft, or AWS.
+    <strong>&#9888;&#65039; Transparency gaps</strong>: Stanford FMTI (Dec 2025) noted limited transparency on risk taxonomies and external red-teaming for Qwen 3. Independent red-teaming (Promptfoo) reported Qwen 2.5 72B passed only 48.1% of 39 security test categories (1,600+ probes). No standalone &ldquo;Responsible AI&rdquo; page comparable to Google Cloud, Microsoft, or AWS.
   </div>
 </section>
 

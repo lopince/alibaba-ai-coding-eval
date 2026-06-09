@@ -11,7 +11,7 @@
 
 <header class="top">
   <h1><a href="index.html">Alibaba AI Coding Evaluation</a></h1>
-  <div class="meta">Section 4 of 4</div>
+  <div class="meta">Section 4 of 5</div>
 </header>
 
 <nav class="rail"><div class="inner">
@@ -20,6 +20,7 @@
   <a href="qoder.html">Qoder</a>
   <a href="cli-eval.html">Qoder CLI</a>
   <a href="benchmark.html" class="active">Benchmark</a>
+  <a href="cost.html">Cost</a>
 </div></nav>
 
 </div>
@@ -59,9 +60,7 @@
       <tr><td>GLM-5.1</td><td>Chinese Frontier</td><td>72.52</td><td>75.37</td><td>55.00</td><td>&mdash;</td></tr>
       <tr><td>Kimi K2.6</td><td>Chinese Frontier</td><td>79.38</td><td>78.57</td><td>58.33</td><td>&mdash;</td></tr>
       <tr><td>MiniMax M3</td><td>Chinese Frontier</td><td>74.48</td><td>68.20</td><td><strong>60.00</strong></td><td>Text + Image + Video + Audio</td></tr>
-      <tr><td>MiMo V2.5 Pro</td><td>Chinese Frontier</td><td>69.70</td><td>68.85</td><td>30.00</td><td>Text only</td></tr>
-    </tbody>
-  </table></div>
+      <tr><td>MiMo V2.5 Pro</td><td>Chinese Frontier</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>Not on LiveBench</td></tr>
 
   <div class="callout">
     <strong>General Capability:</strong> Anthropic Opus models lead reasoning (88–90), with Opus 4.8 topping at 89.71. GPT-5.5 edges ahead on coding (82.47). Qwen3.7-Max is the strongest Qwen entry (83.34 reasoning). Among Chinese Frontier, DeepSeek V4 Pro leads reasoning (82.69) while Kimi K2.6 is strong across coding (78.57) and agentic (58.33). MiniMax M3 uniquely supports Text + Image + Video + Audio multimodality.
@@ -73,17 +72,17 @@
   <div class="tbl"><table>
     <thead><tr><th>Model</th><th>Series</th><th>SWE-bench Verified</th><th>SWE-bench Pro</th><th>LiveCodeBench v6</th><th>Terminal-Bench</th><th>Kilo Bench</th><th>Notes</th></tr></thead>
     <tbody>
-      <tr><td>DeepSeek V4 / V4-Pro</td><td>Chinese Frontier</td><td>83.7% &#9888;&#65039;</td><td>&mdash;</td><td>93.5</td><td>67.9%</td><td>&mdash;</td><td>Self-reported; treat skeptically</td></tr>
-      <tr><td>Claude Opus 4.8</td><td>Anthropic</td><td>87.6%</td><td>64.3%</td><td>77.4</td><td>&mdash;</td><td>67.6% &middot; $85.19</td><td>&mdash;</td></tr>
+      <tr><td>DeepSeek V4 / V4-Pro</td><td>Chinese Frontier</td><td>83.7% &#9888;&#65039;</td><td>&mdash;</td><td>93.5</td><td>67.9%</td><td>&mdash;</td><td>Self-reported; NIST CAISI independently scored 74%</td></tr>
+      <tr><td>Claude Opus 4.8</td><td>Anthropic</td><td>87.6%</td><td>69.2%</td><td>77.4</td><td>&mdash;</td><td>67.6% &middot; $85.19</td><td>&mdash;</td></tr>
+      <tr><td>Claude Opus 4.7</td><td>Anthropic</td><td>87.6%</td><td>64.3%</td><td>&mdash;</td><td>69.4%</td><td>70.1% &middot; $100.51</td><td>Highest Kilo cost</td></tr>
       <tr><td>Claude Opus 4.5</td><td>Anthropic</td><td>80.9%</td><td>&mdash;</td><td>73.8</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr class="highlight"><td><strong>Qwen3.7-Max</strong></td><td>Qwen</td><td><strong>80.4%</strong></td><td><strong>60.6%</strong> (#4)</td><td><strong>91.6</strong></td><td>69.7%</td><td>&mdash;</td><td>Within 0.5pts of frontier leaders</td></tr>
       <tr class="highlight"><td><strong>Qwen3.7-Plus</strong></td><td>Qwen</td><td>77.7%</td><td>57.6%</td><td>89.6</td><td>70.3%</td><td>&mdash;</td><td>Multimodal (Text + Image + Video)</td></tr>
       <tr class="highlight"><td><strong>Qwen3.6-Max</strong></td><td>Qwen</td><td>78.8%</td><td>57.3%</td><td>87.1</td><td>&mdash;</td><td>&mdash;</td><td>Preview release; Terminal-Bench TBD</td></tr>
-      <tr class="highlight"><td><strong>Qwen3.6-Plus</strong></td><td>Qwen</td><td>78.8%</td><td>&mdash;</td><td>87.1</td><td>65.4%</td><td>&mdash;</td><td>Strong cost-efficiency</td></tr>
+      <tr class="highlight"><td><strong>Qwen3.6-Plus</strong></td><td>Qwen</td><td>78.8%</td><td>&mdash;</td><td>87.1</td><td>61.6%</td><td>&mdash;</td><td>Strong cost-efficiency</td></tr>
       <tr><td>Kimi K2.6</td><td>Chinese Frontier</td><td>80.2%</td><td>58.6%</td><td>89.6</td><td>66.7%</td><td>54.4% &middot; $24.84</td><td>&mdash;</td></tr>
-      <tr><td>Claude Opus 4.7</td><td>Anthropic</td><td>&mdash;</td><td>&mdash;</td><td>75.8</td><td>&mdash;</td><td>70.1% &middot; $100.51</td><td>Highest Kilo cost</td></tr>
-      <tr><td>Claude Sonnet 4.6</td><td>Anthropic</td><td>79.6%</td><td>&mdash;</td><td>&mdash;</td><td>65.4%</td><td>55.1% &middot; $53.37</td><td>&mdash;</td></tr>
-      <tr><td>GPT-5.5</td><td>OpenAI</td><td>70.2%</td><td>58.6%</td><td>&mdash;</td><td><strong>82.7%</strong></td><td><strong>74.2%</strong> &middot; $72.63</td><td>Leads Terminal + Kilo</td></tr>
+      <tr><td>Claude Sonnet 4.6</td><td>Anthropic</td><td>79.6%</td><td>&mdash;</td><td>&mdash;</td><td>59.1%</td><td>55.1% &middot; $53.37</td><td>&mdash;</td></tr>
+      <tr><td>GPT-5.5</td><td>OpenAI</td><td>~82.6% <small>(scaffold-dep.)</small></td><td>58.6%</td><td>&mdash;</td><td><strong>82.7%</strong></td><td><strong>74.2%</strong> &middot; $72.63</td><td>Leads Terminal + Kilo; SWE-V ranges 82&ndash;88%</td></tr>
       <tr><td>GPT-5</td><td>OpenAI</td><td>74.9%</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr><td>GLM-5.1</td><td>Chinese Frontier</td><td>&mdash;</td><td><strong>58.4%</strong> (#1)</td><td>&mdash;</td><td>&mdash;</td><td>49.4% &middot; $23.98</td><td>&mdash;</td></tr>
       <tr><td>Gemini 2.5 Pro</td><td>Google</td><td>63.8%</td><td>&mdash;</td><td>73.6</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
@@ -95,9 +94,8 @@
   <div class="callout">
     <strong>Key observations:</strong><br>
     &bull; <strong>Qwen3.7-Max</strong> remains the strongest Qwen entry on coding (SWE-bench Verified 80.4%, LiveCodeBench 91.6); Qwen3.7-Plus, Qwen3.6-Max, and Qwen3.6-Plus cluster tightly in the 77&ndash;79% SWE-V range with strong LiveCodeBench scores (87&ndash;90).<br>
-    &bull; SWE-bench scores vary dramatically by scaffold &mdash; always note the evaluation setup.<br>
-    &bull; SWE-bench Pro is much harder &mdash; top scores range 38&ndash;64% vs. 55&ndash;87% on Verified.<br>
-    &bull; DeepSeek V4 scores are self-reported/leaked and should be treated skeptically until independently verified.<br>
+    &bull; SWE-bench scores vary dramatically by scaffold &mdash; always note the evaluation setup. GPT-5.5 SWE-V ranges 82&ndash;88% across different scaffolds; DeepSeek V4 self-reported 83.7% but NIST CAISI independently scored it at 74%.<br>
+    &bull; SWE-bench Pro is much harder &mdash; top scores range 38&ndash;69% vs. 55&ndash;87% on Verified. Claude Opus 4.8 leads Pro at 69.2%; Claude Opus 4.7 scored 64.3%.<br>
     &bull; GPT-5.5 leads agent benchmarks (82.7% Terminal-Bench, 74.2% Kilo Bench).<br>
     &bull; MiMo V2.5 Pro ($4.92/attempt) and MiniMax M3 ($10.35) offer the best cost-efficiency among Chinese frontier models on Kilo Bench.
   </div>
@@ -105,6 +103,7 @@
 
 <div class="page-nav">
   <a href="cli-eval.html">&larr; Qoder CLI</a>
+  <a href="cost.html" class="next">Cost &rarr;</a>
 </div>
 
 <footer class="foot">

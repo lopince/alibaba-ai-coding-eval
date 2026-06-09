@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Cost &mdash; Alibaba AI Coding Evaluation</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Alibaba AI Coding Evaluation</a></h1>
+  <div class="meta">Section 5 of 5</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="alicloud.html">AliCloud</a>
+  <a href="qoder.html">Qoder</a>
+  <a href="cli-eval.html">Qoder CLI</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="cost.html" class="active">Cost</a>
+</div></nav>
+
+</div>
+
+<div class="wrap">
+
+<section class="eval">
+  <div class="crumb">Section 5</div>
+  <h2>Cost Analysis</h2>
+
+  <p>Cost comparison for a <strong>~100-member team based in Singapore</strong> (infra, coding, data analysis, management) across the current AWS Bedrock + Claude Code setup and proposed AliCloud Bailian / Qoder alternatives. Chinese model pricing shown at China mainland rates; <strong>Bailian international pricing (Singapore region) is ~1.5&ndash;1.7&times; higher</strong> but the cost advantage remains significant. Frontier Chinese models: Qwen 3.6/3.7, DeepSeek V4, GLM-5.1, Kimi K2.6, MiniMax M3.</p>
+
+  <h3>5.1 &ensp;LLM Token Pricing (per 1M tokens)</h3>
+  <p>Pay-as-you-go rates on respective platforms. Claude Opus pricing is AWS Bedrock on-demand; Chinese model pricing is AliCloud Bailian (China mainland). &mdash; = not applicable.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Model</th><th>Provider</th><th>Input (¥/1M)</th><th>Output (¥/1M)</th><th>Input ($/1M)</th><th>Output ($/1M)</th><th>Context</th><th>vs Opus Cost</th></tr></thead>
+    <tbody>
+      <tr><td>Claude Opus 4.8</td><td>AWS Bedrock</td><td>&mdash;</td><td>&mdash;</td><td>$5.00</td><td>$25.00</td><td>200K</td><td class="s-total">1.0&times;</td></tr>
+      <tr class="highlight"><td><strong>Qwen3.7-Max</strong></td><td>Bailian</td><td>¥12.00</td><td>¥36.00</td><td>~$1.66</td><td>~$4.97</td><td>1M</td><td class="s-pass">~4&times; cheaper</td></tr>
+      <tr class="highlight"><td><strong>Qwen3.6-Max</strong></td><td>Bailian</td><td>¥9.00</td><td>¥54.00</td><td>~$1.24</td><td>~$7.45</td><td>256K</td><td class="s-pass">~3.5&times; cheaper</td></tr>
+      <tr class="highlight"><td><strong>Qwen3.7-Plus</strong> <small>(≤256K)</small></td><td>Bailian</td><td>¥2.00</td><td>¥8.00</td><td>~$0.28</td><td>~$1.10</td><td>1M</td><td class="s-pass">~21&times; cheaper</td></tr>
+      <tr class="highlight"><td><strong>Qwen3.6-Plus</strong> <small>(≤256K)</small></td><td>Bailian</td><td>¥2.00</td><td>¥12.00</td><td>~$0.28</td><td>~$1.66</td><td>1M</td><td class="s-pass">~18&times; cheaper</td></tr>
+      <tr><td>DeepSeek V4 Pro</td><td>Bailian</td><td>¥3.00</td><td>¥6.00</td><td>~$0.41</td><td>~$0.83</td><td>1M</td><td class="s-pass">~21&times; cheaper</td></tr>
+      <tr><td>DeepSeek V4 Flash</td><td>Bailian</td><td>¥1.00</td><td>¥2.00</td><td>~$0.14</td><td>~$0.28</td><td>1M</td><td class="s-pass">~42&times; cheaper</td></tr>
+      <tr><td>GLM-5.1</td><td>Bailian</td><td>¥6.00</td><td>¥24.00</td><td>~$0.83</td><td>~$3.31</td><td>198K</td><td class="s-pass">~7&times; cheaper</td></tr>
+      <tr><td>Kimi K2.6</td><td>Bailian</td><td>¥6.50</td><td>¥27.00</td><td>~$0.90</td><td>~$3.72</td><td>256K</td><td class="s-pass">~6&times; cheaper</td></tr>
+      <tr><td>MiniMax M3</td><td>Bailian</td><td>¥2.10</td><td>¥8.40</td><td>~$0.29</td><td>~$1.16</td><td>1M</td><td class="s-pass">~20&times; cheaper</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>LLM Cost Advantage:</strong> Every Chinese frontier model on Bailian is <strong>6&ndash;42&times; cheaper</strong> than Claude Opus 4.8 at China mainland rates. With Singapore international pricing (~1.5&times; uplift), Qwen3.7-Max is still roughly <strong>3&times; cheaper</strong> than Opus, while lighter models remain 10&ndash;30&times; cheaper. Top-tier Qwen3.7-Max approaches Opus-level coding performance &mdash; Qwen reports ~60.6% on SWE-bench Pro and ~80% on SWE-bench Verified for the 3.7-Max agent harness, while Claude Opus 4.7 scored 87.6% on SWE-bench Verified.
+  </div>
+
+  <h3>5.2 &ensp;CLI Platform &amp; Subscription Pricing</h3>
+  <p>Three CLI approaches for team deployment. Claude Code and Qoder are integrated products (subscription covers both CLI + model); OpenCode is open-source and requires separate model access.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>CLI Tool</th><th>Plan</th><th>Price/User/Mo</th><th>Model Access</th><th>Key Constraints</th></tr></thead>
+    <tbody>
+      <tr><td>Claude Code</td><td>Max (5&times;)</td><td>$100</td><td>Claude Opus 4.x</td><td>Shared web + CLI cap; no per-token visibility</td></tr>
+      <tr><td>Claude Code</td><td>Max (20&times;)</td><td>$200</td><td>Claude Opus 4.x</td><td>Shared web + CLI cap; no per-token visibility</td></tr>
+      <tr class="highlight"><td><strong>Qoder CLI</strong></td><td><strong>Pro</strong></td><td><strong>$20</strong></td><td>2,000 credits &rarr; premium models</td><td>Credits expire monthly; basic models after depletion</td></tr>
+      <tr class="highlight"><td><strong>Qoder CLI</strong></td><td><strong>Pro+</strong></td><td><strong>$60</strong></td><td>6,000 credits &rarr; premium models</td><td>Credits expire monthly; basic models after depletion</td></tr>
+      <tr class="highlight"><td><strong>Qoder CLI</strong></td><td><strong>Ultra</strong></td><td><strong>$200</strong></td><td>20,000 credits &rarr; premium models</td><td>Recommended for long-running Quest tasks</td></tr>
+      <tr><td>OpenCode + Bailian</td><td>Pay-as-you-go</td><td>$10 (OpenCode Go) + token cost</td><td>All Bailian models via BYOK</td><td>Per-token billing; full cost visibility; rate limits apply</td></tr>
+      <tr><td>OpenCode + Bailian</td><td>Coding Plan</td><td>$10 (OpenCode Go) + $50 (Bailian)</td><td>Qwen3.5-Plus, Qwen3-Max, Qwen3-Coder-Next/Plus, GLM-5, GLM-4.7, Kimi K2.5, MiniMax M2.5</td><td>Flat rate; 6K req/5hr, 45K req/wk, 90K req/mo; coding-tool-only; personal use</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>CLI Cost Advantage:</strong> Qoder CLI Pro is <strong>~5&times; cheaper per user</strong> than Claude Code Max. OpenCode + Bailian pay-as-you-go offers the most granular cost control &mdash; you pay only for tokens consumed, with full billing visibility. The Bailian Coding Plan provides a flat-rate middle ground with predictable spend (older-gen model roster).
+  </div>
+
+  <h3>5.3 &ensp;100-Member Team Cost Projection</h3>
+
+  <h4>Usage Assumptions</h4>
+  <ul>
+    <li><strong>Heavy users</strong> (infra, coding engineers): majority of the team, full-day AI-assisted development</li>
+    <li><strong>Moderate users</strong> (data analysts): daily AI-assisted workflows with lighter token consumption</li>
+    <li><strong>Light users</strong> (PM, management): occasional AI assistance for reviews, summaries, and documentation</li>
+  </ul>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Scenario</th><th>Model</th><th>CLI Tool</th><th>Billing</th><th>Cost vs Current</th><th>Per-Developer Impact</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Current</strong></td><td>Claude Opus 4.8</td><td>Claude Code Max</td><td>Subscription</td><td class="s-fail">Baseline (1&times;)</td><td>Highest per-user spend</td></tr>
+      <tr><td>Option A</td><td>Qwen3.7-Max</td><td>OpenCode + Bailian</td><td>Pay-as-you-go</td><td class="s-pass">~3&ndash;4&times; cheaper</td><td>Best frontier quality on Bailian</td></tr>
+      <tr><td>Option B</td><td>Qwen3.7-Plus</td><td>OpenCode + Bailian</td><td>Pay-as-you-go</td><td class="s-pass">~10&times; cheaper</td><td>Strong coding at minimal cost</td></tr>
+      <tr><td>Option C</td><td>Coding Plan models</td><td>OpenCode + Bailian</td><td>Flat subscription</td><td class="s-pass">~2&times; cheaper</td><td>Predictable flat-rate spend</td></tr>
+      <tr class="highlight"><td><strong>Option D</strong></td><td><strong>Multi-model</strong></td><td><strong>Qoder CLI</strong></td><td><strong>Subscription</strong></td><td class="s-pass"><strong>~3&times; cheaper</strong></td><td><strong>Integrated multi-agent experience</strong></td></tr>
+      <tr><td>Option E</td><td>DeepSeek V4 Pro</td><td>OpenCode + Bailian</td><td>Pay-as-you-go</td><td class="s-pass">~10&times; cheaper</td><td>Lowest cost frontier option</td></tr>
+      <tr><td>Option F</td><td>Qwen3.7-Plus + Opus fallback</td><td>Qoder + Claude Code</td><td>Hybrid</td><td class="s-pass">~2&times; cheaper</td><td>Phased migration path</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Scenario Breakdown</h4>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Scenario</th><th>LLM Cost</th><th>CLI Cost</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Current</strong> (Claude Code Max)</td><td>Included in subscription</td><td>Highest per-user spend (Max plans)</td><td>Shared web+CLI cap; no token-level billing visibility</td></tr>
+      <tr><td>A: Qwen3.7-Max pay-go</td><td>~3&times; cheaper tokens vs Opus</td><td>OpenCode Go (low per-user fee)</td><td>Best frontier quality on Bailian; full cost visibility</td></tr>
+      <tr><td>B: Qwen3.7-Plus pay-go</td><td>~10&times; cheaper tokens vs Opus</td><td>OpenCode Go (low per-user fee)</td><td>Strong coding quality at minimal cost; 1M context (tiered pricing)</td></tr>
+      <tr><td>C: Bailian Coding Plan</td><td>Flat-rate model access (older-gen)</td><td>OpenCode Go (low per-user fee)</td><td>Predictable spend ($60/user/mo total); rate-limited; coding-tool-only</td></tr>
+      <tr class="highlight"><td>D: Qoder CLI (Pro+ / Pro mix)</td><td>Included (credits)</td><td>~3&times; cheaper per user vs Max</td><td>Integrated experience; Quest + multi-agent; BYOK for overflow</td></tr>
+      <tr><td>E: DeepSeek V4 Pro pay-go</td><td>~10&times; cheaper tokens vs Opus</td><td>OpenCode Go (low per-user fee)</td><td>Lowest cost; strong coding benchmarks</td></tr>
+      <tr><td>F: Hybrid (Qoder + Claude Code)</td><td>Mixed subscription</td><td>~2&times; cheaper (partial Claude retention)</td><td>Qoder for routine coding; Claude for complex tasks</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>Team Cost Projection:</strong> Switching from Claude Code Max to any Bailian-backed option reduces per-developer cost by <strong>2&ndash;10&times;</strong>. Options A and D (Qwen3.7-Max pay-go, Qoder CLI) offer the best balance of quality and cost at roughly <strong>3&ndash;4&times; cheaper</strong>. Options B and E (Plus/Flash tier pay-go) push savings to ~10&times; at slightly lower model quality. Option C (Bailian Coding Plan) is ~2&times; cheaper with predictable spend but covers older-gen models only. Option F (hybrid) is ideal for phased migration &mdash; roughly <strong>2&times; cheaper</strong> while retaining Claude for critical paths.
+  </div>
+
+  <h3>5.4 &ensp;Trade-offs &amp; Recommendations</h3>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Factor</th><th>Claude Code + Bedrock</th><th>OpenCode + Bailian</th><th>Qoder CLI</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Per-developer cost</strong></td><td class="s-fail">Highest (baseline)</td><td class="s-pass">~2&ndash;10&times; cheaper</td><td class="s-total">~3&times; cheaper</td></tr>
+      <tr><td><strong>Model quality (coding)</strong></td><td>Highest (Opus 4.7: 87.6% SWE-V)</td><td>Near-frontier (Qwen3.7-Max: ~80% SWE-V / 60.6% Pro; DS V4 Pro strong on code)</td><td>Multi-model; Qwen3.7-Max + others</td></tr>
+      <tr><td><strong>Cost visibility</strong></td><td>Low (shared subscription cap)</td><td>High (per-token billing)</td><td>Medium (credit-based)</td></tr>
+      <tr><td><strong>Setup effort</strong></td><td>Low (managed)</td><td>Medium (BYOK config, rate limit awareness)</td><td>Low (managed)</td></tr>
+      <tr><td><strong>Chinese ecosystem fit</strong></td><td>Low</td><td>High (native Bailian integration)</td><td>High (Bailian + Qwen native)</td></tr>
+      <tr><td><strong>Data residency</strong></td><td>AWS Singapore / global</td><td>AliCloud Singapore region</td><td>AliCloud + Qoder infra</td></tr>
+      <tr><td><strong>Agent capabilities</strong></td><td>Single agent</td><td>Single agent</td><td>Multi-agent (Quest, Experts Mode)</td></tr>
+      <tr><td><strong>Scalability</strong></td><td>Add more Max seats</td><td>Scale tokens linearly</td><td>Upgrade tier or add credit packs</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout warn">
+    <strong>Important caveats:</strong><br>
+    &bull; <strong>Singapore international pricing:</strong> Bailian per-token rates in the Singapore region are ~1.5&ndash;1.7&times; China mainland prices. The cost advantage remains significant (3&ndash;10&times; vs Opus) but verify actual rates in the <a href="https://bailian.console.aliyun.com/">Bailian console</a>.<br>
+    &bull; <strong>Bailian Coding Plan model roster is older-gen:</strong> Current $50/mo tier includes Qwen3.5-Plus, Qwen3-Max, Qwen3-Coder-Next/Plus, GLM-5, GLM-4.7, Kimi K2.5, MiniMax M2.5 &mdash; not the latest Qwen3.7-Plus, DeepSeek V4, Kimi K2.6, or MiniMax M3 listed elsewhere in this page. Verify included models in the <a href="https://www.alibabacloud.com/help/en/model-studio/coding-plan">Coding Plan docs</a>.<br>
+    &bull; <strong>MiniMax M3 on Bailian:</strong> The Bailian model catalog currently lists MiniMax M2.7, not M3. The ¥2.1/¥8.4 row uses MiniMax's official API rate (~$0.30/$1.20) converted to RMB; confirm Bailian availability before depending on it.<br>
+    &bull; Claude Code Max subscription caps are <strong>shared between web and CLI</strong> &mdash; heavy web usage reduces CLI availability.<br>
+    &bull; Bailian Coding Plan is <strong>personal use, coding tools only</strong> &mdash; not suitable for backend APIs or automated scripts.<br>
+    &bull; Qoder CLI credits are <strong>monthly and non-rolling</strong> &mdash; unused credits do not carry over.<br>
+    &bull; Chinese model pricing is <strong>subject to change</strong> (the market has seen both price wars and 50&ndash;80% increases for some providers). Always verify at <a href="https://help.aliyun.com/zh/model-studio/model-pricing">Bailian pricing page</a>.<br>
+    &bull; <strong>SWE-bench scores are not directly comparable across vendors:</strong> Opus 4.7's 87.6% is on SWE-bench Verified (Anthropic-reported); Qwen3.7-Max's ~80% SWE-V / 60.6% Pro is from the Qwen blog using an agent harness; DeepSeek V4 Pro numbers come from the DeepSeek technical report. Harness and scaffolding materially affect scores.
+    &bull; Quality-cost trade-off: cheaper models (Qwen3.7-Plus, DeepSeek V4 Flash) may require more iterations for complex tasks, partially offsetting token savings.
+  </div>
+
+  <div class="callout">
+    <strong>Recommendation for ~100-member Singapore team:</strong> Start with <strong>Option D (Qoder CLI Pro+)</strong> for heavy coding users and <strong>Pro</strong> for others &mdash; roughly <strong>3&times; cheaper</strong> per developer with an integrated multi-agent experience and minimal setup. For teams wanting maximum savings with full cost control, <strong>Option A (OpenCode + Bailian pay-go with Qwen3.7-Max)</strong> delivers near-frontier quality at ~3&ndash;4&times; lower cost. Consider a <strong>hybrid approach</strong> (Option F) during transition, keeping Claude Code for critical paths while onboarding Bailian.
+  </div>
+</section>
+
+<div class="page-nav">
+  <a href="benchmark.html">&larr; Benchmark</a>
+</div>
+
+<footer class="foot">
+  <span>Alibaba AI Coding Evaluation</span>
+  <span>Last updated 2026-06-07</span>
+</footer>
+
+</div>
+</body>
+</html>
