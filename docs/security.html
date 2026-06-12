@@ -5,6 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Security &mdash; Alibaba AI Coding Evaluation</title>
 <link rel="stylesheet" href="style.css"/>
+<style>
+.flow { display: flex; align-items: stretch; gap: 0; margin: 1.5rem 0; flex-wrap: wrap; }
+.flow-node { flex: 1; min-width: 160px; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem; text-align: center; position: relative; }
+.flow-node .node-label { font: 600 13px/1.2 var(--sans); color: var(--ink); margin-bottom: .4em; }
+.flow-node .node-detail { font: 12px/1.4 var(--sans); color: var(--ink-soft); }
+.flow-node .node-zone { font: 600 10px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em; padding: .2em .5em; border-radius: 3px; display: inline-block; margin-bottom: .5em; }
+.flow-node .node-zone.local { background: rgba(120,140,93,.12); color: var(--olive); }
+.flow-node .node-zone.cloud { background: rgba(217,119,87,.12); color: var(--clay); }
+.flow-node .node-zone.sg { background: rgba(106,140,175,.12); color: var(--sky); }
+.flow-arrow { display: flex; align-items: center; padding: 0 .3rem; color: var(--g300); font-size: 1.4rem; flex-shrink: 0; }
+.flow-caption { width: 100%; font: 12px/1.4 var(--sans); color: var(--ink-soft); text-align: center; margin-top: .5rem; padding-top: .5rem; border-top: 1px dashed var(--rule); }
+.arch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+.arch-box { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.2rem; }
+.arch-box h4 { margin: 0 0 .6em; font: 600 13px/1.2 var(--sans); text-transform: none; letter-spacing: 0; color: var(--ink); }
+.arch-box .arch-badge { font: 600 10px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em; padding: .2em .5em; border-radius: 3px; display: inline-block; margin-bottom: .5em; }
+.arch-box ul { margin: .4em 0; padding-left: 1.2em; font-size: .88rem; color: var(--ink-soft); }
+.arch-box li { margin-bottom: .2em; }
+.src-ref { display: flex; align-items: flex-start; gap: .5rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: .6rem .8rem; margin: .5rem 0; font-size: .88rem; }
+.src-ref .src-icon { flex-shrink: 0; width: 18px; height: 18px; border-radius: 3px; background: rgba(106,140,175,.12); color: var(--sky); display: flex; align-items: center; justify-content: center; font: 600 11px var(--sans); margin-top: .1em; }
+.src-ref a { font-weight: 500; }
+@media (max-width: 640px) { .arch-grid { grid-template-columns: 1fr; } .flow { flex-direction: column; } .flow-arrow { transform: rotate(90deg); justify-content: center; padding: .3rem 0; } }
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -32,240 +54,311 @@
   <div class="crumb">Section 6</div>
   <h2>Security Assessment</h2>
 
-  <p>Security evaluation of the Qwen model API (via AliCloud Model Studio) and Qoder CLI for a <strong>Singapore-based team</strong>. Covers data residency, compliance certifications, data retention, legal jurisdiction, and risk-tiered deployment recommendations.</p>
+  <p>Security evaluation of the Qwen model API (via AliCloud Model Studio) and Qoder CLI for a <strong>Singapore-based team</strong>. Focus on data security, region support, and self-managed capabilities.</p>
 
-  <h3>6.1 &ensp;AliCloud / Qwen Model API &mdash; Data Security</h3>
-
-  <h4>Singapore Region Availability</h4>
-  <p>Model Studio (DashScope/Bailian) officially supports <strong>Singapore</strong> (<code>ap-southeast-1</code>), US-Virginia, Beijing, Hong Kong, and Frankfurt. Singapore is fully available for inference and static data storage.</p>
-
-  <h4>Data Residency</h4>
-  <p>You select a region when creating a Model Studio workspace. <strong>All static data is stored in the selected region</strong> to meet data residency requirements. Even during dynamic cross-border processing, inputs and results never persist outside the designated zone. This is a strong feature for Singapore PDPA compliance.</p>
-
-  <h4>Data Retention</h4>
-  <ul>
-    <li><strong>Direct API calls (OpenAI-compatible):</strong> Zero retention &mdash; prompts and responses are not stored after the request completes.</li>
-    <li><strong>Assistant API:</strong> Conversation history is retained for session continuity.</li>
-    <li><strong>Model training:</strong> AliCloud states that user data is not used for model training.</li>
-  </ul>
-
-  <h4>Encryption</h4>
-  <p>AES-256 encryption for data at rest; TLS 1.2+ for data in transit. PrivateLink is available in <strong>Singapore and Beijing</strong> for network-level isolation (not available in US-Virginia).</p>
-
-  <h4>Compliance Certifications (Singapore-Relevant)</h4>
+  <!-- ===== 6.1 ===== -->
+  <h3>6.1 &ensp;AliCloud / Qwen Model API &mdash; At a Glance</h3>
 
   <div class="tbl"><table>
-    <thead><tr><th>Certification</th><th>Status</th><th>Scope</th></tr></thead>
+    <thead><tr><th>Area</th><th>Status</th><th>Key Detail</th></tr></thead>
     <tbody>
-      <tr><td>MTCS Level 3 (Singapore)</td><td class="s-pass">Certified</td><td>Highest Singapore cloud security tier</td></tr>
-      <tr><td>PDPA (Singapore)</td><td class="s-pass">Certified</td><td>Singapore Personal Data Protection Act</td></tr>
-      <tr><td>DPTM (Singapore)</td><td class="s-pass">Certified</td><td>Data Protection Trustmark</td></tr>
-      <tr><td>OSPAR (Singapore)</td><td class="s-pass">Certified</td><td>Outsourced Service Provider Audit Report</td></tr>
+      <tr><td><strong>Singapore region</strong></td><td class="s-pass">Available</td><td><code>ap-southeast-1</code> &mdash; inference + static data stored in-region</td></tr>
+      <tr><td><strong>Data residency</strong></td><td class="s-pass">Configurable</td><td>Select region at workspace creation; data never persists outside chosen zone</td></tr>
+      <tr><td><strong>API data retention</strong></td><td class="s-pass">Zero retention</td><td>Direct API calls: prompts/responses not stored. Assistant API: history retained for session</td></tr>
+      <tr><td><strong>Model training on user data</strong></td><td class="s-pass">No</td><td>AliCloud states user data is not used for training</td></tr>
+      <tr><td><strong>Encryption at rest</strong></td><td class="s-pass">AES-256</td><td>All stored data encrypted</td></tr>
+      <tr><td><strong>Encryption in transit</strong></td><td class="s-pass">TLS 1.2+</td><td>All API traffic encrypted</td></tr>
+      <tr><td><strong>PrivateLink (network isolation)</strong></td><td class="s-pass">Singapore + Beijing</td><td>Not available in US-Virginia. Enables VPC-to-VPC without public internet</td></tr>
+      <tr><td><strong>Content moderation</strong></td><td class="s-total">Mandatory</td><td>Cannot be disabled. Returns <code>400 DataInspectionFailed</code> on violations</td></tr>
+      <tr><td><strong>Legal jurisdiction</strong></td><td class="s-fail">China HQ</td><td>Alibaba HQ in Hangzhou &mdash; Chinese law can compel data disclosure</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Compliance Certifications (Singapore)</h4>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Certification</th><th>Status</th><th>What It Means</th></tr></thead>
+    <tbody>
+      <tr><td>MTCS Level 3</td><td class="s-pass">Certified</td><td>Highest Singapore cloud security tier</td></tr>
+      <tr><td>PDPA</td><td class="s-pass">Certified</td><td>Singapore Personal Data Protection Act compliance</td></tr>
+      <tr><td>DPTM</td><td class="s-pass">Certified</td><td>Data Protection Trustmark (Singapore)</td></tr>
+      <tr><td>OSPAR</td><td class="s-pass">Certified</td><td>Outsourced Service Provider Audit (Singapore)</td></tr>
       <tr><td>SOC 2 Type II</td><td class="s-pass">Certified</td><td>Independent audit of security controls</td></tr>
-      <tr><td>ISO 27001 / 27017 / 27018 / 27701</td><td class="s-pass">Certified</td><td>Information security, cloud privacy, PII</td></tr>
-      <tr><td>CSA STAR</td><td class="s-pass">Certified</td><td>Cloud Security Alliance</td></tr>
-      <tr><td>GDPR (EU)</td><td class="s-pass">Certified</td><td>European data protection</td></tr>
-      <tr><td>Global CBPR / PRP</td><td class="s-pass">Certified</td><td>Cross-border privacy rules</td></tr>
+      <tr><td>ISO 27001/27017/27018/27701</td><td class="s-pass">Certified</td><td>Info security, cloud privacy, PII protection</td></tr>
+      <tr><td>CSA STAR</td><td class="s-pass">Certified</td><td>Cloud Security Alliance certification</td></tr>
+      <tr><td>GDPR</td><td class="s-pass">Certified</td><td>European data protection compliance</td></tr>
     </tbody>
   </table></div>
 
-  <h4>Legal Jurisdiction Risk</h4>
+  <div class="src-ref">
+    <div class="src-icon">R</div>
+    <div><strong>Official source:</strong> <a href="https://www.alibabacloud.com/en/trust-center/compliance">Alibaba Cloud Compliance &amp; Certifications</a> &mdash; full list of 40+ certifications. <a href="https://www.alibabacloud.com/help/en/model-studio/regions/">Model Studio Regions</a> &mdash; supported regions and data residency. <a href="https://www.alibabacloud.com/en/trust-center/mtcs">MTCS Certification</a> &mdash; Singapore-specific.</div>
+  </div>
+
   <div class="callout warn">
-    <strong>Critical consideration:</strong> Alibaba Group is headquartered in Hangzhou, China. Chinese law (National Intelligence Law 2017, Cybersecurity Law 2017) can compel organizations to provide data access to government authorities. Even with Singapore data residency and compliance certifications, a Chinese-headquartered entity may be legally required to disclose data under Chinese government order. There is no known instance of this being exercised on AliCloud international customer data, but the legal authority exists. For workloads with strict data sovereignty requirements, this is the #1 risk factor.
+    <strong>Key risk &mdash; Legal jurisdiction:</strong> Alibaba Group is headquartered in China. Chinese law (National Intelligence Law 2017) can compel data disclosure to government authorities. Even with Singapore data residency, a Chinese HQ entity may be legally required to disclose data. No known instance has occurred on AliCloud international customer data, but the legal authority exists. <strong>Mitigation:</strong> Self-host Qwen open-source models (Apache 2.0 license) on your own Singapore infrastructure.
   </div>
 
-  <h4>Mitigation: Self-Hosted Qwen</h4>
-  <p>Qwen open-source models (Qwen3 variants) are released under the <strong>Apache 2.0 license</strong>. Self-hosting on your own Singapore infrastructure (e.g., AliCloud ECS, AWS EC2, or on-prem GPU cluster) eliminates cloud provider access risk entirely. Trade-off: you manage infrastructure, scaling, and model updates yourself.</p>
-
-  <h4>AI Safety Guardrails</h4>
-  <p>Model Studio enforces mandatory content moderation on all API I/O (cannot be disabled &mdash; returns <code>400 DataInspectionFailed</code> on policy violations). Additional layers:</p>
-  <ul>
-    <li><strong>AI Guardrails</strong> (managed): 10+ filter categories, PII detection, jailbreak/prompt-injection defense, hallucination detection, digital watermarking.</li>
-    <li><strong>Qwen3Guard</strong> (open-source): 0.6B/4B/8B safety model for custom deployments; 3-tier classification (Safe/Unsafe/Controversial).</li>
-  </ul>
-
-  <div class="callout">
-    <strong>Transparency note:</strong> Stanford FMTI flagged limited transparency on Qwen 3 risk taxonomies and external red-teaming. Promptfoo red-team testing found Qwen 2.5 72B passed only 48.1% of 39 security categories (1,600+ probes). No standalone "Responsible AI" page exists. This has improved with Qwen 3.x but independent third-party safety audits remain limited.
+  <h4>Transparency Note</h4>
+  <div class="src-ref">
+    <div class="src-icon">R</div>
+    <div>Stanford FMTI flagged limited transparency on Qwen risk taxonomies and external red-teaming. Promptfoo found Qwen 2.5 72B passed only 48.1% of 39 security categories (1,600+ probes). Improved with Qwen 3.x but independent audits remain limited. <a href="https://crfm.stanford.edu/">Stanford CRFM</a> &middot; <a href="https://docs.promptfoo.dev/">Promptfoo</a></div>
   </div>
 
-  <h3>6.2 &ensp;Qoder CLI &mdash; Data Security</h3>
+  <!-- ===== 6.2 ===== -->
+  <h3>6.2 &ensp;Qoder CLI &mdash; Data Flow Diagrams</h3>
 
-  <h4>Code Transmission &amp; Data Flow</h4>
-  <p>Qoder CLI transmits code context to Qoder&rsquo;s cloud API endpoints (<code>api1.qoder.sh</code>, <code>api2.qoder.sh</code>, <code>api3.qoder.sh</code>) for model inference. Key details on what gets transmitted:</p>
-  <ul>
-    <li><strong>Per-request context:</strong> The CLI sends relevant file contents, conversation history, and code snippets to the LLM backend for each request. The scope is determined by the model&rsquo;s context window and relevance algorithms &mdash; not the entire codebase.</li>
-    <li><strong>Codebase indexing:</strong> Qoder generates semantic embeddings client-side for local search (supports up to 100,000 files). Files can be excluded via <code>.qoderignore</code>. Embeddings are stored locally, not uploaded.</li>
-    <li><strong>Claimed not stored:</strong> Qoder states: <em>&ldquo;Qoder does not store or share your code. During code completion, your code context is required but is never stored or used for other purposes.&rdquo;</em> However, <strong>no independent audit or third-party verification</strong> of this claim was found.</li>
-    <li><strong>In-transit exposure:</strong> Code traverses the public internet to reach the LLM backend, creating an in-transit exposure surface. TLS encryption protects the channel but the data is readable by Qoder&rsquo;s infrastructure during processing.</li>
-  </ul>
+  <h4>Standard Mode: Qoder-Hosted Inference</h4>
+  <p>Code context flows from the developer&rsquo;s machine through Qoder&rsquo;s cloud to the LLM backend.</p>
 
-  <h4>Network Egress</h4>
-  <p>The CLI connects to the following known endpoints:</p>
-  <ul>
-    <li><code>api1.qoder.sh</code>, <code>api2.qoder.sh</code>, <code>api3.qoder.sh</code> &mdash; model inference</li>
-    <li>Configured MCP server endpoints (if any)</li>
-    <li>Telemetry endpoints (undocumented, active when telemetry is enabled)</li>
-  </ul>
-  <p>Firewall teams can restrict egress to these domains. However, the full IP range list is not publicly documented, which may complicate allowlist-based firewall rules.</p>
+  <div class="flow">
+    <div class="flow-node">
+      <div class="node-zone local">Local</div>
+      <div class="node-label">Developer Machine</div>
+      <div class="node-detail">
+        Qoder CLI runs locally<br>
+        <code>~/.qoder/</code> credentials<br>
+        <code>.qoder/skills/</code> + <code>agents/</code><br>
+        Codebase index (local)
+      </div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <div class="node-zone cloud">Cloud (region unknown)</div>
+      <div class="node-label">Qoder Cloud API</div>
+      <div class="node-detail">
+        <code>api*.qoder.sh</code><br>
+        Code context received<br>
+        Claimed: not stored<br>
+        Telemetry (cannot disable on free tier)
+      </div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <div class="node-zone cloud">Cloud</div>
+      <div class="node-label">LLM Backend</div>
+      <div class="node-detail">
+        Qwen / other models<br>
+        Inference only<br>
+        Response returned to CLI
+      </div>
+    </div>
+    <div class="flow-caption">Code context leaves your machine and traverses Qoder&rsquo;s infrastructure. Region is not configurable.</div>
+  </div>
 
-  <h4>Local Storage</h4>
-  <p>The <code>~/.qoder/</code> directory (configurable via <code>QODER_CONFIG_DIR</code>) stores:</p>
-  <ul>
-    <li>Authentication credentials (tokens, session state)</li>
-    <li>Tool permission configurations (<code>settings.local.json</code>)</li>
-    <li>Custom skills (<code>~/.qoder/skills/</code>) and custom agents (<code>~/.qoder/agents/</code>)</li>
-    <li>Codebase index and semantic embeddings (for local search)</li>
-  </ul>
-  <p>The exact storage format for credentials (plaintext, encrypted, OS keychain integration) is <strong>not documented</strong>. No mention of macOS Keychain or OS credential manager integration.</p>
+  <h4>BYOK Mode: Self-Hosted Model (Recommended for Singapore)</h4>
+  <p>Bring Your Own Key &mdash; point Qoder CLI at your own model endpoint in Singapore.</p>
 
-  <h4>Telemetry</h4>
-  <p>A &ldquo;Share for Improvement&rdquo; setting controls whether usage metrics are sent to Qoder. <strong>Free/Community users cannot disable this</strong> &mdash; it is a Pro-tier and above exclusive feature. The specific data points collected are not publicly documented. The CLI-specific privacy mode configuration is undocumented.</p>
+  <div class="flow">
+    <div class="flow-node">
+      <div class="node-zone local">Local</div>
+      <div class="node-label">Developer Machine</div>
+      <div class="node-detail">
+        Qoder CLI runs locally<br>
+        Your MCP servers (internal)<br>
+        Your skills + agents<br>
+        Your API keys (BYOK)
+      </div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <div class="node-zone sg">Your SG VPC</div>
+      <div class="node-label">Self-Hosted Model</div>
+      <div class="node-detail">
+        Qwen (Apache 2.0) or<br>
+        AliCloud Bailian (SG region)<br>
+        Zero retention<br>
+        PrivateLink available
+      </div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <div class="node-zone local">Local</div>
+      <div class="node-label">Response</div>
+      <div class="node-detail">
+        Results return directly<br>
+        No Qoder cloud in path<br>
+        Full data sovereignty
+      </div>
+    </div>
+    <div class="flow-caption">Code stays within your network boundary. No data flows to Qoder&rsquo;s cloud for inference.</div>
+  </div>
 
-  <h4>Data Residency</h4>
-  <p><strong>No documented region controls.</strong> The Alibaba Cloud Compute Nest deployment defaults to <code>cn-hangzhou</code> (Hangzhou, China). No Singapore or APAC-specific deployment options were found in public documentation. Organizations requiring data residency in specific jurisdictions have no documented mechanism to control where their data is processed.</p>
-
-  <h4>Compliance Certifications</h4>
-  <p><strong>None found for the Qoder product itself.</strong> Alibaba Cloud (the infrastructure provider) holds extensive certifications, but these cover the infrastructure layer, not the Qoder application layer. There is a compliance gap between the two.</p>
-
-  <h4>On-Premises / Air-Gapped Deployment</h4>
-  <p><strong>Not supported.</strong> Qoder CLI requires connectivity to <code>api*.qoder.sh</code> for model inference. No air-gapped or fully on-premises deployment mode exists. <strong>BYOK (Bring Your Own Key)</strong> is the closest option &mdash; users can connect their own model endpoints, which could be self-hosted LLMs in a private VPC.</p>
-
-  <h4>Data Retention Policy</h4>
-  <p><strong>None documented.</strong> Qoder&rsquo;s FAQ states code is not stored, but no retention period is specified for metadata, chat logs, usage analytics, or telemetry data. When a team member is removed, &ldquo;all their organization-related data will be permanently deleted&rdquo; &mdash; but no SLA or timeline is given.</p>
-
-  <h4>Source Code Audit</h4>
-  <p><strong>Proprietary / closed-source.</strong> The npm package <code>@qoder-ai/qodercli</code> has no open-source license declared. The GitHub repository returns 404. No <code>SECURITY.md</code>, responsible disclosure policy, or bug bounty program was found. Organizations requiring code review as part of vendor assessment cannot inspect the codebase.</p>
-
-  <h4>Risk Summary</h4>
+  <!-- ===== Qoder Risk Table ===== -->
+  <h4>Qoder CLI &mdash; Risk Summary</h4>
 
   <div class="tbl"><table>
-    <thead><tr><th>Area</th><th>Finding</th><th>Risk Level</th></tr></thead>
+    <thead><tr><th>Area</th><th>Risk</th><th>What This Means</th><th>Source</th></tr></thead>
     <tbody>
-      <tr><td>Code transmission</td><td>Per-request context sent to cloud APIs; claimed not stored but unverifiable</td><td class="s-total">Medium</td></tr>
-      <tr><td>Telemetry</td><td>Exists; free users cannot opt out; data points undocumented</td><td class="s-fail">High</td></tr>
-      <tr><td>Data residency</td><td>No region controls; default appears to be China</td><td class="s-fail">High</td></tr>
-      <tr><td>Compliance certs</td><td>None for Qoder product; Alibaba Cloud infra certified</td><td class="s-total">Medium</td></tr>
-      <tr><td>On-prem / air-gapped</td><td>Not supported; BYOK is only partial alternative</td><td class="s-fail">High</td></tr>
-      <tr><td>Local credential storage</td><td>Storage format opaque; no documented OS keychain integration</td><td class="s-total">Medium</td></tr>
-      <tr><td>Data retention</td><td>No policy documented</td><td class="s-fail">High</td></tr>
-      <tr><td>Source code audit</td><td>Proprietary; no independent audit possible</td><td class="s-fail">High</td></tr>
-      <tr class="highlight"><td>MCP servers</td><td>Fully self-managed; teams control their own MCP integrations</td><td class="s-pass">Positive</td></tr>
-      <tr class="highlight"><td>Skills</td><td>Fully self-managed; markdown-based; Git-versioned by teams</td><td class="s-pass">Positive</td></tr>
-      <tr class="highlight"><td>Custom agents</td><td>Fully self-managed; granular per-agent tool/MCP/skill permissions</td><td class="s-pass">Positive</td></tr>
-      <tr><td>Admin governance</td><td>No documented controls to restrict which MCP/skills/agents devs use</td><td class="s-total">Medium</td></tr>
+      <tr><td>Code transmission</td><td class="s-total">Medium</td><td>Per-request code context sent to <code>api*.qoder.sh</code>. Claimed not stored, but no independent audit.</td><td><a href="https://docs.qoder.com/troubleshooting/common-issue">FAQ</a></td></tr>
+      <tr><td>Telemetry</td><td class="s-fail">High</td><td>Exists. Free users <strong>cannot opt out</strong>. Data points collected are undocumented.</td><td><a href="https://forum.qoder.com/t/topic/5983">Forum</a></td></tr>
+      <tr><td>Data residency</td><td class="s-fail">High</td><td>No region controls. Default appears to be China (<code>cn-hangzhou</code>).</td><td><a href="https://help.aliyun.com/zh/compute-nest/use-cases/qoder-cli-community-edition-service-instance-deployment-document">Deploy docs</a></td></tr>
+      <tr><td>Compliance certs</td><td class="s-total">Medium</td><td>None for Qoder product itself. Alibaba Cloud infra is certified.</td><td>&mdash;</td></tr>
+      <tr><td>On-prem / air-gapped</td><td class="s-fail">High</td><td>Not supported. BYOK is the closest option.</td><td>&mdash;</td></tr>
+      <tr><td>Local credential storage</td><td class="s-total">Medium</td><td><code>~/.qoder/</code> format undocumented. No OS keychain integration confirmed.</td><td>&mdash;</td></tr>
+      <tr><td>Data retention</td><td class="s-fail">High</td><td>No retention policy documented.</td><td><a href="https://qoder.com/privacy-policy">Privacy Policy</a></td></tr>
+      <tr><td>Source code audit</td><td class="s-fail">High</td><td>Proprietary, closed-source. No audit possible.</td><td><a href="https://www.npmjs.com/package/@qoder-ai/qodercli">npm</a></td></tr>
     </tbody>
   </table></div>
 
-  <h3>6.3 &ensp;Self-Managed Capabilities &mdash; Team Customization</h3>
-
-  <p>A key advantage of Qoder is its extensible architecture. Teams can create and manage their own customizations locally, without requiring Qoder platform changes. This has positive security implications: internal tools, coding standards, and workflows stay within the team&rsquo;s control.</p>
-
-  <h4>MCP Servers &mdash; Fully Self-Managed</h4>
-  <p>Qoder fully supports the open MCP (Model Context Protocol) standard, allowing teams to plug in their own external tools and data sources.</p>
-  <ul>
-    <li><strong>Custom MCP servers:</strong> Teams can connect any MCP-compatible server &mdash; including internal databases, proprietary APIs, CI/CD systems, or company documentation platforms.</li>
-    <li><strong>Three connection types:</strong> Streamable HTTP (remote services), SSE (remote services, older protocol), and STDIO (locally running servers via CLI commands).</li>
-    <li><strong>Configuration scope:</strong> MCP servers can be configured at the user level or project level, allowing per-repo or per-team customization.</li>
-    <li><strong>Security implication:</strong> Teams can build MCP servers that connect to internal systems behind the corporate VPN/firewall, keeping sensitive data flows within the organization&rsquo;s network boundary. The MCP server itself runs on the team&rsquo;s infrastructure &mdash; only tool results pass through Qoder.</li>
-  </ul>
-
-  <div class="callout">
-    <strong>Data security benefit:</strong> Custom MCP servers let teams extend Qoder&rsquo;s capabilities without giving the platform direct access to internal systems. The MCP server acts as a controlled gateway &mdash; it can enforce authentication, authorization, and data filtering before results reach the AI model. This is a meaningful security pattern for enterprise deployments.
+  <div class="src-ref">
+    <div class="src-icon">R</div>
+    <div><strong>Official sources:</strong> <a href="https://docs.qoder.com/troubleshooting/common-issue">Qoder FAQ &amp; Data Security</a> &middot; <a href="https://qoder.com/privacy-policy">Privacy Policy</a> &middot; <a href="https://qoder.com/enterprise">Enterprise page</a> &middot; <a href="https://www.alibabacloud.com/en/marketplace/qoder">Alibaba Cloud Marketplace</a></div>
   </div>
 
-  <h4>Skills &mdash; Fully Self-Managed</h4>
-  <p>Skills are markdown-based instruction files that teach Qoder CLI how to perform specific tasks. Teams have full control over skill creation and distribution.</p>
-  <ul>
-    <li><strong>Format:</strong> A <code>SKILL.md</code> file with YAML frontmatter (name, description) and markdown instructions.</li>
-    <li><strong>Project-level:</strong> Place skills in <code>.qoder/skills/{skill-name}/SKILL.md</code> &mdash; committed to the repo, version-controlled with Git, shared across the team.</li>
-    <li><strong>User-level:</strong> Place skills in <code>~/.qoder/skills/{skill-name}/SKILL.md</code> &mdash; personal skills available across all projects.</li>
-    <li><strong>Capabilities:</strong> Skills can include helper scripts, reference docs, templates, and step-by-step workflows. They can run helper scripts (Python, Bash, etc.) as part of their execution.</li>
-    <li><strong>Security implication:</strong> Teams can encode company coding standards, security review checklists, deployment procedures, and compliance checks as skills. These stay in the team&rsquo;s Git repo &mdash; no data leaves the organization to define these workflows.</li>
-  </ul>
+  <!-- ===== 6.3 ===== -->
+  <h3>6.3 &ensp;Self-Managed Capabilities &mdash; What Your Team Controls</h3>
 
-  <h4>Custom Agents &mdash; Fully Self-Managed</h4>
-  <p>Custom Agents are specialized AI agents with independent context windows, tool permissions, and system prompts.</p>
-  <ul>
-    <li><strong>Format:</strong> A <code>.md</code> file with YAML frontmatter defining name, description, allowed tools, model, skills, and MCP servers.</li>
-    <li><strong>Project-level:</strong> Place agents in <code>.qoder/agents/{agentName}.md</code> &mdash; shared across the team via Git.</li>
-    <li><strong>User-level:</strong> Place agents in <code>~/.qoder/agents/{agentName}.md</code> &mdash; personal agents.</li>
-    <li><strong>Granular permissions:</strong> Each agent can be restricted to specific tools (Read, Grep, Glob, Bash, Edit, Write, WebFetch, WebSearch), specific MCP servers, specific skills, and even specific models.</li>
-    <li><strong>Security implication:</strong> Teams can create read-only review agents, security audit agents, or deployment agents with tightly scoped permissions. This follows the principle of least privilege &mdash; each agent only accesses what it needs.</li>
-  </ul>
+  <p>Qoder&rsquo;s extensible architecture lets teams manage their own MCP servers, Skills, and Custom Agents. These stay within your control &mdash; no platform dependency.</p>
 
-  <h4>Team Admin Controls (Teams / Enterprise Plan)</h4>
-
-  <div class="tbl"><table>
-    <thead><tr><th>Control</th><th>Available</th><th>Details</th></tr></thead>
-    <tbody>
-      <tr><td>SSO / SAML</td><td class="s-pass">Yes</td><td>Enterprise-grade single sign-on integration</td></tr>
-      <tr><td>RBAC (Role-Based Access)</td><td class="s-pass">Yes</td><td>Permission management by role within the organization</td></tr>
-      <tr><td>Domain-based access</td><td class="s-pass">Yes</td><td>Restrict account access to specific email domains</td></tr>
-      <tr><td>Privacy mode enforcement</td><td class="s-pass">Yes</td><td>Admins can enforce data privacy modes for all team members</td></tr>
-      <tr><td>Centralized billing</td><td class="s-pass">Yes</td><td>Single account manages all team payments and seat allocation</td></tr>
-      <tr><td>Usage analytics</td><td class="s-pass">Yes</td><td>Admin visibility into AI adoption metrics across the org</td></tr>
-      <tr><td>SCIM provisioning</td><td class="s-total">Claimed (marketplace)</td><td>Mentioned in Alibaba Cloud marketplace listing; not confirmed in Qoder docs</td></tr>
-      <tr><td>Model restrictions</td><td class="s-total">Unclear</td><td>No documented way to restrict which models team members can use</td></tr>
-      <tr><td>MCP/skill restrictions</td><td class="s-total">Unclear</td><td>No documented admin controls over which MCP servers or skills are allowed</td></tr>
-      <tr><td>Data Processing Agreement</td><td class="s-total">Undocumented</td><td>No public DPA found; contact Qoder Enterprise sales</td></tr>
-    </tbody>
-  </table></div>
-
-  <div class="callout">
-    <strong>Self-managed assessment:</strong> MCP servers, Skills, and Custom Agents are all fully team-managed and stored locally or in Git. This is a strong security positive &mdash; teams control their own extensions without platform dependency. However, there is no documented admin control to restrict which MCP servers, skills, or agents developers can use (e.g., preventing a developer from connecting an unauthorized MCP server to a production database). This is a governance gap to discuss with Qoder Enterprise.
+  <div class="arch-grid">
+    <div class="arch-box">
+      <div class="arch-badge" style="background:rgba(120,140,93,.12);color:var(--olive)">Your Team Controls</div>
+      <h4>MCP Servers</h4>
+      <ul>
+        <li>Connect to <strong>any</strong> MCP-compatible service</li>
+        <li>Build custom servers for internal APIs, DBs, docs</li>
+        <li>3 types: Streamable HTTP, SSE, STDIO (local CLI)</li>
+        <li>Config per-project or per-user</li>
+        <li>MCP server runs on <strong>your infra</strong> &mdash; acts as a controlled gateway</li>
+      </ul>
+      <p style="font-size:.85rem;color:var(--ink-soft);margin:.5em 0 0"><a href="https://docs.qoder.com/qoderwork/mcp">Docs: MCP Configuration</a></p>
+    </div>
+    <div class="arch-box">
+      <div class="arch-badge" style="background:rgba(120,140,93,.12);color:var(--olive)">Your Team Controls</div>
+      <h4>Skills</h4>
+      <ul>
+        <li>Markdown files (<code>SKILL.md</code>) with instructions</li>
+        <li>Project-level: <code>.qoder/skills/</code> &rarr; Git-versioned, team-shared</li>
+        <li>User-level: <code>~/.qoder/skills/</code> &rarr; personal</li>
+        <li>Can include scripts, templates, reference docs</li>
+        <li>Encode coding standards, security checklists, compliance</li>
+      </ul>
+      <p style="font-size:.85rem;color:var(--ink-soft);margin:.5em 0 0"><a href="https://docs.qoder.com/en/cli/Skills">Docs: Skills</a></p>
+    </div>
+    <div class="arch-box">
+      <div class="arch-badge" style="background:rgba(120,140,93,.12);color:var(--olive)">Your Team Controls</div>
+      <h4>Custom Agents</h4>
+      <ul>
+        <li>Specialized AI agents with own context + permissions</li>
+        <li>Restrict per agent: tools, MCP servers, skills, models</li>
+        <li>Project-level: <code>.qoder/agents/</code> &rarr; team-shared via Git</li>
+        <li>Examples: read-only reviewer, security auditor, deploy agent</li>
+        <li>Principle of least privilege built-in</li>
+      </ul>
+      <p style="font-size:.85rem;color:var(--ink-soft);margin:.5em 0 0"><a href="https://docs.qoder.com/extensions/subagent">Docs: Custom Agents</a></p>
+    </div>
+    <div class="arch-box">
+      <div class="arch-badge" style="background:rgba(106,140,175,.12);color:var(--sky)">Team Admin (Enterprise)</div>
+      <h4>Admin Controls</h4>
+      <ul>
+        <li>SSO / SAML single sign-on</li>
+        <li>RBAC &mdash; role-based permission management</li>
+        <li>Domain-based access restriction</li>
+        <li>Privacy mode enforcement for all members</li>
+        <li>Centralized billing + usage analytics</li>
+        <li><span style="color:var(--clay)">Gap:</span> No documented controls to restrict which MCP/skills devs use</li>
+      </ul>
+      <p style="font-size:.85rem;color:var(--ink-soft);margin:.5em 0 0"><a href="https://docs.qoder.com/account/teams/get-started-with-teams">Docs: Teams Setup</a> &middot; <a href="https://qoder.com/enterprise">Enterprise</a></p>
+    </div>
   </div>
 
-  <h3>6.4 &ensp;Tiered Recommendations for Singapore Team</h3>
+  <div class="callout">
+    <strong>Security positive:</strong> MCP, Skills, and Custom Agents are all stored locally or in Git. Teams control their own extensions &mdash; internal tools, coding standards, and workflows never leave the organization. Custom MCP servers act as controlled gateways to internal systems, enforcing auth and filtering before data reaches the model.
+  </div>
+
+  <div class="callout warn">
+    <strong>Governance gap:</strong> No documented admin control to restrict which MCP servers, skills, or agents developers can use (e.g., preventing a developer from connecting an unauthorized MCP server to a production database). Discuss with Qoder Enterprise.
+  </div>
+
+  <!-- ===== 6.4 ===== -->
+  <h3>6.4 &ensp;Recommendations &mdash; By Sensitivity Level</h3>
 
   <div class="tbl"><table>
-    <thead><tr><th>Tier</th><th>Sensitivity</th><th>Model API</th><th>CLI Tool</th><th>Key Controls</th></tr></thead>
+    <thead><tr><th>Tier</th><th>Code Sensitivity</th><th>Model API</th><th>CLI Setup</th><th>Key Controls</th></tr></thead>
     <tbody>
       <tr>
-        <td><strong>Tier 1</strong></td>
-        <td>Low (public / open-source code)</td>
-        <td>AliCloud Model Studio (Singapore region)</td>
-        <td>Qoder CLI with Qoder-hosted models</td>
-        <td>Enable all privacy settings (requires Pro tier for telemetry opt-out)</td>
+        <td><strong>1</strong></td>
+        <td>Low<br><small>public / OSS code</small></td>
+        <td>AliCloud Bailian (SG region)</td>
+        <td>Qoder CLI (default)</td>
+        <td>Pro tier for telemetry opt-out</td>
       </tr>
       <tr class="highlight">
-        <td><strong>Tier 2</strong></td>
-        <td>Moderate (proprietary code)</td>
-        <td>AliCloud Model Studio (Singapore region, zero-retention API)</td>
-        <td>Qoder CLI with BYOK &rarr; self-hosted Qwen in SG VPC</td>
-        <td>PrivateLink for network isolation; Pro tier for telemetry opt-out; audit logs</td>
+        <td><strong>2</strong></td>
+        <td>Moderate<br><small>proprietary code</small></td>
+        <td>AliCloud Bailian (SG, zero-retention)</td>
+        <td>Qoder CLI + BYOK &rarr; SG VPC</td>
+        <td>PrivateLink; Pro tier; audit logs</td>
       </tr>
       <tr>
-        <td><strong>Tier 3</strong></td>
-        <td>High (regulated / confidential)</td>
-        <td>Self-hosted Qwen (Apache 2.0) on own Singapore infra</td>
-        <td>Qoder CLI with BYOK only, or open-source CLI alternative</td>
-        <td>Full data sovereignty; own network monitoring; no cloud API for this tier</td>
+        <td><strong>3</strong></td>
+        <td>High<br><small>regulated / confidential</small></td>
+        <td>Self-hosted Qwen (Apache 2.0) on own SG infra</td>
+        <td>Qoder CLI + BYOK only</td>
+        <td>Full sovereignty; own monitoring; no cloud API</td>
       </tr>
     </tbody>
   </table></div>
 
   <div class="callout">
-    <strong>Recommendation:</strong> AliCloud Model Studio in Singapore is well-certified and supports data residency with zero retention. Qoder CLI is the weaker link &mdash; closed-source, mandatory telemetry on free tier, no region controls, and code flows to Qoder&rsquo;s cloud. For a Singapore team, the recommended path is <strong>AliCloud Model Studio (Singapore region) for the API</strong> + <strong>Qoder CLI with BYOK pointing to your own hosted models</strong> for anything beyond low-sensitivity work. For regulated workloads, self-host Qwen open-source models on your own Singapore infrastructure.
+    <strong>Bottom line for Singapore teams:</strong><br>
+    <strong>AliCloud Model Studio (Singapore)</strong> is well-certified &mdash; MTCS L3, PDPA, SOC 2, zero retention. Strong choice for the API layer.<br>
+    <strong>Qoder CLI</strong> is the weaker link &mdash; closed-source, mandatory telemetry on free tier, no region controls, code flows to Qoder&rsquo;s cloud.<br>
+    <strong>Recommended path:</strong> AliCloud Bailian (SG region) for the API + Qoder CLI with BYOK pointing to your own hosted models for anything beyond low-sensitivity work. For regulated workloads, self-host Qwen on your own Singapore infrastructure.
   </div>
 
-  <h3>6.5 &ensp;Sources</h3>
-  <ul>
-    <li><a href="https://www.alibabacloud.com/help/en/model-studio/regions/">Model Studio Regions &amp; Deployment</a></li>
-    <li><a href="https://www.alibabacloud.com/en/trust-center/compliance">Alibaba Cloud Compliance &amp; Certifications</a></li>
-    <li><a href="https://www.alibabacloud.com/en/trust-center/mtcs">Alibaba Cloud MTCS (Singapore)</a></li>
-    <li><a href="https://docs.qoder.com/troubleshooting/common-issue">Qoder FAQ &amp; Data Security</a></li>
-    <li><a href="https://qoder.com/privacy-policy">Qoder Privacy Policy</a></li>
-    <li><a href="https://qoder.com/enterprise">Qoder Enterprise</a></li>
-    <li><a href="https://www.alibabacloud.com/en/marketplace/qoder">Alibaba Cloud Marketplace: Qoder Enterprise</a></li>
-    <li><a href="https://docs.qoder.com/cloud-agents/environments">Qoder Cloud Environments</a></li>
-    <li><a href="https://docs.qoder.com/account/teams/openapi/api-key-security">Qoder API Key Security</a></li>
-    <li><a href="https://docs.qoder.com/cloud-agents/vaults">Qoder Vaults (Secrets Management)</a></li>
-    <li><a href="https://docs.qoder.com/qoderwork/mcp">Qoder MCP Documentation</a></li>
-    <li><a href="https://docs.qoder.com/en/cli/Skills">Qoder Skills Documentation</a></li>
-    <li><a href="https://docs.qoder.com/extensions/subagent">Qoder Custom Agent Documentation</a></li>
-    <li><a href="https://docs.qoder.com/account/teams/get-started-with-teams">Qoder Teams &mdash; Get Started</a></li>
-    <li><a href="https://docs.qoder.com/account/teams/members-and-roles">Qoder Teams &mdash; Members &amp; Roles</a></li>
-  </ul>
+  <!-- ===== 6.5 ===== -->
+  <h3>6.5 &ensp;Sources &amp; References</h3>
+
+  <div class="src-ref">
+    <div class="src-icon">1</div>
+    <div><a href="https://www.alibabacloud.com/help/en/model-studio/regions/">Model Studio Regions &amp; Deployment</a> &mdash; supported regions, data residency configuration</div>
+  </div>
+  <div class="src-ref">
+    <div class="src-icon">2</div>
+    <div><a href="https://www.alibabacloud.com/en/trust-center/compliance">Alibaba Cloud Compliance &amp; Certifications</a> &mdash; full list of 40+ certifications including MTCS, PDPA, SOC 2, ISO</div>
+  </div>
+  <div class="src-ref">
+    <div class="src-icon">3</div>
+    <div><a href="https://www.alibabacloud.com/en/trust-center/mtcs">Alibaba Cloud MTCS (Singapore)</a> &mdash; Singapore-specific cloud security certification</div>
+  </div>
+  <div class="src-ref">
+    <div class="src-icon">4</div>
+    <div><a href="https://docs.qoder.com/troubleshooting/common-issue">Qoder FAQ &amp; Data Security</a> &mdash; code storage claims, data handling</div>
+  </div>
+  <div class="src-ref">
+    <div class="src-icon">5</div>
+    <div><a href="https://qoder.com/privacy-policy">Qoder Privacy Policy</a> &mdash; data processing and retention terms</div>
+  </div>
+  <div class="src-ref">
+    <div class="src-icon">6</div>
+    <div><a href="https://qoder.com/enterprise">Qoder Enterprise</a> &mdash; SSO, RBAC, centralized policy, compliance controls</div>
+  </div>
+  <div class="src-ref">
+    <div class="src-icon">7</div>
+    <div><a href="https://www.alibabacloud.com/en/marketplace/qoder">Alibaba Cloud Marketplace: Qoder Enterprise</a> &mdash; deployment details, SCIM mention</div>
+  </div>
+  <div class="src-ref">
+    <div class="src-icon">8</div>
+    <div><a href="https://docs.qoder.com/qoderwork/mcp">Qoder MCP Documentation</a> &mdash; custom MCP server configuration</div>
+  </div>
+  <div class="src-ref">
+    <div class="src-icon">9</div>
+    <div><a href="https://docs.qoder.com/en/cli/Skills">Qoder Skills Documentation</a> &mdash; creating and managing team skills</div>
+  </div>
+  <div class="src-ref">
+    <div class="src-icon">10</div>
+    <div><a href="https://docs.qoder.com/extensions/subagent">Qoder Custom Agent Documentation</a> &mdash; creating specialized agents with scoped permissions</div>
+  </div>
+  <div class="src-ref">
+    <div class="src-icon">11</div>
+    <div><a href="https://docs.qoder.com/account/teams/get-started-with-teams">Qoder Teams Setup Guide</a> &mdash; SSO, domain access, admin controls</div>
+  </div>
+  <div class="src-ref">
+    <div class="src-icon">12</div>
+    <div><a href="https://docs.qoder.com/account/teams/openapi/api-key-security">Qoder API Key Security</a> &mdash; PAT management, rotation, best practices</div>
+  </div>
 </section>
 
 <div class="page-nav">
