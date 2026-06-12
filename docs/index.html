@@ -34,6 +34,7 @@
 <li><strong>Quality gap is narrow.</strong> Qwen3.7-Max scores ~80% on SWE-bench Verified (Opus 4.7: 87.6%) and 60.6% on SWE-bench Pro (Opus 4.8: 69.2%). For routine coding and data analysis, the difference is marginal. <a href="benchmark.html">Section 4 &rarr;</a></li>
 <li><strong>Three migration paths:</strong> (A) <strong>Qoder CLI</strong> &mdash; integrated multi-agent experience at ~3&times; lower cost, minimal setup; (B) <strong>OpenCode + Bailian pay-go</strong> &mdash; maximum cost control with per-token billing and full model freedom; (C) <strong>Hybrid</strong> &mdash; Qoder/OpenCode for daily work, retain Claude Code for complex tasks during transition. <a href="cost.html">Section 5 &rarr;</a></li>
 <li><strong>Multi-agent advantage.</strong> Qoder Experts Mode provides centralized multi-agent orchestration (Lead + 7 specialist roles) that Claude Code lacks &mdash; built-in QA, Code Review, and Debug roles with +67% quality over single-agent. <a href="cli-eval.html">Section 3 &rarr;</a></li>
+<li><strong>AliCloud API is well-certified for Singapore; Qoder CLI is the weaker link.</strong> AliCloud Model Studio holds MTCS L3, PDPA, SOC 2, ISO 27001 with zero data retention and Singapore region support. Qoder CLI is closed-source, has mandatory telemetry on free tier, and no region controls. <strong>Recommended:</strong> AliCloud Bailian (SG region) for the API + Qoder CLI with BYOK pointing to your own models for anything beyond low-sensitivity work. MCP, Skills, and Custom Agents are fully team-managed &mdash; a strong security positive. <a href="security.html">Section 6 &rarr;</a></li>
 </ul>
 </div>
 
@@ -72,7 +73,7 @@
   <a class="card" href="security.html">
     <div class="card-crumb">Section 6</div>
     <h3>Security Assessment</h3>
-    <p>Data residency, compliance (MTCS, PDPA, SOC 2), Qoder CLI data security deep-dive, self-managed capabilities (MCP, Skills, Custom Agents), team admin controls, and tiered recommendations for Singapore teams.</p>
+    <p>Data residency, compliance (MTCS, PDPA, SOC 2), Qoder CLI data security with flow diagrams, self-managed capabilities (MCP, Skills, Custom Agents), and team admin controls for Singapore teams.</p>
   </a>
 
 
@@ -80,7 +81,7 @@
 
 <footer class="foot">
   <span>Alibaba AI Coding Evaluation</span>
-  <span>Last updated 2026-06-11</span>
+  <span>Last updated 2026-06-12</span>
 </footer>
 
 </div>
