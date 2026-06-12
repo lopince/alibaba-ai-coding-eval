@@ -282,43 +282,6 @@ table th:first-child { text-align: left; }
     <div><strong>Official sources:</strong> <a href="https://docs.qoder.com/qoderwork/mcp">MCP Configuration</a> &middot; <a href="https://docs.qoder.com/en/cli/Skills">Skills</a> &middot; <a href="https://docs.qoder.com/extensions/subagent">Custom Agents</a> &middot; <a href="https://docs.qoder.com/account/teams/get-started-with-teams">Teams Setup</a> &middot; <a href="https://docs.qoder.com/account/teams/openapi/api-key-security">API Key Security</a> &middot; <a href="https://www.alibabacloud.com/en/marketplace/qoder">Qoder on AliCloud Marketplace</a></div>
   </div>
 
-  <!-- ===== 6.4 ===== -->
-  <h3>6.4 &ensp;Recommendations &mdash; By Sensitivity Level</h3>
-
-  <div class="tbl"><table>
-    <thead><tr><th>Tier</th><th>Code Sensitivity</th><th>Model API</th><th>CLI Setup</th><th>Key Controls</th></tr></thead>
-    <tbody>
-      <tr>
-        <td><strong>1</strong></td>
-        <td>Low<br><small>public / OSS code</small></td>
-        <td>AliCloud Bailian (SG region)</td>
-        <td>Qoder CLI (default)</td>
-        <td>Pro tier for telemetry opt-out</td>
-      </tr>
-      <tr class="highlight">
-        <td><strong>2</strong></td>
-        <td>Moderate<br><small>proprietary code</small></td>
-        <td>AliCloud Bailian (SG, zero-retention)</td>
-        <td>Qoder CLI + BYOK &rarr; SG VPC</td>
-        <td>PrivateLink; Pro tier; audit logs</td>
-      </tr>
-      <tr>
-        <td><strong>3</strong></td>
-        <td>High<br><small>regulated / confidential</small></td>
-        <td>Self-hosted Qwen (Apache 2.0) on own SG infra</td>
-        <td>Qoder CLI + BYOK only</td>
-        <td>Full sovereignty; own monitoring; no cloud API</td>
-      </tr>
-    </tbody>
-  </table></div>
-
-  <div class="callout">
-    <strong>Bottom line for Singapore teams:</strong><br>
-    <strong>AliCloud Model Studio (Singapore)</strong> is well-certified &mdash; MTCS L3, PDPA, SOC 2, zero retention. Strong choice for the API layer.<br>
-    <strong>Qoder CLI</strong> is the weaker link &mdash; closed-source, mandatory telemetry on free tier, no region controls, code flows to Qoder&rsquo;s cloud.<br>
-    <strong>Recommended path:</strong> AliCloud Bailian (SG region) for the API + Qoder CLI with BYOK pointing to your own hosted models for anything beyond low-sensitivity work. For regulated workloads, self-host Qwen on your own Singapore infrastructure.
-  </div>
-
 </section>
 
 <div class="page-nav">
