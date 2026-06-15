@@ -86,43 +86,54 @@
 
 <!-- ══════════════════════════════════════════ INSIGHTS -->
 <section class="eval" id="insights">
-  <h2>Building for a 50-Person Team</h2>
+  <h2>Self-Hosted LLM for a 50-Person Team</h2>
 
-  <p>Practical insights for deploying a self-hosted LLM coding platform on AWS, sized for ~50 engineers doing daily coding and code analysis.</p>
+  <p>A quick assessment based on the research in these pages, assuming current setup is <strong>Bedrock (Anthropic Claude) + Claude Code</strong>.</p>
 
-  <div class="tbl"><table>
-    <thead><tr><th style="width:22%">Topic</th><th>Insight</th></tr></thead>
-    <tbody>
-      <tr>
-        <td><strong>Cost break-even</strong></td>
-        <td>50 engineers generating ~10M tokens/day spend ~$12K/mo on managed APIs (Claude Sonnet pricing). Self-hosted on EKS with Qwen3-Coder-32B (g6e.48xlarge, FP8) runs ~$11.5K/mo on-demand, or ~$7.8K/mo on 1-year RI. Break-even at ~3 months. After that, marginal cost per token approaches zero.</td>
-      </tr>
-      <tr>
-        <td><strong>Model strategy</strong></td>
-        <td>Run a two-tier setup: Qwen3-Coder-7B on g6.12xlarge for fast inline completions (low latency, high volume), and Qwen3-Coder-32B on g6e.48xlarge for complex agentic tasks (multi-file edits, architecture reasoning). LiteLLM routes by request type. This halves your GPU bill vs. running the larger model for everything.</td>
-      </tr>
-      <tr>
-        <td><strong>Infrastructure</strong></td>
-        <td>EKS with Karpenter is the right pattern at 50 users. It auto-provisions GPU nodes when engineers start working and consolidates when idle. Spot instances for batch workloads (code review, test generation) save 60%. Plan for 15&ndash;20 concurrent users at peak, not 50.</td>
-      </tr>
-      <tr>
-        <td><strong>Engine choice</strong></td>
-        <td>Use SGLang for agentic coding workloads &mdash; its RadixAttention caches shared system prompts and repository context, delivering ~29% higher throughput than vLLM when engineers work on the same codebase. Use vLLM for general-purpose completions where model breadth matters more.</td>
-      </tr>
-      <tr>
-        <td><strong>Security posture</strong></td>
-        <td>50 developers = 50 potential leak vectors. Lock down the inference subnet (no NAT, no internet gateway). Use Cognito OAuth per developer with DynamoDB-tracked quotas. Disable prompt logging or redact sensitive patterns at the gateway. Every request must carry a short-lived JWT &mdash; no shared API keys.</td>
-      </tr>
-      <tr>
-        <td><strong>MCP integration</strong></td>
-        <td>Non-negotiable for a coding platform. MCP lets the LLM safely read internal docs, query databases, and check CI/CD status without unrestricted access. Deploy 3&ndash;4 MCP servers (docs, git, database, CI/CD) on ECS Fargate within your VPC. The local coding harness controls all execution &mdash; the cloud LLM only suggests, never executes.</td>
-      </tr>
-      <tr>
-        <td><strong>Go / No-go</strong></td>
-        <td>Self-host if: team &gt;30 engineers, token spend &gt;$8K/mo, or data sovereignty is a hard requirement. Stay on managed APIs if: team &lt;15, usage is sporadic, or you lack Kubernetes ops capacity. The hybrid approach &mdash; self-host for sensitive repos, use APIs for non-sensitive work &mdash; is a valid middle ground.</td>
-      </tr>
-    </tbody>
-  </table></div>
+  <div class="arch-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0 1.8rem">
+    <div class="arch-box" style="border-left:3px solid var(--olive)">
+      <h4>What it looks like</h4>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">EKS cluster on AWS running open-weight coding models (Qwen3-Coder). Engineers keep using their local tools (Claude Code, OpenCode, Cursor) &mdash; pointed at your own endpoint instead of Bedrock. All code stays inside your VPC.</p>
+    </div>
+    <div class="arch-box" style="border-left:3px solid var(--sky)">
+      <h4>Expected performance</h4>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">Qwen3-Coder-32B scores ~72% on SWE-bench Verified (vs Claude Sonnet ~80%). For daily coding and analysis, the gap is narrow &mdash; noticeable on complex multi-file refactors, negligible on standard code gen, explanations, and debugging.</p>
+    </div>
+    <div class="arch-box" style="border-left:3px solid var(--clay)">
+      <h4>Cost</h4>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">Current Bedrock spend for 50 devs: est. $10&ndash;15K/mo. Self-hosted: ~$8K/mo on reserved instances. Break-even at ~3 months. After that, marginal cost is near zero &mdash; no per-token billing surprises.</p>
+    </div>
+    <div class="arch-box" style="border-left:3px solid var(--g500)">
+      <h4>Success criteria</h4>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">Task completion rate &ge;70% on SWE-bench. TTFT p99 &lt;5s for interactive coding. Zero code leakage outside VPC. Developer satisfaction parity with Claude Code within 4 weeks of rollout.</p>
+    </div>
+  </div>
+
+  <h4>Benefits vs current Bedrock + Claude Code</h4>
+  <div class="two-col">
+    <div class="product" style="border-left:3px solid var(--olive)">
+      <strong style="color:var(--olive)">Benefits</strong>
+      <ul class="product-features">
+        <li>Code never leaves your VPC &mdash; eliminates third-party data exposure</li>
+        <li>Fixed cost at scale &mdash; no per-token billing spikes during crunch periods</li>
+        <li>Full control over model selection, quantization, and latency tuning</li>
+        <li>No vendor dependency &mdash; swap models without changing tools</li>
+      </ul>
+    </div>
+    <div class="product" style="border-left:3px solid var(--clay)">
+      <strong style="color:var(--clay)">Risks</strong>
+      <ul class="product-features">
+        <li>~8&ndash;10% quality gap on complex agentic tasks vs frontier models</li>
+        <li>Kubernetes ops burden &mdash; needs 1&ndash;2 engineers maintaining the platform</li>
+        <li>GPU capacity planning &mdash; under-provisioning causes queue buildup at peak</li>
+        <li>No extended thinking or advanced reasoning that Claude provides natively</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Bottom line:</strong> self-hosting makes sense if data sovereignty is non-negotiable or Bedrock spend exceeds $10K/mo. The quality gap is real but manageable for daily coding. Consider a hybrid approach: self-host for sensitive repos, keep Bedrock for complex architecture tasks where Claude&rsquo;s reasoning edge matters.
+  </div>
 </section>
 
 <!-- ══════════════════════════════════════════ 1. WHY SELF-HOST -->
