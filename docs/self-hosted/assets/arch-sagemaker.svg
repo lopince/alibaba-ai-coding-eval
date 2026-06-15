@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 250" font-family="Inter,system-ui,sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#78706A"/>
+    </marker>
+  </defs>
+
+  <!-- S3 -->
+  <rect x="15" y="40" width="160" height="65" rx="5" fill="#f0f7ed" stroke="#788C5D" stroke-width="1.5"/>
+  <text x="95" y="65" text-anchor="middle" font-size="12" font-weight="600" fill="#141413">Amazon S3</text>
+  <text x="95" y="82" text-anchor="middle" font-size="11" fill="#78706A">Model weights</text>
+  <text x="95" y="96" text-anchor="middle" font-size="10" fill="#788C5D">VPC gateway endpoint</text>
+
+  <!-- Arrow S3 → SageMaker -->
+  <line x1="175" y1="72" x2="240" y2="72" stroke="#78706A" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="208" y="64" text-anchor="middle" font-size="9" fill="#78706A">load</text>
+
+  <!-- SageMaker Endpoint -->
+  <rect x="245" y="15" width="310" height="155" rx="5" fill="#edf2f7" stroke="#6A8CAF" stroke-width="1.5"/>
+  <text x="400" y="38" text-anchor="middle" font-size="13" font-weight="700" fill="#141413">SageMaker AI Endpoint</text>
+  <text x="400" y="56" text-anchor="middle" font-size="11" fill="#6A8CAF">ml.g5.12xlarge or ml.p4d.24xlarge</text>
+  <line x1="260" y1="66" x2="540" y2="66" stroke="#d4d0c8" stroke-width=".75"/>
+  <text x="265" y="84" font-size="11" fill="#78706A">VPC: private subnets only</text>
+  <text x="265" y="100" font-size="11" fill="#78706A">SG: outbound HTTPS to S3 endpoint</text>
+  <text x="265" y="116" font-size="11" fill="#78706A">IAM: sagemaker:InvokeEndpoint</text>
+  <text x="265" y="132" font-size="11" fill="#78706A">VPC Endpoints: S3, SSM, EC2 Msgs</text>
+  <rect x="260" y="142" width="280" height="20" rx="3" fill="rgba(106,140,175,.08)"/>
+  <text x="400" y="156" text-anchor="middle" font-size="10" font-weight="500" fill="#6A8CAF">vLLM container (OpenAI-compatible)</text>
+
+  <!-- Arrow SageMaker → API -->
+  <line x1="555" y1="72" x2="620" y2="72" stroke="#78706A" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="588" y="64" text-anchor="middle" font-size="9" fill="#78706A">serve</text>
+
+  <!-- API output -->
+  <rect x="625" y="35" width="260" height="75" rx="5" fill="#fef3ed" stroke="#D97757" stroke-width="1.5"/>
+  <text x="755" y="58" text-anchor="middle" font-size="12" font-weight="600" fill="#D97757">/v1/chat/completions</text>
+  <text x="755" y="76" text-anchor="middle" font-size="11" fill="#78706A">OpenAI-compatible API</text>
+  <text x="755" y="93" text-anchor="middle" font-size="10" fill="#78706A">Streaming + structured JSON</text>
+
+  <!-- Caption -->
+  <rect x="245" y="195" width="310" height="40" rx="4" fill="#fff" stroke="#E3DACC"/>
+  <text x="400" y="212" text-anchor="middle" font-size="10" fill="#78706A">All inference stays inside VPC.</text>
+  <text x="400" y="226" text-anchor="middle" font-size="10" fill="#78706A">No data leaves your AWS environment.</text>
+</svg>

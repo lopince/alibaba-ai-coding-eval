@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Models Open-Source Models &mdash; Self-Hostedmdash; Self-Hosting LLM</title>
+<link rel="stylesheet" href="../style.css"/>
+<style>
+  tr.group-start td { border-top: 2px solid var(--g300); }
+  tr.group-start td:first-child { position: relative; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Self-Hosting LLM</a></h1>
+  <div class="meta">Section 1 of 3</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="models.html" class="active">Models</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="infra.html">Infrastructure</a>
+  <a href="serving.html">Serving</a>
+</div></nav>
+
+</div>
+
+<div class="wrap">
+
+<section class="eval">
+  <div class="crumb">Section 1</div>
+  <h2>Models</h2>
+  <p>16 open-weight models across 5 Chinese AI providers, selected for frontier coding and agentic performance. All data sourced from official HuggingFace model cards, provider documentation, and vLLM deployment recipes.</p>
+
+  <p style="margin-bottom:1.2em">Models with a <a href="https://recipes.vllm.ai">vLLM Recipe</a> link have verified deployment guides on recipes.vllm.ai.</p>
+
+  <div class="tbl"><table>
+    <thead><tr>
+      <th>Model</th>
+      <th style="text-align:center">Provider</th>
+      <th style="text-align:center">Params (Total / Active)</th>
+      <th style="text-align:center">Context</th>
+      <th style="text-align:center">Arch</th>
+      <th style="text-align:center">License</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>DeepSeek-V4-Pro</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/deepseek-ai/DeepSeek-V4-Pro">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">DeepSeek</td>
+        <td style="text-align:center">1.6T / 49B</td>
+        <td style="text-align:center">1M</td>
+        <td style="text-align:center"><span class="cmp partial">MoE</span></td>
+        <td style="text-align:center"><span class="cmp yes">MIT</span></td>
+      </tr>
+      <tr>
+        <td><strong>DeepSeek-V4-Flash</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/deepseek-ai/DeepSeek-V4-Flash">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">DeepSeek</td>
+        <td style="text-align:center">284B / 13B</td>
+        <td style="text-align:center">1M</td>
+        <td style="text-align:center"><span class="cmp partial">MoE</span></td>
+        <td style="text-align:center"><span class="cmp yes">MIT</span></td>
+      </tr>
+      <tr>
+        <td><strong>DeepSeek-R1-0528</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/deepseek-ai/DeepSeek-R1-0528">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/deepseek-ai/DeepSeek-R1-0528">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">DeepSeek</td>
+        <td style="text-align:center">685B / 37B</td>
+        <td style="text-align:center">128K</td>
+        <td style="text-align:center"><span class="cmp partial">MoE</span></td>
+        <td style="text-align:center"><span class="cmp yes">MIT</span></td>
+      </tr>
+      <tr class="group-start">
+        <td><strong>Qwen3.6-27B</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/Qwen/Qwen3.6-27B">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/Qwen/Qwen3.6-27B">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">Qwen</td>
+        <td style="text-align:center">27B / 27B</td>
+        <td style="text-align:center">262K&rarr;1M</td>
+        <td style="text-align:center"><span class="cmp yes">Dense+Vision</span></td>
+        <td style="text-align:center"><span class="cmp yes">Apache 2.0</span></td>
+      </tr>
+      <tr>
+        <td><strong>Qwen3.6-35B-A3B</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/Qwen/Qwen3.6-35B-A3B">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/Qwen/Qwen3.6-35B-A3B">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">Qwen</td>
+        <td style="text-align:center">35B / 3B</td>
+        <td style="text-align:center">262K&rarr;1M</td>
+        <td style="text-align:center"><span class="cmp partial">MoE+Vision</span></td>
+        <td style="text-align:center"><span class="cmp yes">Apache 2.0</span></td>
+      </tr>
+      <tr>
+        <td><strong>Qwen3-235B-A22B</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct-2507">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/Qwen/Qwen3-235B-A22B-Instruct-2507">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">Qwen</td>
+        <td style="text-align:center">235B / 22B</td>
+        <td style="text-align:center">128K&rarr;1M</td>
+        <td style="text-align:center"><span class="cmp partial">MoE</span></td>
+        <td style="text-align:center"><span class="cmp yes">Apache 2.0</span></td>
+      </tr>
+      <tr>
+        <td><strong>Qwen3-Coder-480B-A35B</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/Qwen/Qwen3-Coder-480B-A35B-Instruct">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/Qwen/Qwen3-Coder-480B-A35B-Instruct">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">Qwen</td>
+        <td style="text-align:center">480B / 35B</td>
+        <td style="text-align:center">256K&rarr;1M</td>
+        <td style="text-align:center"><span class="cmp partial">MoE</span></td>
+        <td style="text-align:center"><span class="cmp yes">Apache 2.0</span></td>
+      </tr>
+      <tr>
+        <td><strong>Qwen3-Coder-Next</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/Qwen/Qwen3-Coder-Next">HuggingFace &rarr;</a></span></td>
+        <td style="text-align:center">Qwen</td>
+        <td style="text-align:center">80B / 3B</td>
+        <td style="text-align:center">262K</td>
+        <td style="text-align:center"><span class="cmp partial">MoE</span></td>
+        <td style="text-align:center"><span class="cmp yes">Apache 2.0</span></td>
+      </tr>
+      <tr>
+        <td><strong>Qwen3-Next-80B-A3B</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/Qwen/Qwen3-Next-80B-A3B-Instruct">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/Qwen/Qwen3-Next-80B-A3B-Instruct">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">Qwen</td>
+        <td style="text-align:center">80B / 3B</td>
+        <td style="text-align:center">262K&rarr;1M</td>
+        <td style="text-align:center"><span class="cmp partial">MoE</span></td>
+        <td style="text-align:center"><span class="cmp yes">Apache 2.0</span></td>
+      </tr>
+      <tr class="group-start">
+        <td><strong>GLM-5.2</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)">API only &mdash; <a href="https://docs.z.ai/devpack/latest-model">docs &rarr;</a></span></td>
+        <td style="text-align:center">Zhipu AI</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">1M</td>
+        <td style="text-align:center"><span class="cmp partial">MoE</span></td>
+        <td style="text-align:center"><span class="cmp no">Proprietary</span></td>
+      </tr>
+      <tr>
+        <td><strong>GLM-5.1</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/zai-org/GLM-5.1">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/zai-org/GLM-5.1">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">Zhipu AI</td>
+        <td style="text-align:center">754B / 40B</td>
+        <td style="text-align:center">202K</td>
+        <td style="text-align:center"><span class="cmp partial">MoE+DSA</span></td>
+        <td style="text-align:center"><span class="cmp yes">MIT</span></td>
+      </tr>
+      <tr class="group-start">
+        <td><strong>Kimi-K2.7-Code</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/moonshotai/Kimi-K2.7-Code">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/moonshotai/Kimi-K2.7-Code">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">Moonshot AI</td>
+        <td style="text-align:center">~1T / 32B</td>
+        <td style="text-align:center">256K</td>
+        <td style="text-align:center"><span class="cmp partial">MoE+Vision</span></td>
+        <td style="text-align:center"><span class="cmp partial">Mod. MIT</span></td>
+      </tr>
+      <tr>
+        <td><strong>Kimi-K2.6</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/moonshotai/Kimi-K2.6">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/moonshotai/Kimi-K2.6">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">Moonshot AI</td>
+        <td style="text-align:center">1T / 32B</td>
+        <td style="text-align:center">256K</td>
+        <td style="text-align:center"><span class="cmp partial">MoE+Vision</span></td>
+        <td style="text-align:center"><span class="cmp partial">Mod. MIT</span></td>
+      </tr>
+      <tr>
+        <td><strong>Kimi-Dev-72B</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/moonshotai/Kimi-Dev-72B">HuggingFace &rarr;</a></span></td>
+        <td style="text-align:center">Moonshot AI</td>
+        <td style="text-align:center">73B / 73B</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center"><span class="cmp yes">Dense</span></td>
+        <td style="text-align:center"><span class="cmp yes">MIT</span></td>
+      </tr>
+      <tr class="group-start">
+        <td><strong>MiniMax-M3</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/MiniMaxAI/MiniMax-M3">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/MiniMaxAI/MiniMax-M3">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">MiniMax</td>
+        <td style="text-align:center">428B / 23B</td>
+        <td style="text-align:center">1M</td>
+        <td style="text-align:center"><span class="cmp partial">MoE+MSA</span></td>
+        <td style="text-align:center"><span class="cmp partial">Community</span></td>
+      </tr>
+      <tr>
+        <td><strong>MiniMax-M2.7</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/MiniMaxAI/MiniMax-M2.7">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/MiniMaxAI/MiniMax-M2.7">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">MiniMax</td>
+        <td style="text-align:center">229B / &mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center"><span class="cmp partial">MoE</span></td>
+        <td style="text-align:center"><span class="cmp partial">Custom</span></td>
+      </tr>
+      <tr>
+        <td><strong>MiniMax-M2.5</strong><br><span style="font:11px/1.4 var(--sans);color:var(--ink-soft)"><a href="https://huggingface.co/MiniMaxAI/MiniMax-M2.5">HuggingFace &rarr;</a><br><a href="https://recipes.vllm.ai/MiniMaxAI/MiniMax-M2.5">vLLM Recipe &rarr;</a></span></td>
+        <td style="text-align:center">MiniMax</td>
+        <td style="text-align:center">229B / 10B</td>
+        <td style="text-align:center">200K</td>
+        <td style="text-align:center"><span class="cmp partial">MoE</span></td>
+        <td style="text-align:center"><span class="cmp partial">Mod. MIT</span></td>
+      </tr>
+    </tbody>
+  </table></div>
+
+</section>
+
+<div class="page-nav">
+  <a href="index.html">&larr; Overview</a>
+  <a class="next" href="benchmark.html">Benchmark Framework &rarr;</a>
+</div>
+
+<footer class="foot">
+  <span>Self-Hosting LLM</span>
+  <span>Last updated 2026-06-14</span>
+</footer>
+
+</div>
+</body>
+</html>

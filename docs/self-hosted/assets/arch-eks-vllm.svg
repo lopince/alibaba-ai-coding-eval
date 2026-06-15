@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" font-family="Inter,system-ui,sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#78706A"/>
+    </marker>
+    <marker id="arr-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#6A8CAF"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="22" text-anchor="middle" font-size="14" font-weight="700" fill="#141413">EKS Kubernetes — vLLM / SGLang Inference Platform</text>
+
+  <!-- Engineer Laptop -->
+  <rect x="15" y="45" width="200" height="90" rx="6" fill="#f0f7ed" stroke="#788C5D" stroke-width="1.5"/>
+  <text x="115" y="68" text-anchor="middle" font-size="11" font-weight="700" fill="#5a6b45" letter-spacing=".04em">ENGINEER LAPTOP</text>
+  <rect x="30" y="78" width="170" height="44" rx="4" fill="#fff" stroke="#d4d0c8"/>
+  <text x="115" y="96" text-anchor="middle" font-size="11" font-weight="600" fill="#141413">OpenCode / Cursor</text>
+  <text x="115" y="112" text-anchor="middle" font-size="10" fill="#78706A">Local MCP Server</text>
+
+  <!-- Arrow laptop → Gateway -->
+  <line x1="215" y1="100" x2="265" y2="100" stroke="#D97757" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="240" y="92" text-anchor="middle" font-size="9" font-weight="600" fill="#D97757">HTTPS</text>
+
+  <!-- CloudFront + WAF -->
+  <rect x="270" y="60" width="140" height="80" rx="6" fill="#fef9ee" stroke="#c77b00" stroke-width="1.5"/>
+  <text x="340" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#c77b00">CloudFront</text>
+  <text x="340" y="97" text-anchor="middle" font-size="11" font-weight="700" fill="#c77b00">+ WAF</text>
+  <text x="340" y="115" text-anchor="middle" font-size="9" fill="#78706A">TLS · DDoS</text>
+  <text x="340" y="128" text-anchor="middle" font-size="9" fill="#78706A">Rate limiting</text>
+
+  <!-- Arrow CF → ALB -->
+  <line x1="410" y1="100" x2="445" y2="100" stroke="#78706A" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ALB -->
+  <rect x="450" y="65" width="130" height="70" rx="6" fill="#fef3ed" stroke="#D97757" stroke-width="1.5"/>
+  <text x="515" y="88" text-anchor="middle" font-size="11" font-weight="600" fill="#141413">ALB</text>
+  <text x="515" y="104" text-anchor="middle" font-size="9" fill="#78706A">Path routing</text>
+  <text x="515" y="117" text-anchor="middle" font-size="9" fill="#78706A">/v1/* → LiteLLM</text>
+
+  <!-- Arrow ALB → EKS -->
+  <line x1="580" y1="100" x2="620" y2="100" stroke="#78706A" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- EKS Cluster (big box) -->
+  <rect x="625" y="40" width="260" height="565" rx="8" fill="#edf2f7" stroke="#6A8CAF" stroke-width="2"/>
+  <text x="755" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="#6A8CAF" letter-spacing=".04em">AMAZON EKS CLUSTER</text>
+  <text x="755" y="77" text-anchor="middle" font-size="9" fill="#78706A">ap-southeast-1 · VPC private subnets</text>
+
+  <!-- LiteLLM Gateway pods -->
+  <rect x="640" y="90" width="230" height="80" rx="5" fill="#fff" stroke="#D97757" stroke-width=".75"/>
+  <rect x="645" y="93" width="115" height="14" rx="2" fill="rgba(217,119,87,.1)"/>
+  <text x="650" y="104" font-size="9" font-weight="600" fill="#D97757">GATEWAY NAMESPACE</text>
+  <rect x="655" y="113" width="100" height="42" rx="4" fill="#fef3ed" stroke="#D97757" stroke-width=".5"/>
+  <text x="705" y="131" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">LiteLLM</text>
+  <text x="705" y="146" text-anchor="middle" font-size="9" fill="#78706A">2 replicas (HPA)</text>
+  <rect x="765" y="113" width="90" height="42" rx="4" fill="#fef3ed" stroke="#D97757" stroke-width=".5"/>
+  <text x="810" y="131" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">Cognito</text>
+  <text x="810" y="146" text-anchor="middle" font-size="9" fill="#78706A">JWT sidecar</text>
+
+  <!-- Arrow down to inference -->
+  <line x1="755" y1="170" x2="755" y2="195" stroke="#6A8CAF" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <text x="770" y="186" font-size="9" fill="#6A8CAF">route</text>
+
+  <!-- Inference Namespace (big section) -->
+  <rect x="640" y="195" width="230" height="290" rx="5" fill="#fff" stroke="#6A8CAF" stroke-width=".75"/>
+  <rect x="645" y="198" width="125" height="14" rx="2" fill="rgba(106,140,175,.1)"/>
+  <text x="650" y="209" font-size="9" font-weight="600" fill="#6A8CAF">INFERENCE NAMESPACE</text>
+
+  <!-- vLLM Pod Group 1: Qwen3-Coder -->
+  <rect x="655" y="220" width="200" height="68" rx="4" fill="#e8f4f8" stroke="#6A8CAF" stroke-width=".5"/>
+  <text x="755" y="236" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">vLLM — Qwen3-Coder-32B</text>
+  <rect x="665" y="244" width="55" height="32" rx="3" fill="#edf2f7" stroke="#6A8CAF" stroke-width=".5"/>
+  <text x="692" y="258" text-anchor="middle" font-size="8" font-weight="600" fill="#6A8CAF">Pod 1</text>
+  <text x="692" y="270" text-anchor="middle" font-size="7" fill="#78706A">1× A100</text>
+  <rect x="728" y="244" width="55" height="32" rx="3" fill="#edf2f7" stroke="#6A8CAF" stroke-width=".5"/>
+  <text x="755" y="258" text-anchor="middle" font-size="8" font-weight="600" fill="#6A8CAF">Pod 2</text>
+  <text x="755" y="270" text-anchor="middle" font-size="7" fill="#78706A">1× A100</text>
+  <rect x="791" y="244" width="55" height="32" rx="3" fill="#edf2f7" stroke="#6A8CAF" stroke-width=".5"/>
+  <text x="818" y="258" text-anchor="middle" font-size="8" font-weight="600" fill="#6A8CAF">Pod 3</text>
+  <text x="818" y="270" text-anchor="middle" font-size="7" fill="#78706A">1× A100</text>
+
+  <!-- SGLang Pod Group: Devstral -->
+  <rect x="655" y="296" width="200" height="68" rx="4" fill="#f0f7ed" stroke="#788C5D" stroke-width=".5"/>
+  <text x="755" y="312" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">SGLang — Devstral-Small-2</text>
+  <rect x="665" y="320" width="55" height="32" rx="3" fill="#f0f7ed" stroke="#788C5D" stroke-width=".5"/>
+  <text x="692" y="334" text-anchor="middle" font-size="8" font-weight="600" fill="#788C5D">Pod 1</text>
+  <text x="692" y="346" text-anchor="middle" font-size="7" fill="#78706A">1× L40S</text>
+  <rect x="728" y="320" width="55" height="32" rx="3" fill="#f0f7ed" stroke="#788C5D" stroke-width=".5"/>
+  <text x="755" y="334" text-anchor="middle" font-size="8" font-weight="600" fill="#788C5D">Pod 2</text>
+  <text x="755" y="346" text-anchor="middle" font-size="7" fill="#78706A">1× L40S</text>
+
+  <!-- vLLM Pod Group 2: DeepSeek -->
+  <rect x="655" y="372" width="200" height="68" rx="4" fill="#e8f4f8" stroke="#6A8CAF" stroke-width=".5"/>
+  <text x="755" y="388" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">vLLM — DeepSeek-V4</text>
+  <rect x="665" y="396" width="90" height="32" rx="3" fill="#edf2f7" stroke="#6A8CAF" stroke-width=".5"/>
+  <text x="710" y="410" text-anchor="middle" font-size="8" font-weight="600" fill="#6A8CAF">Pod 1 (TP=8)</text>
+  <text x="710" y="422" text-anchor="middle" font-size="7" fill="#78706A">8× H100 node</text>
+  <rect x="763" y="396" width="90" height="32" rx="3" fill="#edf2f7" stroke="#6A8CAF" stroke-width=".5"/>
+  <text x="808" y="410" text-anchor="middle" font-size="8" font-weight="600" fill="#6A8CAF">Pod 2 (TP=8)</text>
+  <text x="808" y="422" text-anchor="middle" font-size="7" fill="#78706A">8× H100 node</text>
+
+  <!-- K8s Services -->
+  <rect x="655" y="450" width="200" height="25" rx="3" fill="rgba(106,140,175,.08)" stroke="#6A8CAF" stroke-width=".5"/>
+  <text x="755" y="467" text-anchor="middle" font-size="9" font-weight="500" fill="#6A8CAF">K8s Services · ClusterIP · InternalDNS</text>
+
+  <!-- Observability namespace -->
+  <rect x="640" y="497" width="230" height="60" rx="5" fill="#fff" stroke="#788C5D" stroke-width=".75"/>
+  <rect x="645" y="500" width="130" height="14" rx="2" fill="rgba(120,140,93,.1)"/>
+  <text x="650" y="511" font-size="9" font-weight="600" fill="#788C5D">OBSERVABILITY NAMESPACE</text>
+  <rect x="655" y="520" width="62" height="28" rx="3" fill="#f0f7ed" stroke="#788C5D" stroke-width=".5"/>
+  <text x="686" y="538" text-anchor="middle" font-size="8" font-weight="500" fill="#5a6b45">Prometheus</text>
+  <rect x="724" y="520" width="62" height="28" rx="3" fill="#f0f7ed" stroke="#788C5D" stroke-width=".5"/>
+  <text x="755" y="538" text-anchor="middle" font-size="8" font-weight="500" fill="#5a6b45">Grafana</text>
+  <rect x="793" y="520" width="62" height="28" rx="3" fill="#f0f7ed" stroke="#788C5D" stroke-width=".5"/>
+  <text x="824" y="538" text-anchor="middle" font-size="8" font-weight="500" fill="#5a6b45">Loki</text>
+
+  <!-- Karpenter label -->
+  <rect x="640" y="570" width="230" height="25" rx="4" fill="rgba(199,123,0,.08)" stroke="#c77b00" stroke-width=".5"/>
+  <text x="755" y="587" text-anchor="middle" font-size="9" font-weight="600" fill="#c77b00">Karpenter · GPU Node Autoscaler · Spot Fallback</text>
+
+  <!-- GPU Node Pool (left side) -->
+  <rect x="15" y="195" width="200" height="230" rx="6" fill="#fef9ee" stroke="#c77b00" stroke-width="1.5"/>
+  <text x="115" y="218" text-anchor="middle" font-size="11" font-weight="700" fill="#c77b00">GPU NODE POOLS</text>
+
+  <rect x="30" y="232" width="170" height="48" rx="4" fill="#fff" stroke="#c77b00" stroke-width=".5"/>
+  <text x="115" y="250" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">p4de.24xlarge</text>
+  <text x="115" y="265" text-anchor="middle" font-size="9" fill="#78706A">8× A100 80GB · On-Demand</text>
+
+  <rect x="30" y="288" width="170" height="48" rx="4" fill="#fff" stroke="#c77b00" stroke-width=".5"/>
+  <text x="115" y="306" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">g6e.48xlarge</text>
+  <text x="115" y="321" text-anchor="middle" font-size="9" fill="#78706A">8× L40S · On-Demand</text>
+
+  <rect x="30" y="344" width="170" height="48" rx="4" fill="#fff" stroke="#c77b00" stroke-width=".5"/>
+  <text x="115" y="362" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">p5.48xlarge</text>
+  <text x="115" y="377" text-anchor="middle" font-size="9" fill="#78706A">8× H100 · Spot (60% off)</text>
+
+  <!-- Arrow: Node pools → EKS -->
+  <line x1="215" y1="310" x2="625" y2="340" stroke="#c77b00" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr)"/>
+  <text x="420" y="315" text-anchor="middle" font-size="9" fill="#c77b00">Karpenter provisions nodes on demand</text>
+
+  <!-- Data services (bottom left) -->
+  <rect x="15" y="450" width="200" height="125" rx="6" fill="#fff" stroke="#788C5D" stroke-width="1.5"/>
+  <text x="115" y="473" text-anchor="middle" font-size="11" font-weight="700" fill="#5a6b45">AWS DATA SERVICES</text>
+  <rect x="30" y="485" width="80" height="32" rx="3" fill="#f0f7ed" stroke="#788C5D" stroke-width=".5"/>
+  <text x="70" y="505" text-anchor="middle" font-size="9" font-weight="500" fill="#141413">S3 (weights)</text>
+  <rect x="120" y="485" width="80" height="32" rx="3" fill="#f0f7ed" stroke="#788C5D" stroke-width=".5"/>
+  <text x="160" y="505" text-anchor="middle" font-size="9" font-weight="500" fill="#141413">DynamoDB</text>
+  <rect x="30" y="525" width="80" height="32" rx="3" fill="#f0f7ed" stroke="#788C5D" stroke-width=".5"/>
+  <text x="70" y="545" text-anchor="middle" font-size="9" font-weight="500" fill="#141413">Cognito</text>
+  <rect x="120" y="525" width="80" height="32" rx="3" fill="#f0f7ed" stroke="#788C5D" stroke-width=".5"/>
+  <text x="160" y="545" text-anchor="middle" font-size="9" font-weight="500" fill="#141413">Secrets Mgr</text>
+
+  <!-- Arrow: data → EKS -->
+  <line x1="215" y1="510" x2="625" y2="530" stroke="#788C5D" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#arr)"/>
+
+  <!-- Cognito (top center) -->
+  <rect x="270" y="160" width="140" height="50" rx="6" fill="#fef3ed" stroke="#D97757" stroke-width="1"/>
+  <text x="340" y="182" text-anchor="middle" font-size="11" font-weight="600" fill="#141413">Amazon Cognito</text>
+  <text x="340" y="198" text-anchor="middle" font-size="9" fill="#78706A">OAuth 2.0 · OIDC</text>
+
+  <!-- Arrow Cognito → LiteLLM -->
+  <line x1="380" y1="175" x2="640" y2="140" stroke="#D97757" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+  <text x="510" y="148" text-anchor="middle" font-size="8" fill="#D97757">JWKS validation</text>
+</svg>

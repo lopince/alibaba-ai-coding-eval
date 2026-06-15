@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Serving &mdash; Self-Hosting LLM</title>
+<link rel="stylesheet" href="../style.css"/>
+<style>
+  /* Overview diagram */
+  .overview-map { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin: 1.5rem 0 2rem; }
+  .map-node { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem; text-align: center; transition: border-color .15s; }
+  .map-node:hover { border-color: var(--clay); }
+  .map-node .map-icon { font-size: 1.6rem; margin-bottom: .4em; display: block; }
+  .map-node h4 { margin: 0 0 .3em; font: 600 14px/1.2 var(--sans); text-transform: none; letter-spacing: 0; color: var(--ink); }
+  .map-node p { font: 12px/1.4 var(--sans); color: var(--ink-soft); margin: 0; }
+  .map-col { display: flex; flex-direction: column; gap: 1rem; }
+  .map-col-label { font: 600 11px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--g500); text-align: center; padding-bottom: .3em; border-bottom: 2px solid var(--rule); }
+  .map-col-label.hw { border-bottom-color: var(--olive); color: var(--olive); }
+  .map-col-label.mem { border-bottom-color: var(--sky); color: var(--sky); }
+  .map-col-label.sched { border-bottom-color: var(--clay); color: var(--clay); }
+
+  @media (max-width: 768px) { .overview-map { grid-template-columns: 1fr; } }
+
+  /* Technique card */
+  .tech { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.5rem; margin-bottom: 2rem; }
+  .tech-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+  .tech-num { flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 700 13px/1 var(--sans); color: #fff; }
+  .tech-num.hw { background: var(--olive); }
+  .tech-num.mem { background: var(--sky); }
+  .tech-num.sched { background: var(--clay); }
+  .tech-title { flex: 1; }
+  .tech-title h3 { margin: 0 0 .2em; font-size: 1.1rem; }
+  .tech-title .tag { display: inline-block; font: 500 10px/1 var(--sans); padding: .2em .5em; border-radius: 3px; margin-right: .3em; text-transform: uppercase; letter-spacing: .06em; }
+  .tech-title .tag.hw { background: rgba(120,140,93,.12); color: var(--olive); }
+  .tech-title .tag.mem { background: rgba(106,140,175,.12); color: var(--sky); }
+  .tech-title .tag.sched { background: rgba(217,119,87,.12); color: var(--clay); }
+  .tech p { color: var(--ink-soft); font-size: .92rem; margin: .6em 0; line-height: 1.55; }
+
+  /* Book figure */
+  .book-fig { margin: 1.2rem 0; text-align: center; }
+  .book-fig img { max-width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--rule); }
+  .book-fig .caption { font: 11px/1.3 var(--sans); color: var(--g500); padding: .4em 0; }
+
+  /* Key number callout */
+  .key-num { display: inline-block; background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--clay); padding: .5em 1em; margin: .5em 0; border-radius: 4px; font: 14px/1.5 var(--mono); }
+  .key-num strong { color: var(--clay); }
+
+  /* Two-col for prefill/decode */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0 1.5rem; }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Self-Hosting LLM</a></h1>
+  <div class="meta">Section 4 of 4</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="models.html">Models</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="infra.html">Infrastructure</a>
+  <a href="serving.html" class="active">Serving</a>
+</div></nav>
+
+</div>
+
+<div class="wrap">
+
+<p class="tldr">The five key techniques that determine LLM serving performance &mdash; from hardware physics to scheduling. Each technique is illustrated with diagrams from the <a href="https://jax-ml.github.io/scaling-book/" target="_blank">JAX Scaling Book</a>.</p>
+
+<!-- ══════════════════════════════════════════ OVERVIEW MAP -->
+<section class="eval" id="overview">
+  <div class="crumb">Overview</div>
+  <h2>The Five Key Techniques</h2>
+
+  <p>Self-hosting an LLM efficiently comes down to three layers. Every optimization falls into one of these categories:</p>
+
+  <div class="overview-map">
+    <div class="map-col">
+      <div class="map-col-label hw">Hardware Physics</div>
+      <a href="#roofline" class="map-node" style="text-decoration:none;color:inherit">
+        <span class="map-icon">&#9601;&#9602;&#9604;</span>
+        <h4>1. Roofline Model</h4>
+        <p>Are you compute-bound or memory-bound? One number tells you.</p>
+      </a>
+      <a href="#two-phase" class="map-node" style="text-decoration:none;color:inherit">
+        <span class="map-icon">&#9654;&#10074;</span>
+        <h4>2. Prefill vs Decode</h4>
+        <p>Two phases with opposite bottlenecks &mdash; the fundamental asymmetry.</p>
+      </a>
+    </div>
+    <div class="map-col">
+      <div class="map-col-label mem">Memory &amp; Data</div>
+      <a href="#kv-cache" class="map-node" style="text-decoration:none;color:inherit">
+        <span class="map-icon">&#128451;</span>
+        <h4>3. KV Cache &amp; Quantization</h4>
+        <p>Shrink the memory elephant. GQA, paging, and precision choices.</p>
+      </a>
+    </div>
+    <div class="map-col">
+      <div class="map-col-label sched">Scheduling</div>
+      <a href="#parallelism" class="map-node" style="text-decoration:none;color:inherit">
+        <span class="map-icon">&#9776;</span>
+        <h4>4. Parallelism</h4>
+        <p>TP, FSDP, pipeline, sequence &mdash; how to shard across accelerators.</p>
+      </a>
+      <a href="#disaggregation" class="map-node" style="text-decoration:none;color:inherit">
+        <span class="map-icon">&#8644;</span>
+        <h4>5. Disaggregated Serving</h4>
+        <p>Split prefill and decode onto separate clusters for independent scaling.</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>The big picture:</strong> Decode is almost always <em>memory-bandwidth-bound</em> &mdash; you spend more time loading weights and KV cache from HBM than doing math. The five techniques above are all levers for either (a) reducing the amount of data you need to move, or (b) amortizing the cost across more tokens. The single most impactful number: <strong>2&times; latency tolerance &rarr; ~100&times; cost reduction</strong>.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ TECH 1: ROOFLINE -->
+<section class="eval" id="roofline">
+  <div class="tech">
+    <div class="tech-header">
+      <div class="tech-num hw">1</div>
+      <div class="tech-title">
+        <h3>Roofline Model</h3>
+        <span class="tag hw">Hardware Physics</span>
+      </div>
+    </div>
+
+    <p>Every LLM operation hits one of two ceilings: <strong>compute</strong> (not enough FLOPs/s) or <strong>memory bandwidth</strong> (not enough bytes/s). The roofline model tells you which one you&rsquo;re hitting from a single number called <em>arithmetic intensity</em> &mdash; how many FLOPs you do per byte of data moved.</p>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/roofline-improved.png" alt="Roofline model diagram showing bandwidth-bound and compute-bound regions" loading="lazy"/>
+      <div class="caption">Source: <a href="https://jax-ml.github.io/scaling-book/roofline/" target="_blank">JAX Scaling Book, Ch.1 &mdash; Roofline Analysis</a></div>
+    </div>
+
+    <p>The left side of the roofline is <em>bandwidth-bound</em>: you have leftover compute but can&rsquo;t feed data fast enough. The flat top is <em>compute-bound</em>: data arrives faster than you can process it. The ridge point &mdash; where the two lines meet &mdash; is the <strong>critical intensity</strong>.</p>
+
+    <div class="key-num">
+      <strong>B<sub>crit</sub> &asymp; 240 tokens</strong> (bf16) &ensp;|&ensp; <strong>B<sub>crit</sub> &asymp; 120 tokens</strong> (int8 weights) &ensp;|&ensp; H100: <strong>~296 tokens</strong>
+    </div>
+
+    <p>Below B<sub>crit</sub>, adding more tokens to the batch is nearly free &mdash; you&rsquo;re just using idle compute. Above B<sub>crit</sub>, you&rsquo;re saturating the math units and every additional token costs proportionally more. The practical takeaway: <strong>batch toward B<sub>crit</sub> for maximum throughput per dollar</strong>.</p>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/batch-scaling-throughput.png" alt="Batch scaling throughput" loading="lazy"/>
+      <div class="caption">Throughput rises steeply as batch approaches B<sub>crit</sub>, then flattens. Source: <a href="https://jax-ml.github.io/scaling-book/inference/" target="_blank">Ch.7 &mdash; Inference</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ TECH 2: TWO-PHASE -->
+<section class="eval" id="two-phase">
+  <div class="tech">
+    <div class="tech-header">
+      <div class="tech-num hw">2</div>
+      <div class="tech-title">
+        <h3>Prefill vs Decode &mdash; The Fundamental Asymmetry</h3>
+        <span class="tag hw">Hardware Physics</span>
+      </div>
+    </div>
+
+    <p>LLM inference has two phases that look like the same model but have <em>opposite</em> hardware profiles:</p>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/naive-inference.png" alt="Naive autoregressive inference" loading="lazy"/>
+      <div class="caption">Without caching, every step recomputes all prior tokens. Source: <a href="https://jax-ml.github.io/scaling-book/inference/" target="_blank">Ch.7 &mdash; Inference</a></div>
+    </div>
+
+    <div class="two-col">
+      <div class="product">
+        <strong style="color:var(--olive)">Prefill</strong>
+        <p>Process the entire prompt in parallel. This is a big batch matmul &mdash; arithmetic intensity scales with prompt length. <strong>Can be compute-bound</strong> for long prompts. Bottleneck: FLOPs/s.</p>
+      </div>
+      <div class="product">
+        <strong style="color:var(--clay)">Decode</strong>
+        <p>Generate one token per step. Each step loads <em>all</em> model weights plus the growing KV cache from HBM. Intensity &asymp; 1. <strong>Almost always memory-bound</strong>. Bottleneck: HBM bandwidth.</p>
+      </div>
+    </div>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/cached-inference.png" alt="Cached inference with KV cache" loading="lazy"/>
+      <div class="caption">With KV caching, each step only computes the new token&rsquo;s query against stored keys and values. Source: <a href="https://jax-ml.github.io/scaling-book/inference/" target="_blank">Ch.7 &mdash; Inference</a></div>
+    </div>
+
+    <div class="key-num">
+      Decode floor: <strong>params + KV &divide; HBM bandwidth</strong> &ensp;|&ensp; LLaMA 3-70B: <strong>~19 ms/step</strong>
+    </div>
+
+    <p>At context lengths above ~2k tokens, loading the KV cache takes more time than loading model weights. This is why reducing KV cache size is the primary lever for throughput at long contexts.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ TECH 3: KV CACHE + QUANTIZATION -->
+<section class="eval" id="kv-cache">
+  <div class="tech">
+    <div class="tech-header">
+      <div class="tech-num mem">3</div>
+      <div class="tech-title">
+        <h3>KV Cache &amp; Quantization &mdash; Shrink the Memory Elephant</h3>
+        <span class="tag mem">Memory &amp; Data</span>
+      </div>
+    </div>
+
+    <p>The KV cache stores key and value tensors for every token seen so far. It grows linearly with sequence length and is the dominant memory cost at long contexts. At 2k+ tokens, loading the KV cache takes more time than loading model weights.</p>
+
+    <div class="key-num">
+      Per token: <strong>2 &times; L &times; K &times; H</strong> bytes &ensp;|&ensp; LLaMA 3-70B: <strong>160 kB/token</strong> &ensp;|&ensp; 32k ctx: <strong>5.4 GB/seq</strong>
+    </div>
+
+    <p>Five levers to shrink memory footprint &mdash; the first two are architectural (model design), the rest are deployment choices:</p>
+
+    <div class="tbl"><table>
+      <thead><tr><th>Technique</th><th>What It Does</th><th>Savings</th><th>Quality Cost</th></tr></thead>
+      <tbody>
+        <tr><td><strong>GQA</strong></td><td>Fewer KV heads shared across query heads</td><td>8&times; for LLaMA 3</td><td>Minimal at K&ge;4</td></tr>
+        <tr><td><strong>Weight Quantization</strong></td><td>Store weights at int8 or int4 instead of bf16</td><td>2&times; or 4&times; VRAM</td><td>int8W: near-lossless; int4: slight</td></tr>
+        <tr><td><strong>KV Quantization</strong></td><td>Store KV cache at int8 instead of bf16</td><td>2&times; cache size</td><td>Slight; usually acceptable</td></tr>
+        <tr><td><strong>Paged Attention</strong></td><td>OS-style virtual memory for KV blocks</td><td>30&ndash;40% (padding waste)</td><td>None</td></tr>
+        <tr><td><strong>Prefix Caching</strong></td><td>Trie-based reuse for shared prompt prefixes</td><td>Proportional to shared prefix</td><td>None</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/gmqa.png" alt="Grouped multi-query attention" loading="lazy"/>
+      <div class="caption">GQA: fewer KV heads (K) shared across many query heads (N). Source: <a href="https://jax-ml.github.io/scaling-book/inference/" target="_blank">Ch.7 &mdash; Inference</a></div>
+    </div>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/paged-attention.png" alt="Paged attention" loading="lazy"/>
+      <div class="caption">Paged Attention: OS-style virtual memory for KV blocks, eliminating padding waste. Source: <a href="https://jax-ml.github.io/scaling-book/inference/" target="_blank">Ch.7 &mdash; Inference</a></div>
+    </div>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/prefix-caching-trie.png" alt="Prefix caching trie" loading="lazy"/>
+      <div class="caption">Prefix Caching: a trie reuses KV blocks for shared prompt prefixes (e.g., system prompts). Source: <a href="https://jax-ml.github.io/scaling-book/inference/" target="_blank">Ch.7 &mdash; Inference</a></div>
+    </div>
+
+    <h4>Which Precision Should You Use?</h4>
+    <p>Quantization doesn&rsquo;t just save VRAM &mdash; it halves B<sub>crit</sub>, meaning you hit compute saturation with smaller batches. This is the single easiest lever to pull:</p>
+
+    <div class="tbl"><table>
+      <thead><tr><th>Precision</th><th>70B Model VRAM</th><th>B<sub>crit</sub></th><th>Throughput</th><th>Quality</th><th>When to Use</th></tr></thead>
+      <tbody>
+        <tr><td><strong>bf16</strong></td><td>140 GB</td><td>~296</td><td>1&times;</td><td>Baseline</td><td>Regulated / audit-required</td></tr>
+        <tr class="highlight"><td><strong>int8W + bf16 math</strong></td><td>70 GB</td><td>~148</td><td>~2&times;</td><td>98&ndash;99.5%</td><td><strong>Default choice</strong></td></tr>
+        <tr><td><strong>int4W (AWQ)</strong></td><td>35 GB</td><td>~74</td><td>~4&times;</td><td>97&ndash;99%</td><td>VRAM-constrained; test quality first</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="callout">
+      <strong>Practical rule:</strong> Start with int8 weights + bf16 math. It halves VRAM, doubles throughput, and is near-lossless. On H100/A100 use FP8 (same VRAM savings, faster kernels). Only drop to int4 when you can&rsquo;t fit the model otherwise, and benchmark quality for your specific task.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ TECH 4: PARALLELISM -->
+<section class="eval" id="parallelism">
+  <div class="tech">
+    <div class="tech-header">
+      <div class="tech-num sched">4</div>
+      <div class="tech-title">
+        <h3>Parallelism &mdash; Sharding Across Accelerators</h3>
+        <span class="tag sched">Scheduling</span>
+      </div>
+    </div>
+
+    <p>When a model doesn&rsquo;t fit on one GPU, you shard it across multiple. The five main strategies differ in what they split, how much communication they need, and whether that communication blocks the math:</p>
+
+    <div class="tbl"><table>
+      <thead><tr><th>Strategy</th><th>Splits What</th><th>Network Traffic</th><th>Blocks Math?</th><th>Best For</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Tensor Parallel (TP)</strong></td><td>FFN dimension across GPUs</td><td>AllGather + Scatter per layer</td><td style="color:var(--clay)"><strong>Yes</strong></td><td>Inference &mdash; split weights</td></tr>
+        <tr><td><strong>FSDP</strong></td><td>Weights + optimizer across replicas</td><td>AllGather (fwd), ReduceScatter (bwd)</td><td style="color:var(--olive)">No (overlapped)</td><td>Training &mdash; large models</td></tr>
+        <tr><td><strong>Pipeline Parallel</strong></td><td>Layers across nodes</td><td>Activations between stages</td><td style="color:var(--sky)">Partial (bubbles)</td><td>Multi-node &mdash; very large</td></tr>
+        <tr><td><strong>Sequence Parallel</strong></td><td>Token dimension</td><td>Ring KV exchange for attention</td><td style="color:var(--olive)">No (overlapped)</td><td>Long context inference</td></tr>
+        <tr><td><strong>MoE Expert Parallel</strong></td><td>Experts across GPUs</td><td>All-to-all dispatch</td><td style="color:var(--olive)">No</td><td>MoE models</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/model-parallelism.png" alt="Tensor parallelism diagram" loading="lazy"/>
+      <div class="caption">Tensor Parallelism: split each layer&rsquo;s weight matrices across GPUs. Source: <a href="https://jax-ml.github.io/scaling-book/training/" target="_blank">Ch.5 &mdash; Parallelism</a></div>
+    </div>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/fsdp.png" alt="FSDP diagram" loading="lazy"/>
+      <div class="caption">FSDP: shard weights across replicas, all-gather on demand. Communication overlaps with compute. Source: <a href="https://jax-ml.github.io/scaling-book/training/" target="_blank">Ch.5 &mdash; Parallelism</a></div>
+    </div>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/all-collectives.png" alt="Communication collectives summary" loading="lazy"/>
+      <div class="caption">Summary of communication primitives used in distributed inference and training. Source: <a href="https://jax-ml.github.io/scaling-book/sharding/" target="_blank">Ch.3 &mdash; Sharding</a></div>
+    </div>
+
+    <div class="key-num">
+      <strong>FSDP+TP &gt; pure TP</strong> &mdash; splits transfers across orthogonal mesh axes &ensp;|&ensp; Every 2&times; more shards &asymp; halves arithmetic intensity
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ TECH 5: DISAGGREGATION -->
+<section class="eval" id="disaggregation">
+  <div class="tech">
+    <div class="tech-header">
+      <div class="tech-num sched">5</div>
+      <div class="tech-title">
+        <h3>Disaggregated Serving &mdash; Split Prefill from Decode</h3>
+        <span class="tag sched">Scheduling</span>
+      </div>
+    </div>
+
+    <p>Since prefill (compute-bound) and decode (memory-bound) want opposite hardware, production systems at scale run them on separate clusters. Each cluster can be sized and configured independently for its bottleneck.</p>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/disaggregation.png" alt="Disaggregated serving" loading="lazy"/>
+      <div class="caption">Disaggregated serving: prefill nodes build KV cache, transfer it to decode nodes via high-speed interconnect. Source: <a href="https://jax-ml.github.io/scaling-book/inference/" target="_blank">Ch.7 &mdash; Inference</a></div>
+    </div>
+
+    <div class="two-col">
+      <div class="product">
+        <strong style="color:var(--olive)">Prefill Cluster</strong>
+        <p>High-FLOP hardware. Large batches of prompt tokens. Outputs KV cache to decode cluster. Can shard aggressively across many chips.</p>
+      </div>
+      <div class="product">
+        <strong style="color:var(--clay)">Decode Cluster</strong>
+        <p>High-bandwidth hardware. Steady-state token generation. Maintains KV cache for active sequences. Smaller shards keep per-chip bandwidth high.</p>
+      </div>
+    </div>
+
+    <div class="key-num">
+      Ratio: <strong>~3 prefill hosts per 1 decode host</strong> (8k context) &ensp;|&ensp; 2&ndash;7&times; throughput gain in production
+    </div>
+
+    <h4>Related: Continuous Batching &amp; Speculative Decoding</h4>
+    <p>Two scheduling techniques that complement disaggregation:</p>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/continuous-batching.gif" alt="Continuous batching animation" loading="lazy"/>
+      <div class="caption">Continuous batching: dynamically insert/evict sequences mid-step, keeping GPU utilization near 100%. Source: <a href="https://jax-ml.github.io/scaling-book/inference/" target="_blank">Ch.7 &mdash; Inference</a></div>
+    </div>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/spec-sampling1.png" alt="Speculative decoding" loading="lazy"/>
+      <div class="caption">Speculative decoding: a small draft model proposes tokens, the target model verifies them in one pass. Source: <a href="https://jax-ml.github.io/scaling-book/inference/" target="_blank">Ch.7 &mdash; Inference</a></div>
+    </div>
+
+    <div class="tbl"><table>
+      <thead><tr><th>Technique</th><th>How It Works</th><th>Benefit</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Continuous Batching</strong></td><td>Add/remove sequences mid-step; no padding to max length</td><td>Near-100% GPU utilization</td></tr>
+        <tr><td><strong>Speculative Decoding</strong></td><td>Draft model proposes N tokens; target verifies in one pass</td><td>2&ndash;4&times; latency reduction</td></tr>
+        <tr><td><strong>Chunked Prefill</strong></td><td>Split long prompts into chunks interleaved with decode</td><td>Smooth latency; no prefill spikes</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ DECISION GUIDE -->
+<section class="eval" id="decision">
+  <div class="crumb">Decision Guide</div>
+  <h2>Sizing Your Deployment</h2>
+
+  <div class="callout">
+    <strong>1. Pick precision first.</strong> int8 weights + bf16 math is the default. Halves VRAM, doubles throughput, near-lossless.<br><br>
+    <strong>2. Check your context length.</strong> Under 2k tokens &rarr; parameter-load-bound (more chips helps). Over 2k tokens &rarr; KV-cache-bound (GQA + paging first).<br><br>
+    <strong>3. Set your latency target.</strong> Tolerating &gt;200 ms tail latency? Batch hard toward B<sub>crit</sub> for 10&ndash;100&times; cost savings. Need sub-50 ms? You&rsquo;re paying a premium for low batch sizes.<br><br>
+    <strong>4. Disaggregate if scale warrants it.</strong> Frequent long prompts + high concurrency? Split prefill/decode clusters at ~3:1 ratio.<br><br>
+    <strong>5. Free wins first.</strong> GQA is architectural. Paged Attention and continuous batching are system-level. Enable them before buying more hardware.
+  </div>
+
+  <div class="metric-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+    <div class="metric-card">
+      <div class="value">100&times;</div>
+      <div class="metric-label">Cost reduction from 2&times; latency tolerance</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">~296</div>
+      <div class="metric-label">B<sub>crit</sub> for H100 (bf16) &mdash; tokens/chip</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">160 kB</div>
+      <div class="metric-label">KV cache per token (LLaMA 3-70B, int8)</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">3 : 1</div>
+      <div class="metric-label">Prefill-to-decode host ratio (8k context)</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">2k tokens</div>
+      <div class="metric-label">Context where KV cache overtakes params as bottleneck</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">~3,840</div>
+      <div class="metric-label">MoE saturation batch (DeepSeek V4, E=256, k=8)</div>
+    </div>
+  </div>
+</section>
+
+<div class="page-nav">
+  <a href="infra.html">&larr; Infrastructure</a>
+</div>
+
+<footer class="foot">
+  <span>Self-Hosting LLM</span>
+  <span>Source: <a href="https://jax-ml.github.io/scaling-book/" target="_blank">JAX Scaling Book</a> &middot; 2026-06-14</span>
+</footer>
+
+</div>
+</body>
+</html>
