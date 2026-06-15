@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" font-family="Inter,system-ui,sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#78706A"/>
+    </marker>
+  </defs>
+
+  <!-- Laptop zone -->
+  <rect x="5" y="5" width="285" height="490" rx="8" fill="#f0f7ed" stroke="#788C5D" stroke-width="1.5"/>
+  <text x="148" y="28" text-anchor="middle" font-size="11" font-weight="700" fill="#5a6b45" letter-spacing=".06em">ENGINEER'S LAPTOP</text>
+
+  <!-- IDE -->
+  <rect x="20" y="42" width="255" height="58" rx="5" fill="#fff" stroke="#d4d0c8"/>
+  <text x="148" y="63" text-anchor="middle" font-size="12" font-weight="600" fill="#141413">IDE</text>
+  <text x="148" y="80" text-anchor="middle" font-size="11" fill="#78706A">VS Code / Cursor / JetBrains</text>
+
+  <line x1="148" y1="100" x2="148" y2="118" stroke="#B5AFA8" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- Coding Harness -->
+  <rect x="20" y="118" width="255" height="80" rx="5" fill="#fff" stroke="#d4d0c8"/>
+  <text x="148" y="139" text-anchor="middle" font-size="12" font-weight="600" fill="#141413">Local Coding Harness</text>
+  <text x="148" y="156" text-anchor="middle" font-size="11" fill="#78706A">OpenCode / Claude Code / Qoder</text>
+  <line x1="35" y1="165" x2="260" y2="165" stroke="#E3DACC" stroke-width=".75"/>
+  <text x="148" y="181" text-anchor="middle" font-size="10" fill="#788C5D">Outbound HTTPS only</text>
+  <text x="148" y="194" text-anchor="middle" font-size="10" fill="#788C5D">No inbound ports open</text>
+
+  <!-- MCP -->
+  <rect x="20" y="220" width="255" height="68" rx="5" fill="#fff" stroke="#d4d0c8"/>
+  <text x="148" y="241" text-anchor="middle" font-size="12" font-weight="600" fill="#141413">Local MCP Server</text>
+  <text x="148" y="258" text-anchor="middle" font-size="11" fill="#78706A">file read / git / terminal</text>
+  <text x="148" y="275" text-anchor="middle" font-size="10" fill="#6A8CAF">Structured JSON tool calls</text>
+
+  <!-- Execution -->
+  <rect x="20" y="340" width="255" height="62" rx="5" fill="#fff" stroke="#788C5D" stroke-width="1.5"/>
+  <text x="148" y="361" text-anchor="middle" font-size="12" font-weight="600" fill="#5a6b45">Local Execution</text>
+  <text x="148" y="378" text-anchor="middle" font-size="11" fill="#78706A">User approval required</text>
+  <text x="148" y="394" text-anchor="middle" font-size="11" font-style="italic" fill="#788C5D">"Allow editing server.py?"</text>
+
+  <!-- Internal arrows -->
+  <line x1="60" y1="288" x2="60" y2="340" stroke="#B5AFA8" stroke-width="1.2" marker-end="url(#arr)"/>
+  <line x1="235" y1="340" x2="235" y2="288" stroke="#B5AFA8" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="44" y="318" text-anchor="middle" font-size="9" fill="#78706A" transform="rotate(-90 44 318)">approve</text>
+  <text x="251" y="318" text-anchor="middle" font-size="9" fill="#78706A" transform="rotate(90 251 318)">result</text>
+
+  <!-- AWS VPC zone -->
+  <rect x="370" y="5" width="525" height="490" rx="8" fill="#fef9ee" stroke="#c77b00" stroke-width="1.5"/>
+  <text x="633" y="28" text-anchor="middle" font-size="11" font-weight="700" fill="#c77b00" letter-spacing=".06em">AWS CLOUD — VPC (ap-southeast-1)</text>
+
+  <!-- CloudFront + WAF -->
+  <rect x="390" y="42" width="490" height="40" rx="5" fill="#fff" stroke="#d4d0c8"/>
+  <text x="635" y="67" text-anchor="middle" font-size="12" font-weight="600" fill="#141413">CloudFront + AWS WAF</text>
+
+  <line x1="635" y1="82" x2="635" y2="96" stroke="#B5AFA8" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- ALB -->
+  <rect x="390" y="96" width="490" height="34" rx="5" fill="#fff" stroke="#d4d0c8"/>
+  <text x="635" y="118" text-anchor="middle" font-size="12" font-weight="600" fill="#141413">Application Load Balancer (ALB)</text>
+
+  <line x1="635" y1="130" x2="635" y2="148" stroke="#B5AFA8" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- Public Subnet -->
+  <rect x="390" y="148" width="490" height="112" rx="5" fill="#fff" stroke="#D97757" stroke-dasharray="4 2"/>
+  <text x="400" y="163" font-size="10" font-weight="600" fill="#D97757">PUBLIC SUBNET</text>
+  <rect x="400" y="170" width="470" height="80" rx="4" fill="#fef3ed" stroke="#D97757" stroke-width=".5"/>
+  <text x="635" y="189" text-anchor="middle" font-size="12" font-weight="600" fill="#141413">ECS Fargate: LiteLLM Proxy</text>
+  <text x="635" y="206" text-anchor="middle" font-size="10" fill="#78706A">JWT validation (Cognito)  ·  API key lookup (DynamoDB)</text>
+  <text x="635" y="221" text-anchor="middle" font-size="10" fill="#78706A">Rate limiting  ·  Cost tracking  ·  OpenAI-compatible API</text>
+  <text x="635" y="240" text-anchor="middle" font-size="10" font-weight="500" fill="#D97757">/v1/chat/completions</text>
+
+  <line x1="635" y1="260" x2="635" y2="278" stroke="#B5AFA8" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- Private Subnet -->
+  <rect x="390" y="278" width="490" height="115" rx="5" fill="#fff" stroke="#6A8CAF" stroke-dasharray="4 2"/>
+  <text x="400" y="293" font-size="10" font-weight="600" fill="#6A8CAF">PRIVATE SUBNET (no internet)</text>
+  <rect x="400" y="300" width="470" height="83" rx="4" fill="#edf2f7" stroke="#6A8CAF" stroke-width=".5"/>
+  <text x="635" y="319" text-anchor="middle" font-size="12" font-weight="600" fill="#141413">SageMaker AI Endpoint / EC2 GPU</text>
+  <text x="635" y="336" text-anchor="middle" font-size="10" fill="#78706A">Model: Qwen3-Coder / DeepSeek-V4 / Devstral</text>
+  <text x="635" y="351" text-anchor="middle" font-size="10" fill="#78706A">Engine: vLLM + PagedAttention + FP8</text>
+  <text x="635" y="366" text-anchor="middle" font-size="10" fill="#78706A">Tensor Parallel: 8× GPU via NVLink</text>
+
+  <!-- Data services -->
+  <rect x="390" y="412" width="490" height="72" rx="5" fill="#fff" stroke="#d4d0c8"/>
+  <text x="400" y="429" font-size="10" font-weight="600" fill="#78706A">DATA SERVICES</text>
+  <text x="445" y="448" font-size="10" fill="#78706A">S3 (weights)</text>
+  <text x="545" y="448" font-size="10" fill="#78706A">DynamoDB (keys)</text>
+  <text x="665" y="448" font-size="10" fill="#78706A">CloudWatch (logs)</text>
+  <text x="790" y="448" font-size="10" fill="#78706A">Cognito</text>
+  <text x="445" y="465" font-size="10" fill="#78706A">EFS (config)</text>
+  <text x="545" y="465" font-size="10" fill="#78706A">Secrets Manager</text>
+  <text x="665" y="465" font-size="10" fill="#78706A">ElastiCache</text>
+
+  <!-- Cross-zone arrows -->
+  <line x1="275" y1="158" x2="390" y2="190" stroke="#D97757" stroke-width="2" marker-end="url(#arr)"/>
+  <rect x="290" y="155" width="88" height="18" rx="3" fill="#fef3ed"/>
+  <text x="334" y="168" text-anchor="middle" font-size="10" font-weight="600" fill="#D97757">HTTPS →</text>
+
+  <line x1="390" y1="250" x2="275" y2="252" stroke="#6A8CAF" stroke-width="2" marker-end="url(#arr)"/>
+  <rect x="290" y="237" width="88" height="18" rx="3" fill="#edf2f7"/>
+  <text x="334" y="250" text-anchor="middle" font-size="10" font-weight="600" fill="#6A8CAF">← JSON</text>
+</svg>

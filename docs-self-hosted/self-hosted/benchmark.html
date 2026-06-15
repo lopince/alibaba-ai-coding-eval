@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Benchmark &mdash; Self-Hosting LLM</title>
+<link rel="stylesheet" href="../style.css"/>
+<style>
+  /* Framework diagram */
+  .framework-header {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+    padding: 1rem 1.4rem; margin: 1.5rem 0 0; text-align: center;
+    border-bottom: none; border-radius: 6px 6px 0 0;
+  }
+  .framework-header h3 { margin: 0 0 .15em; font-size: 1.05rem; }
+  .framework-header p { margin: 0; color: var(--ink-soft); font-size: .88rem; }
+  .framework-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 0; margin: 0 0 2rem;
+    border: 1px solid var(--rule); border-radius: 0 0 6px 6px; overflow: hidden;
+  }
+  .pillar-card {
+    padding: 1.2rem 1rem; border-right: 1px solid var(--rule);
+    background: var(--surface);
+  }
+  .pillar-card:last-child { border-right: none; }
+  .pillar-card .pillar-label {
+    font: 700 11px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em;
+    margin-bottom: .7em; padding-bottom: .5em; border-bottom: 2px solid var(--rule);
+  }
+  .pillar-card.p-bench .pillar-label { color: var(--olive); border-bottom-color: var(--olive); }
+  .pillar-card.p-tools .pillar-label { color: var(--sky); border-bottom-color: var(--sky); }
+  .pillar-card.p-metrics .pillar-label { color: var(--clay); border-bottom-color: var(--clay); }
+  .pillar-card.p-pipe .pillar-label { color: var(--g500); border-bottom-color: var(--g500); }
+  .pillar-card .pillar-item {
+    font-size: .85rem; color: var(--ink); margin: .5em 0; padding-left: .8em;
+    position: relative; line-height: 1.4;
+  }
+  .pillar-card .pillar-item::before {
+    content: ''; position: absolute; left: 0; top: .55em;
+    width: 4px; height: 4px; border-radius: 50%; background: var(--g300);
+  }
+  .pillar-card.p-bench .pillar-item::before { background: var(--olive); }
+  .pillar-card.p-tools .pillar-item::before { background: var(--sky); }
+  .pillar-card.p-metrics .pillar-item::before { background: var(--clay); }
+  .pillar-card.p-pipe .pillar-item::before { background: var(--g500); }
+  .pillar-card .pillar-sub {
+    font-size: .78rem; color: var(--ink-soft); margin-left: .8em;
+  }
+  .framework-footer {
+    background: var(--bg); border-top: 1px solid var(--rule);
+    padding: .6rem 1rem; text-align: center;
+    font: 500 11px/1 var(--sans); color: var(--ink-soft); letter-spacing: .03em;
+  }
+  @media (max-width: 640px) {
+    .framework-grid { grid-template-columns: 1fr 1fr; }
+    .pillar-card { border-right: none; border-bottom: 1px solid var(--rule); }
+    .pillar-card:nth-child(2) { border-right: none; }
+    .pillar-card:nth-last-child(-n+2) { border-bottom: none; }
+  }
+  @media (max-width: 420px) {
+    .framework-grid { grid-template-columns: 1fr; }
+    .pillar-card { border-right: none; }
+  }
+
+  /* Target badge */
+  .target {
+    display: inline-block; font: 600 12px/1 var(--mono); color: var(--clay);
+    background: rgba(217,119,87,.08); padding: .15em .45em; border-radius: 3px;
+  }
+
+  /* Pipeline flow */
+  .pipeline { display: flex; align-items: stretch; gap: 0; margin: 1.5rem 0; flex-wrap: wrap; }
+  .pipeline-step {
+    flex: 1; min-width: 120px; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 6px; padding: .9rem; text-align: center;
+  }
+  .pipeline-step .step-num { font: 700 11px/1 var(--sans); color: var(--g500); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .3em; }
+  .pipeline-step .step-label { font: 600 13px/1.2 var(--sans); color: var(--ink); margin-bottom: .2em; }
+  .pipeline-step .step-detail { font: 11px/1.4 var(--sans); color: var(--ink-soft); }
+  .pipeline-arrow { display: flex; align-items: center; padding: 0 .3rem; color: var(--g300); font-size: 1.3rem; flex-shrink: 0; }
+  @media (max-width: 640px) {
+    .pipeline { flex-direction: column; }
+    .pipeline-arrow { transform: rotate(90deg); justify-content: center; padding: .3rem 0; }
+  }
+
+  /* Stack flow */
+  .flow { display: flex; align-items: stretch; gap: 0; margin: 1.5rem 0; flex-wrap: wrap; }
+  .flow-node {
+    flex: 1; min-width: 120px; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 6px; padding: .8rem; text-align: center; position: relative;
+  }
+  .flow-node .node-label { font: 600 13px/1.2 var(--sans); color: var(--ink); margin-bottom: .3em; }
+  .flow-node .node-detail { font: 11px/1.4 var(--sans); color: var(--ink-soft); }
+  .flow-node .node-zone {
+    font: 600 10px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em;
+    padding: .2em .5em; border-radius: 3px; display: inline-block; margin-bottom: .4em;
+  }
+  .flow-node .node-zone.cli { background: rgba(120,140,93,.12); color: var(--olive); }
+  .flow-node .node-zone.proxy { background: rgba(217,119,87,.12); color: var(--clay); }
+  .flow-node .node-zone.compute { background: rgba(106,140,175,.12); color: var(--sky); }
+  .flow-node .node-zone.eval { background: rgba(120,140,93,.12); color: var(--olive); }
+  .flow-arrow { display: flex; align-items: center; padding: 0 .3rem; color: var(--g300); font-size: 1.4rem; flex-shrink: 0; }
+  .flow-caption {
+    width: 100%; font: 12px/1.4 var(--sans); color: var(--ink-soft); text-align: center;
+    margin-top: .5rem; padding-top: .5rem; border-top: 1px dashed var(--rule);
+  }
+  @media (max-width: 640px) {
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); justify-content: center; padding: .3rem 0; }
+  }
+
+  /* Go/No-Go box */
+  .gonogo {
+    background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--clay);
+    padding: 1.2em 1.4em; margin: 1.5rem 0; border-radius: 4px;
+  }
+  .gonogo h4 { margin: 0 0 .5em; font: 600 13px/1 var(--sans); color: var(--clay); text-transform: uppercase; letter-spacing: .06em; }
+  .gonogo ul { margin: .3em 0; padding-left: 1.2em; }
+  .gonogo li { font-size: .9rem; margin-bottom: .3em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Self-Hosting LLM</a></h1>
+  <div class="meta">Section 2 of 4</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="models.html">Models</a>
+  <a href="benchmark.html" class="active">Benchmark</a>
+  <a href="infra.html">Infrastructure</a>
+  <a href="serving.html">Serving</a>
+</div></nav>
+
+</div>
+
+<div class="wrap">
+
+<p class="tldr">Success criteria for a self-hosted coding platform PoC &mdash; the <strong>4 pillars</strong> you need to validate before committing: industry benchmarks, evaluation tools, metrics with go/no-go targets, and a straightforward eval pipeline with zero external dependencies.</p>
+
+<!-- ══════════════════════════════════════════ FRAMEWORK DIAGRAM -->
+<section class="eval">
+  <div class="crumb">Framework</div>
+  <h2>Coding Platform PoC Eval Framework</h2>
+
+  <p>A coding platform isn&rsquo;t just the model &mdash; it&rsquo;s the <strong>model + harness (OpenCode) + infrastructure</strong> as a unit. This framework evaluates that unit across 4 pillars, each answering a different question:</p>
+
+  <div class="framework-header">
+    <h3>Unit Under Test: Self-Hosted LLM + OpenCode Harness</h3>
+    <p>Focus: long-horizon tasks &middot; large context (8k&ndash;128k) &middot; coding &amp; tech projects</p>
+  </div>
+  <div class="framework-grid">
+    <div class="pillar-card p-bench">
+      <div class="pillar-label">1 &mdash; Benchmarks</div>
+      <div class="pillar-item">SWE-bench Verified</div>
+      <div class="pillar-sub">500 real GitHub issues</div>
+      <div class="pillar-item">SWE-bench Pro</div>
+      <div class="pillar-sub">Harder stricter variant</div>
+      <div class="pillar-item">FeatureBench</div>
+      <div class="pillar-sub">Multi-file feature dev</div>
+      <div class="pillar-item">Terminal-Bench</div>
+      <div class="pillar-sub">System-level terminal tasks</div>
+      <div class="pillar-item">LiveCodeBench</div>
+      <div class="pillar-sub">Contamination-free coding</div>
+    </div>
+    <div class="pillar-card p-tools">
+      <div class="pillar-label">2 &mdash; Eval Tools</div>
+      <div class="pillar-item">SWE-agent</div>
+      <div class="pillar-sub">Run SWE-bench via CLI</div>
+      <div class="pillar-item">Promptfoo</div>
+      <div class="pillar-sub">Local agent test runner</div>
+      <div class="pillar-item">DeepEval</div>
+      <div class="pillar-sub">Plan &amp; quality metrics</div>
+      <div class="pillar-item">TBench Runner</div>
+      <div class="pillar-sub">Terminal task execution</div>
+    </div>
+    <div class="pillar-card p-metrics">
+      <div class="pillar-label">3 &mdash; Metrics</div>
+      <div class="pillar-item">Task Completion Rate</div>
+      <div class="pillar-sub"><span class="target">&gt;30%</span> SWE-V</div>
+      <div class="pillar-item">Tool Syntax Error Rate</div>
+      <div class="pillar-sub"><span class="target">&lt;5%</span></div>
+      <div class="pillar-item">Plan Adherence</div>
+      <div class="pillar-sub"><span class="target">&gt;7/10</span></div>
+      <div class="pillar-item">Code Quality</div>
+      <div class="pillar-sub"><span class="target">&gt;7/10</span></div>
+      <div class="pillar-item">TTFT at 32k ctx</div>
+      <div class="pillar-sub"><span class="target">&lt;200ms</span></div>
+    </div>
+    <div class="pillar-card p-pipe">
+      <div class="pillar-label">4 &mdash; Pipeline</div>
+      <div class="pillar-item">Trigger</div>
+      <div class="pillar-sub">Harness sends task</div>
+      <div class="pillar-item">Sandbox</div>
+      <div class="pillar-sub">Docker + repo mount</div>
+      <div class="pillar-item">Rollout</div>
+      <div class="pillar-sub">Agent works to completion</div>
+      <div class="pillar-item">Verify</div>
+      <div class="pillar-sub">Tests + quality + latency</div>
+      <div class="pillar-item">Cleanup</div>
+      <div class="pillar-sub">Destroy, save JSON</div>
+    </div>
+    <div class="framework-footer">Reference data: Model Leaderboard Scores &darr;</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ OPEN BENCHMARKS -->
+<section class="eval" id="benchmarks">
+  <div class="crumb">Pillar 1 &mdash; Benchmarks</div>
+  <h2>Open Benchmarks</h2>
+
+  <p>Industry-standard benchmarks used by the top open LLM leaderboards (Hugging Face, LiveBench, Scale AI). Selected for <strong>long-horizon, large-context coding tasks</strong> &mdash; not short-form question answering.</p>
+
+  <div class="tbl"><table>
+    <thead><tr>
+      <th>Benchmark</th>
+      <th>What It Tests</th>
+      <th style="text-align:center">Tasks</th>
+      <th style="text-align:center">Metric</th>
+      <th>2026 Status</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td><strong><a href="https://www.swebench.com/">SWE-bench Verified</a></strong></td>
+        <td>Fix real GitHub issues in Django, Flask, scikit-learn, etc. The most widely-cited coding benchmark on open leaderboards.</td>
+        <td style="text-align:center">500</td>
+        <td style="text-align:center">% Resolved</td>
+        <td><span class="cmp partial">Score inflation</span> &mdash; top models &gt;90%; use <strong>SWE-bench Pro</strong> for harder tasks</td>
+      </tr>
+      <tr>
+        <td><strong>SWE-bench Pro</strong></td>
+        <td>Scale AI&rsquo;s stricter variant of SWE-bench. Fewer hints, harder test suites. Where frontier models actually differentiate.</td>
+        <td style="text-align:center">~500</td>
+        <td style="text-align:center">% Resolved</td>
+        <td><span class="cmp new">Harder standard</span> &mdash; top scores only 38&ndash;69%</td>
+      </tr>
+      <tr>
+        <td><strong><a href="https://libercoders.github.io/FeatureBench/">FeatureBench</a></strong></td>
+        <td>Build multi-file new features from scratch &mdash; not just bug fixes. The benchmark SWE-bench should have been.</td>
+        <td style="text-align:center">261</td>
+        <td style="text-align:center">% Resolved</td>
+        <td><span class="cmp new">ICLR 2026</span> &mdash; fills SWE-bench&rsquo;s feature-development gap</td>
+      </tr>
+      <tr>
+        <td><strong><a href="https://www.tbench.ai/">Terminal-Bench</a></strong></td>
+        <td>Terminal-native tasks: build kernels, train ML models, debug security. Tests system-level reasoning over sustained sessions.</td>
+        <td style="text-align:center">89</td>
+        <td style="text-align:center">% Resolved</td>
+        <td><span class="cmp new">Core 2026</span> &mdash; adopted by major labs for terminal agent eval</td>
+      </tr>
+      <tr>
+        <td><strong><a href="https://livecodebench.github.io/">LiveCodeBench</a></strong></td>
+        <td>Contamination-free competitive programming. Date-tagged; filters out memorized solutions.</td>
+        <td style="text-align:center">300+</td>
+        <td style="text-align:center">Pass@1</td>
+        <td>Monthly refresh; strongest contamination guard</td>
+      </tr>
+      <tr>
+        <td><strong><a href="https://arxiv.org/abs/2606.07297">SWE-Explore</a></strong></td>
+        <td>Tracks how an agent <em>searches</em> through a codebase &mdash; not just whether it fixes the bug, but whether it finds the right lines.</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">Line Recall</td>
+        <td><span class="cmp new">June 2026</span> &mdash; industry avg line-level recall: only 14&ndash;19%</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <h3>What&rsquo;s Wrong with Current Benchmarks</h3>
+  <p>Public benchmarks have known failure modes. Understanding these is essential to interpreting PoC results correctly:</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Problem</th><th>Impact</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Reward hacking</strong></td><td>~20% of &ldquo;solved&rdquo; cases on leaderboards are actually wrong &mdash; agents find sneaky ways to pass unit tests without correct code</td><td>Add LLM-as-a-Judge (Pillar 3) to audit code quality, not just test pass rate</td></tr>
+      <tr><td><strong>Score inflation</strong></td><td>SWE-bench Verified scores &gt;90% due to memorization; no longer differentiates frontier models</td><td>Use SWE-bench Pro and FeatureBench for harder tasks</td></tr>
+      <tr><td><strong>Bug-fix only</strong></td><td>SWE-bench tests bug fixing but not feature development &mdash; the harder, more common real-world task</td><td>Add FeatureBench for multi-file feature creation</td></tr>
+      <tr><td><strong>Low line recall</strong></td><td>Agents find the right file but not the right lines (14&ndash;19% recall) &mdash; they rewrite whole files instead of precise edits</td><td>Track line-level recall; use SWE-Explore methodology</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>The golden rule of 2026:</strong> Do not rely only on public benchmarks. Build a <strong>custom internal dataset of 50&ndash;100 tasks from your own codebase</strong>. Public benchmarks test general capability; your internal dataset tests whether the platform works for <em>your</em> stack.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ EVAL TOOLS -->
+<section class="eval" id="tools">
+  <div class="crumb">Pillar 2 &mdash; Eval Tools</div>
+  <h2>Evaluation Tools</h2>
+
+  <p>Curated to a lean set that runs <strong>locally, with zero external dependencies</strong> &mdash; no CI/CD, no cloud platforms, no managed services. Just your machine, Docker, and shell scripts.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Tool</th><th>What It Does</th><th>Best For</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong><a href="https://github.com/princeton-nlp/SWE-agent">SWE-agent</a></strong></td>
+        <td>Open-source harness that feeds SWE-bench tasks to any CLI agent. Handles repo setup, task injection, and test-based grading. Runs entirely in Docker.</td>
+        <td>Running SWE-bench Verified / Pro</td>
+      </tr>
+      <tr>
+        <td><strong><a href="https://www.promptfoo.dev/docs/guides/evaluate-coding-agents/">Promptfoo</a></strong></td>
+        <td>Run agent tests like regular software tests. Define task prompts, expected outcomes, and assertions in YAML. No CI/CD required &mdash; runs from your terminal.</td>
+        <td>Structured test suites; security red-teaming; regression tracking</td>
+      </tr>
+      <tr>
+        <td><strong><a href="https://deepeval.com/docs/getting-started-agents">DeepEval</a></strong></td>
+        <td>Evaluate agent reasoning: PlanQualityMetric, PlanAdherenceMetric, tool usage scoring. Judges whether the agent&rsquo;s logic is clean or looping aimlessly.</td>
+        <td>Measuring planning, tool steps, and reasoning quality</td>
+      </tr>
+      <tr>
+        <td><strong><a href="https://github.com/harbor-framework/terminal-bench">Terminal-Bench Runner</a></strong></td>
+        <td>Runs Terminal-Bench tasks in sandboxed shells. Takes your LLM&rsquo;s tool choices and executes them against a live Linux environment.</td>
+        <td>Terminal-native task evaluation</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>Why this lean list?</strong> Tools like Braintrust, LangSmith, and Agent-EvalKit are powerful but require platform integrations, cloud accounts, or AWS setup. For a PoC, you want <code>git clone</code> + <code>docker run</code> &mdash; nothing more. Add observability platforms after the PoC proves the platform works.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ METRICS & SUCCESS CRITERIA -->
+<section class="eval" id="metrics">
+  <div class="crumb">Pillar 3 &mdash; Metrics &amp; Success Criteria</div>
+  <h2>Success Criteria</h2>
+
+  <p>Go beyond &ldquo;did it pass?&rdquo; &mdash; measure <em>how</em> the agent works. Each metric has a PoC go/no-go target calibrated for self-hosted models on long-horizon coding tasks.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Metric</th><th style="text-align:center">Unit</th><th>PoC Target</th><th>Why It Matters</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Task Completion Rate</strong></td><td style="text-align:center">%</td><td><span class="target">&gt;30%</span> SWE-V, <span class="target">&gt;15%</span> SWE-Pro</td><td>Baseline viability &mdash; can the platform fix real bugs at all?</td></tr>
+      <tr><td><strong>Tool Syntax Error Rate</strong></td><td style="text-align:center">%</td><td><span class="target">&lt;5%</span></td><td>Agent formats commands correctly and doesn&rsquo;t get stuck in loops</td></tr>
+      <tr><td><strong>Plan Adherence</strong></td><td style="text-align:center">1&ndash;10</td><td><span class="target">&gt;7/10</span></td><td>Agent follows its own plan instead of looping aimlessly through files</td></tr>
+      <tr><td><strong>Code Quality</strong></td><td style="text-align:center">1&ndash;10</td><td><span class="target">&gt;7/10</span> (LLM-Judge)</td><td>Code is clean and well-structured, not just barely passing unit tests</td></tr>
+      <tr><td><strong>Line-Level Recall</strong></td><td style="text-align:center">%</td><td><span class="target">&gt;25%</span></td><td>Agent finds exact lines to edit, not whole-file rewrites (industry avg: 14&ndash;19%)</td></tr>
+      <tr><td><strong>Cost per Task</strong></td><td style="text-align:center">$</td><td><span class="target">&lt; managed equiv</span></td><td>Self-hosted must beat managed API cost at your throughput</td></tr>
+      <tr><td><strong>TTFT at 32k context</strong></td><td style="text-align:center">ms</td><td><span class="target">&lt;200ms</span></td><td>Usable interactive experience with large codebases</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="gonogo">
+    <h4>PoC Go / No-Go</h4>
+    <p style="margin-top:0">A coding platform PoC passes when <strong>all three</strong> conditions are met:</p>
+    <ul>
+      <li><strong>Capability:</strong> Task Completion Rate &ge;30% on SWE-bench Verified (or &ge;15% on SWE-bench Pro)</li>
+      <li><strong>Reliability:</strong> Tool Syntax Error Rate &lt;5% AND Plan Adherence &ge;7/10</li>
+      <li><strong>Infrastructure:</strong> TTFT &lt;200ms at 32k context AND cost/task &lt; managed API equivalent</li>
+    </ul>
+    <p style="margin-bottom:0;color:var(--ink-soft);font-size:.88rem">If capability passes but reliability fails, the model is strong but the harness needs work. If reliability passes but capability fails, the model is too weak. If infrastructure fails, you need more GPUs or a smaller model.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ EVAL PIPELINE -->
+<section class="eval" id="pipeline">
+  <div class="crumb">Pillar 4 &mdash; Pipeline</div>
+  <h2>Evaluation Pipeline</h2>
+
+  <p>5 steps, zero external dependencies. Runs on a single machine with Docker. No CI/CD, no cloud integrations, no managed services.</p>
+
+  <h3>Pipeline</h3>
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="step-num">Step 1</div>
+      <div class="step-label">Trigger</div>
+      <div class="step-detail">Benchmark harness sends task to OpenCode</div>
+    </div>
+    <div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step">
+      <div class="step-num">Step 2</div>
+      <div class="step-label">Sandbox</div>
+      <div class="step-detail">Fresh Docker container with repo + tools mounted</div>
+    </div>
+    <div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step">
+      <div class="step-num">Step 3</div>
+      <div class="step-label">Rollout</div>
+      <div class="step-detail">Agent works via self-hosted LLM until done or timeout</div>
+    </div>
+    <div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step">
+      <div class="step-num">Step 4</div>
+      <div class="step-label">Verify</div>
+      <div class="step-detail">Run unit tests + score quality + record latency</div>
+    </div>
+    <div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-step">
+      <div class="step-num">Step 5</div>
+      <div class="step-label">Cleanup</div>
+      <div class="step-detail">Destroy container; save results to local JSON</div>
+    </div>
+  </div>
+
+  <h3>Stack</h3>
+  <div class="flow">
+    <div class="flow-node">
+      <span class="node-zone cli">CLI Harness</span>
+      <div class="node-label">OpenCode</div>
+      <div class="node-detail">read, write, edit<br>bash, grep, glob</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <span class="node-zone proxy">API Gateway</span>
+      <div class="node-label">LiteLLM</div>
+      <div class="node-detail">OpenAI-compatible<br>/v1/chat/completions</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <span class="node-zone compute">Inference</span>
+      <div class="node-label">vLLM</div>
+      <div class="node-detail">Self-hosted model<br>see <a href="infra.html">Infra</a> + <a href="serving.html">Serving</a></div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <span class="node-zone eval">Scoring</span>
+      <div class="node-label">Eval Harness</div>
+      <div class="node-detail">SWE-agent / TBench<br>+ DeepEval / Promptfoo</div>
+    </div>
+    <div class="flow-caption">Fix the harness and swap models, or fix the model and swap harnesses. Never vary both at once.</div>
+  </div>
+
+  <h3>Running SWE-bench (example)</h3>
+  <pre><code># 1. Start the model
+vllm serve Qwen/Qwen3-235B-A22B-Instruct-2507 \
+  --tensor-parallel-size 4 --max-model-len 131072
+
+# 2. Start API gateway
+litellm --config litellm_config.yaml --port 4000
+
+# 3. Run benchmark via OpenCode (headless)
+opencode --headless --prompt "$(cat swe-bench-tasks/issue-123.md)" \
+  --workdir swe-bench-repos/django \
+  --output results/issue-123.json
+
+# 4. Score with benchmark's native harness
+python swe-bench/harness/run_eval.py --predictions results/</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════ RESULTS -->
+<section class="eval" id="results">
+  <div class="crumb">Results</div>
+  <h2>PoC Results</h2>
+
+  <p>Run each benchmark with each model, keeping the harness identical. Report every result as <strong>model + harness</strong>.</p>
+
+  <div class="tbl"><table>
+    <thead><tr>
+      <th>Model</th>
+      <th style="text-align:center">SWE-bench V</th>
+      <th style="text-align:center">FeatureBench</th>
+      <th style="text-align:center">Terminal-Bench</th>
+      <th style="text-align:center">LiveCode</th>
+      <th style="text-align:center">Avg Tool Calls</th>
+      <th style="text-align:center">Cost / Task</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Qwen3-235B</strong> + OpenCode</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+      </tr>
+      <tr>
+        <td><strong>DeepSeek-V4-Flash</strong> + OpenCode</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+      </tr>
+      <tr>
+        <td><strong>Kimi-K2.6</strong> + OpenCode</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+      </tr>
+      <tr>
+        <td><strong>MiniMax-M3</strong> + OpenCode</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>Before running:</strong> Build a custom internal dataset of 50&ndash;100 tasks from <em>your own codebase</em>. Public benchmarks test general capability; your internal dataset tests whether the platform works for <em>your</em> stack. This is the single highest-ROI step in the evaluation.
+  </div>
+</section>
+
+<div class="page-nav">
+  <a href="models.html">&larr; Models</a>
+  <a href="infra.html" class="next">Infrastructure &rarr;</a>
+</div>
+
+<footer class="foot">
+  <span>Self-Hosting LLM</span>
+  <span>Last updated 2026-06-14</span>
+</footer>
+
+</div>
+</body>
+</html>

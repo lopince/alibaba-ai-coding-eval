@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Infrastructure &mdash; AWS Self-Hosted LLM Coding Platform</title>
+<link rel="stylesheet" href="../style.css"/>
+<style>
+.flow { display: flex; align-items: stretch; gap: 0; margin: 1.5rem 0; flex-wrap: wrap; }
+.flow-node { flex: 1; min-width: 140px; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem; text-align: center; position: relative; }
+.flow-node .node-label { font: 600 13px/1.2 var(--sans); color: var(--ink); margin-bottom: .4em; }
+.flow-node .node-detail { font: 12px/1.4 var(--sans); color: var(--ink-soft); }
+.flow-node .node-zone { font: 600 10px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em; padding: .2em .5em; border-radius: 3px; display: inline-block; margin-bottom: .5em; }
+.flow-node .node-zone.client { background: rgba(120,140,93,.12); color: var(--olive); }
+.flow-node .node-zone.proxy { background: rgba(217,119,87,.12); color: var(--clay); }
+.flow-node .node-zone.compute { background: rgba(106,140,175,.12); color: var(--sky); }
+.flow-node .node-zone.storage { background: rgba(120,140,93,.12); color: var(--olive); }
+.flow-node .node-zone.aws { background: rgba(255,153,0,.12); color: #c77b00; }
+.flow-node .node-zone.security { background: rgba(217,119,87,.12); color: var(--clay); }
+.flow-arrow { display: flex; align-items: center; padding: 0 .3rem; color: var(--g300); font-size: 1.4rem; flex-shrink: 0; }
+.flow-caption { width: 100%; font: 12px/1.4 var(--sans); color: var(--ink-soft); text-align: center; margin-top: .5rem; padding-top: .5rem; border-top: 1px dashed var(--rule); }
+.decision-tree { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.2rem 1.4rem; margin: 1.2rem 0; }
+.decision-tree pre { background: none; border: none; padding: 0; margin: 0; font: 13px/1.6 var(--mono); color: var(--ink); overflow-x: auto; }
+.formula-box { background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--sky); padding: 1rem 1.4rem; margin: 1.2rem 0; border-radius: 4px; }
+.formula-box pre { background: none; border: none; padding: 0; margin: 0; font: 14px/1.6 var(--mono); color: var(--ink); }
+.tier-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.2rem; margin-bottom: 1rem; }
+.tier-card h4 { margin: 0 0 .5em; font: 600 15px/1.2 var(--sans); text-transform: none; letter-spacing: 0; color: var(--ink); }
+.tier-card .tier-price { font: 600 13px/1 var(--sans); color: var(--clay); margin-bottom: .6em; }
+.tier-card ul { margin: .4em 0; padding-left: 1.2em; font-size: .88rem; color: var(--ink-soft); }
+.tier-card li { margin-bottom: .2em; }
+.pillar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.2rem 0 1.8rem; }
+.pillar-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.2rem; border-top: 3px solid var(--sky); }
+.pillar-card.p1 { border-top-color: var(--clay); }
+.pillar-card.p2 { border-top-color: var(--sky); }
+.pillar-card.p3 { border-top-color: var(--olive); }
+.pillar-card h4 { margin: 0 0 .5em; font: 600 14px/1.2 var(--sans); text-transform: none; letter-spacing: 0; color: var(--ink); }
+.pillar-card p { font: 13px/1.5 var(--sans); color: var(--ink-soft); margin: 0 0 .6em; }
+.pillar-card ul { margin: .4em 0; padding-left: 1.2em; font: 13px/1.5 var(--sans); color: var(--ink-soft); }
+.pillar-card li { margin-bottom: .2em; }
+@media (max-width: 640px) { .flow { flex-direction: column; } .flow-arrow { transform: rotate(90deg); justify-content: center; padding: .3rem 0; } .pillar-grid { grid-template-columns: 1fr; } }
+.arch-svg { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: .5rem; margin: 1.2rem 0; }
+.arch-svg img { border-radius: 4px; }
+.ref-link { display: inline-flex; align-items: center; gap: .3em; font: 500 12px/1 var(--sans); color: var(--sky); padding: .3em .6em; background: rgba(106,140,175,.08); border-radius: 3px; text-decoration: none; margin: .15em .2em .15em 0; }
+.ref-link:hover { background: rgba(106,140,175,.16); text-decoration: none; }
+.sec-num { display: inline-block; width: 1.8em; height: 1.8em; border-radius: 50%; background: var(--clay); color: #fff; font: 700 12px/1.8em var(--sans); text-align: center; margin-right: .5em; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Self-Hosting LLM</a></h1>
+  <div class="meta">Section 3 of 4</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="models.html">Models</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="infra.html" class="active">Infrastructure</a>
+  <a href="serving.html">Serving</a>
+</div></nav>
+
+</div>
+
+<div class="wrap">
+
+<section class="eval">
+  <div class="crumb">Section 3</div>
+  <h2><span class="sec-num">3</span> AWS Self-Hosted LLM Coding Platform</h2>
+  <p>A reference architecture for building a self-hosted AI coding platform on AWS &mdash; covering inference infrastructure, AI gateway, the Model Context Protocol bridge, hybrid local-cloud execution, and security-first design. This is not a generic LLM deployment guide; it is an <em>infrastructure blueprint for a coding platform</em> that serves developer teams.</p>
+
+  <!-- ===== 3.1 THE DESIGN CHALLENGE ===== -->
+  <h3>3.1 &ensp;The Design Challenge</h3>
+
+  <p>A self-hosted LLM coding platform is fundamentally different from a chatbot or text-generation service. Coding tools like OpenCode, Claude Code, and Cursor need to <strong>read files, run terminal commands, and test code locally</strong>. The cloud-hosted LLM must never have direct SSH or remote-code-execution access to an engineer&rsquo;s laptop.</p>
+
+  <p>The correct architecture is <em>hybrid</em>: the cloud handles heavy AI inference, while the local PC controls safe execution of code and file operations. The local tool sends code context up to AWS and pulls down structured AI instructions to execute locally.</p>
+
+  <div class="callout">
+    <strong>Core principle:</strong> The local coding harness is always in control. It decides what context to send, what instructions to follow, and what actions to permit on the local machine. The cloud LLM is a stateless inference service &mdash; it returns suggestions, not commands.
+  </div>
+
+  <!-- ===== 3.2 THREE-PILLAR ARCHITECTURE ===== -->
+  <h3>3.2 &ensp;Three-Pillar Architecture</h3>
+
+  <p>A production self-hosted coding platform has three distinct pillars, each solving a different problem:</p>
+
+  <div class="pillar-grid">
+    <div class="pillar-card p1">
+      <h4>Pillar 1: Inference Core</h4>
+      <p>Where model weights run and tokens are generated.</p>
+      <ul>
+        <li>Amazon SageMaker AI or EC2 GPU instances</li>
+        <li>vLLM / SGLang serving engines</li>
+        <li>G5 (A10G) or P4/P5 (A100/H100) instances</li>
+        <li>Tensor parallelism, quantization, KV cache</li>
+      </ul>
+    </div>
+    <div class="pillar-card p2">
+      <h4>Pillar 2: AI Gateway</h4>
+      <p>Authentication, routing, rate limiting, and observability.</p>
+      <ul>
+        <li>ECS Fargate running LiteLLM proxy</li>
+        <li>OAuth 2.0 via Amazon Cognito</li>
+        <li>DynamoDB for API keys and session tracking</li>
+        <li>CloudFront + WAF + ALB for edge security</li>
+      </ul>
+    </div>
+    <div class="pillar-card p3">
+      <h4>Pillar 3: Tooling Protocol (MCP)</h4>
+      <p>Standardized bridge between cloud LLM and local tools.</p>
+      <ul>
+        <li>Model Context Protocol (MCP) servers</li>
+        <li>Local file access, git ops, terminal execution</li>
+        <li>OAuth 2.0 session tokens per developer</li>
+        <li>Outbound-only networking from local PC</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3.3 END-TO-END ARCHITECTURE ===== -->
+  <h3>3.3 &ensp;End-to-End Architecture</h3>
+
+  <p>The complete data flow from engineer laptop to model inference and back:</p>
+
+  <div class="arch-svg">
+    <img src="assets/arch-e2e.svg" alt="End-to-end architecture: Engineer laptop connecting to AWS VPC via HTTPS" style="width:100%;height:auto;display:block;border-radius:6px"/>
+  </div>
+
+  <div class="flow-caption" style="font: 12px/1.4 var(--sans); color: var(--ink-soft); text-align: center; padding: .5rem 0;">
+    All inference traffic stays inside the VPC. The local PC initiates outbound-only HTTPS connections. No inbound ports are opened on the engineer&rsquo;s machine.
+  </div>
+
+  <h4>Data flow sequence</h4>
+  <ol>
+    <li><strong>Context gathering</strong> &mdash; the engineer types a prompt in their IDE. The local harness collects open file tabs, git diffs, and project structure.</li>
+    <li><strong>Secure cloud request</strong> &mdash; the local tool sends an HTTPS request to the AWS endpoint, authenticated with a corporate OIDC/OAuth token (Cognito) or API key.</li>
+    <li><strong>Gateway validation</strong> &mdash; ECS Fargate validates the JWT, checks DynamoDB for API key permissions, applies rate limits, and forwards to the inference endpoint.</li>
+    <li><strong>Model inference</strong> &mdash; SageMaker or EC2 runs the coding model (vLLM with FP8 quantization), generating structured JSON or streaming text tokens back.</li>
+    <li><strong>Local execution</strong> &mdash; the local harness parses the response (MCP tool calls or text suggestions), prompts the user for permission, and executes changes locally on the laptop.</li>
+  </ol>
+
+  <!-- ===== 3.4 PILLAR 1: INFERENCE CORE ===== -->
+  <h3>3.4 &ensp;Pillar 1 &mdash; Inference Core</h3>
+
+  <p>The inference core is where model weights run. Two deployment options exist on AWS, each with different tradeoffs:</p>
+
+  <div class="decision-tree">
+    <pre><strong>Inference Deployment Decision</strong>
+
+Need managed endpoint with auto-scaling + VPC integration?
+  |-> YES -> <strong>Amazon SageMaker AI</strong> (managed, serverless GPU)
+  |          Pros: auto-scaling, managed infra, VPC-native, JumpStart model catalog
+  |          Cons: higher per-hour cost, less control over serving stack
+  |
+  |-> NO -> Need full control over serving engine + custom kernels?
+        |-> YES -> <strong>EC2 (p4de / p5) + vLLM</strong> (bare metal GPU)
+        |          Pros: full control, custom quantization, lowest latency
+        |          Cons: self-managed, need ECS/EKS orchestration
+        |
+        |-> NO -> <strong>SageMaker</strong> (default choice for most teams)</pre>
+  </div>
+
+  <h4>Option A: Amazon SageMaker AI</h4>
+
+  <p>SageMaker provides a managed inference endpoint with built-in VPC integration, auto-scaling, and model catalog via JumpStart. This is the recommended path for teams that want production reliability without managing GPU infrastructure.</p>
+
+  <div class="arch-svg">
+    <img src="assets/arch-sagemaker.svg" alt="SageMaker endpoint architecture: S3 to SageMaker to OpenAI-compatible API" style="width:100%;height:auto;display:block;border-radius:6px"/>
+  </div>
+
+  <h4>Option B: EC2 Bare Metal GPU</h4>
+
+  <p>For teams needing full control over the serving stack &mdash; custom kernels, specific quantization formats, or the lowest possible latency &mdash; EC2 GPU instances with vLLM or SGLang provide bare-metal access.</p>
+
+  <h4>Option C: EKS Kubernetes (Recommended for Production)</h4>
+
+  <p>For teams running multiple models, needing autoscaling, rolling deploys, and proper orchestration &mdash; Amazon EKS with vLLM and SGLang is the production pattern. Kubernetes handles GPU scheduling via device plugins, autoscaling via Karpenter, and model routing via K8s Services.</p>
+
+  <p><strong>Why EKS over raw EC2:</strong> raw EC2 requires manual process management, no autoscaling, no health checks, no rolling deploys. EKS gives you declarative infrastructure, GPU node autoscaling (including Spot fallback), and the ability to run vLLM and SGLang side by side with different scaling policies per model.</p>
+
+  <div class="arch-svg">
+    <img src="assets/arch-eks-vllm.svg" alt="EKS Kubernetes architecture: vLLM and SGLang pods with Karpenter GPU autoscaling" style="width:100%;height:auto;display:block;border-radius:6px"/>
+  </div>
+
+  <div class="arch-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0 1.8rem">
+    <div class="arch-box">
+      <h4>vLLM Pods</h4>
+      <ul>
+        <li>OpenAI-compatible <code>/v1/chat/completions</code> API</li>
+        <li>PagedAttention + continuous batching</li>
+        <li>Tensor parallelism via <code>--tensor-parallel-size N</code></li>
+        <li>Best for: general-purpose code generation, widest model support</li>
+        <li>Deploy as K8s Deployment + Service with GPU resource requests</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>SGLang Pods</h4>
+      <ul>
+        <li>RadixAttention prefix caching (29% faster on repeated context)</li>
+        <li>Structured generation (JSON tool calls for MCP)</li>
+        <li>High-throughput batch API for agentic workloads</li>
+        <li>Best for: coding agents, multi-turn conversations, shared system prompts</li>
+        <li>Deploy alongside vLLM in the same namespace, routed by LiteLLM</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>When to use each option:</strong> Option A (SageMaker) for teams that want zero ops overhead. Option B (EC2) for single-model deployments needing maximum control. Option C (EKS) for teams running 2+ models, needing autoscaling, or already running Kubernetes. Option C is the most common production pattern for platform teams serving 20+ engineers.
+  </div>
+
+  <h4>AWS GPU Instance Reference</h4>
+
+  <div class="tbl"><table>
+    <thead><tr>
+      <th>Instance</th>
+      <th style="text-align:center">GPU</th>
+      <th style="text-align:center">GPUs</th>
+      <th style="text-align:center">VRAM / GPU</th>
+      <th style="text-align:center">Total VRAM</th>
+      <th style="text-align:center">vCPU / RAM</th>
+      <th style="text-align:center">Network</th>
+      <th style="text-align:center">OD Price</th>
+    </tr></thead>
+    <tbody>
+      <tr><td><strong>p5.48xlarge</strong></td><td>H100 SXM5</td><td style="text-align:center">8</td><td style="text-align:center">80 GB</td><td style="text-align:center"><strong>640 GB</strong></td><td style="text-align:center">192 / 2 TB</td><td style="text-align:center">3200 Gbps (EFA)</td><td style="text-align:center">~$130/hr</td></tr>
+      <tr><td><strong>p5en.48xlarge</strong></td><td>H200 SXM</td><td style="text-align:center">8</td><td style="text-align:center">141 GB</td><td style="text-align:center"><strong>1,128 GB</strong></td><td style="text-align:center">192 / 2 TB</td><td style="text-align:center">3200 Gbps (EFA)</td><td style="text-align:center">~$160/hr</td></tr>
+      <tr><td><strong>p4de.24xlarge</strong></td><td>A100 80GB</td><td style="text-align:center">8</td><td style="text-align:center">80 GB</td><td style="text-align:center"><strong>640 GB</strong></td><td style="text-align:center">96 / 1.1 TB</td><td style="text-align:center">400 Gbps (EFA)</td><td style="text-align:center">~$48/hr</td></tr>
+      <tr><td><strong>g6e.48xlarge</strong></td><td>L40S</td><td style="text-align:center">8</td><td style="text-align:center">48 GB</td><td style="text-align:center"><strong>384 GB</strong></td><td style="text-align:center">192 / 768 GB</td><td style="text-align:center">50 Gbps</td><td style="text-align:center">~$16/hr</td></tr>
+      <tr><td><strong>g6.12xlarge</strong></td><td>L4</td><td style="text-align:center">4</td><td style="text-align:center">24 GB</td><td style="text-align:center"><strong>96 GB</strong></td><td style="text-align:center">48 / 192 GB</td><td style="text-align:center">25 Gbps</td><td style="text-align:center">~$5/hr</td></tr>
+      <tr><td><strong>g5.12xlarge</strong></td><td>A10G</td><td style="text-align:center">4</td><td style="text-align:center">24 GB</td><td style="text-align:center"><strong>96 GB</strong></td><td style="text-align:center">48 / 192 GB</td><td style="text-align:center">25 Gbps</td><td style="text-align:center">~$6/hr</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Instance &times; Model Pairing for Coding Workloads</h4>
+
+  <div class="tbl"><table>
+    <thead><tr>
+      <th>Model</th>
+      <th style="text-align:center">Precision</th>
+      <th style="text-align:center">VRAM Needed</th>
+      <th style="text-align:center">AWS Instance</th>
+      <th style="text-align:center">Est. Cost/mo (OD)</th>
+      <th>Coding Use Case</th>
+    </tr></thead>
+    <tbody>
+      <tr class="highlight"><td>Qwen3-Coder-32B</td><td style="text-align:center">FP8</td><td style="text-align:center">~36 GB</td><td style="text-align:center">g6e.48xlarge (8&times;L40S)</td><td style="text-align:center">~$11,500</td><td>Best balance of quality and cost for agentic coding</td></tr>
+      <tr><td>Qwen3-Coder-7B</td><td style="text-align:center">FP16</td><td style="text-align:center">~16 GB</td><td style="text-align:center">g6.12xlarge (4&times;L4)</td><td style="text-align:center">~$3,600</td><td>Low-latency inline completions; autocomplete</td></tr>
+      <tr><td>Devstral-Small-2 (24B)</td><td style="text-align:center">FP8</td><td style="text-align:center">~28 GB</td><td style="text-align:center">g6e.48xlarge (8&times;L40S)</td><td style="text-align:center">~$11,500</td><td>Optimized for SE agents; strong on agentic benchmarks</td></tr>
+      <tr><td>DeepSeek-Coder-V3 (671B MoE)</td><td style="text-align:center">FP8</td><td style="text-align:center">~680 GB</td><td style="text-align:center">p5.48xlarge (8&times;H100)</td><td style="text-align:center">~$93,600</td><td>160K context; deep workspace analysis</td></tr>
+      <tr><td>Qwen3-235B-A22B (MoE)</td><td style="text-align:center">INT4</td><td style="text-align:center">~142 GB</td><td style="text-align:center">p4de.24xlarge (8&times;A100)</td><td style="text-align:center">~$34,500</td><td>High-quality code gen; 22B active params</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>Sizing for coding workloads:</strong> coding models generate long outputs (multi-file diffs, full implementations) and receive large prompts (entire repository context). Prioritize models with 32K+ context windows and sufficient KV cache headroom. A Qwen3-Coder-32B on g6e.48xlarge with FP8 is the recommended starting point &mdash; it handles 128K context and fits comfortably within 8&times;L40S VRAM.
+  </div>
+
+  <!-- ===== 3.5 PILLAR 2: AI GATEWAY ===== -->
+  <h3>3.5 &ensp;Pillar 2 &mdash; AI Gateway</h3>
+
+  <p>The AI gateway sits between engineer laptops and the inference core. It handles authentication, rate limiting, cost tracking, and API format translation. This is the control plane of your coding platform.</p>
+
+  <div class="flow">
+    <div class="flow-node">
+      <div class="node-zone client">Client</div>
+      <div class="node-label">Coding Harness</div>
+      <div class="node-detail">OpenCode<br>Claude Code<br>Qoder CLI</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <div class="node-zone security">Edge</div>
+      <div class="node-label">CloudFront + WAF</div>
+      <div class="node-detail">TLS termination<br>DDoS protection<br>Rate limiting</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <div class="node-zone aws">Gateway</div>
+      <div class="node-label">ECS Fargate</div>
+      <div class="node-detail">LiteLLM Proxy<br>JWT validation<br>Cost tracking</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <div class="node-zone compute">Inference</div>
+      <div class="node-label">SageMaker / EC2</div>
+      <div class="node-detail">vLLM / SGLang<br>Model weights<br>Token generation</div>
+    </div>
+    <div class="flow-caption">LiteLLM translates between OpenAI/Anthropic API formats and forwards to vLLM. DynamoDB stores API keys and usage logs. Cognito issues OAuth tokens.</div>
+  </div>
+
+  <h4>LiteLLM Proxy on ECS Fargate</h4>
+
+  <p>LiteLLM runs as a containerized proxy on ECS Fargate. It exposes an OpenAI-compatible <code>/v1/chat/completions</code> endpoint and translates between different API formats (OpenAI, Anthropic, Azure). Multiple model backends can be load-balanced behind a single gateway.</p>
+
+  <h4>Authentication with Amazon Cognito</h4>
+
+  <p>Every request from a coding harness must carry a valid OAuth 2.0 token. Amazon Cognito issues short-lived JWT tokens that the LiteLLM proxy validates before forwarding to the inference endpoint. This replaces fragile API-key-in-env-file patterns with corporate identity.</p>
+
+  <div class="arch-svg">
+    <img src="assets/arch-oauth.svg" alt="OAuth 2.0 authorization code flow: Developer Laptop, Cognito, LiteLLM sequence diagram" style="width:100%;height:auto;display:block;border-radius:6px"/>
+  </div>
+
+  <div class="callout">
+    <strong>Reference:</strong> The <a href="https://docs.aws.amazon.com/solutions/deploying-model-context-protocol-servers-on-aws/" target="_blank">AWS Guidance for Deploying MCP Servers</a> provides a complete CDK implementation of Cognito OAuth + DynamoDB session management + ECS Fargate for MCP server hosting. The same pattern applies to the AI gateway layer.
+  </div>
+
+  <!-- ===== 3.6 PILLAR 3: MCP TOOLING PROTOCOL ===== -->
+  <h3>3.6 &ensp;Pillar 3 &mdash; Model Context Protocol (MCP)</h3>
+
+  <p>The Model Context Protocol (MCP) is the standardized bridge between your AWS-hosted LLM and local developer tools. Handed over to the Linux Foundation, MCP has become the gold standard for connecting remote LLMs to local execution environments.</p>
+
+  <p>Without MCP, every coding tool would need a custom API integration. With MCP, the LLM can request file context, repository maps, or local execution through a standardized protocol &mdash; the local harness securely processes each request.</p>
+
+  <div class="arch-svg">
+    <img src="assets/arch-mcp.svg" alt="MCP architecture: Cloud LLM communicating with local MCP server for tool execution" style="width:100%;height:auto;display:block;border-radius:6px"/>
+  </div>
+
+  <h4>MCP Server Deployment on AWS</h4>
+
+  <p>AWS provides official blueprints for deploying MCP servers within your VPC. These servers run on ECS Fargate or Lambda, authenticated via Cognito OAuth, and protected by WAF. They allow your cloud-hosted LLM to securely interact with external tools and data sources.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>MCP Server Type</th><th>Deployment</th><th>Purpose</th><th>AWS Services</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Documentation MCP</strong></td><td>ECS Fargate</td><td>Search internal docs, wikis, Confluence</td><td>Fargate, OpenSearch, Cognito</td></tr>
+      <tr><td><strong>Database MCP</strong></td><td>Lambda</td><td>Query databases safely (read-only)</td><td>Lambda, RDS, Secrets Manager</td></tr>
+      <tr><td><strong>Git MCP</strong></td><td>ECS Fargate</td><td>Repository operations, PR management</td><td>Fargate, CodeCommit/GitHub</td></tr>
+      <tr><td><strong>CI/CD MCP</strong></td><td>Lambda</td><td>Trigger builds, check pipeline status</td><td>Lambda, CodePipeline, CodeBuild</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Connecting OpenCode to AWS MCP Servers</h4>
+
+  <div class="callout">
+    <strong>Reference:</strong> <a href="https://dev.to/gitaroktato/using-your-own-architecture-agent-with-opencode-and-aws-mcp-servers-2j26" target="_blank">Using Your Own Architecture Agent with OpenCode and AWS MCP Servers</a> demonstrates the complete integration pattern &mdash; from configuring the local MCP client to connecting it with AWS-hosted LLM endpoints.
+  </div>
+
+  <!-- ===== 3.7 CONNECTIVITY: HOW LOCAL PC REACHES AWS ===== -->
+  <h3>3.7 &ensp;Connectivity &mdash; How the Local PC Reaches AWS</h3>
+
+  <p>Three connectivity patterns exist, each with different security and complexity tradeoffs:</p>
+
+  <div class="decision-tree">
+    <pre><strong>Connectivity Decision</strong>
+
+Public internet with TLS + OAuth?
+  |-> YES -> <strong>Pattern A: Public ALB + Cognito</strong> (simplest)
+  |          CloudFront + WAF + ALB in public subnet
+  |          Cognito OAuth for auth; no VPN needed
+  |          Best for: distributed teams, contractors
+  |
+  |-> NO -> Corporate VPN or Direct Connect available?
+        |-> YES -> <strong>Pattern B: VPN + Private ALB</strong> (enterprise)
+        |          ALB in private subnet; reachable only via VPN
+        |          No public internet exposure
+        |          Best for: regulated industries, finance
+        |
+        |-> NO -> <strong>Pattern C: SSM Port Forwarding</strong> (zero-trust)
+                  AWS Systems Manager tunnels to Fargate task
+                  No public endpoints at all
+                  Best for: maximum security, air-gapped feel</pre>
+  </div>
+
+  <h4>Pattern A: Public ALB + Cognito (Recommended)</h4>
+
+  <p>The simplest and most common pattern. CloudFront terminates TLS, WAF blocks common attacks, ALB routes to ECS Fargate, and Cognito validates every request. No VPN required &mdash; engineers connect from anywhere with internet access.</p>
+
+  <h4>Pattern C: SSM Port Forwarding (Zero-Trust)</h4>
+
+  <p>For maximum security, use AWS Systems Manager Session Manager to create a tunnel from the engineer&rsquo;s laptop directly to the Fargate task&rsquo;s private IP. No public endpoints exist &mdash; the inference platform is completely invisible to the internet.</p>
+
+  <!-- ===== 3.8 SECURITY ARCHITECTURE ===== -->
+  <h3>3.8 &ensp;Security Architecture</h3>
+
+  <p>Security is not an afterthought &mdash; it is the primary design constraint for a self-hosted coding platform. Corporate source code is among the most sensitive assets a company has. The architecture must prevent code leakage, unauthorized access, and prompt injection.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Threat</th><th>Mitigation</th><th>AWS Implementation</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Code leakage via LLM</strong></td>
+        <td>VPC isolation; no outbound internet from inference subnet; disable logging of prompts/responses</td>
+        <td>SageMaker in private subnet with no NAT gateway; CloudWatch log redaction</td>
+      </tr>
+      <tr>
+        <td><strong>Unauthorized access</strong></td>
+        <td>OAuth 2.0 with short-lived tokens; per-user API key quotas; MFA required</td>
+        <td>Cognito + DynamoDB session management; IAM policies scoped to <code>sagemaker:InvokeEndpoint</code></td>
+      </tr>
+      <tr>
+        <td><strong>Prompt injection</strong></td>
+        <td>Input validation at gateway; block secrets (AWS keys, passwords) from entering prompts</td>
+        <td>Custom LiteLLM middleware or Bedrock Guardrails to scan and redact sensitive patterns</td>
+      </tr>
+      <tr>
+        <td><strong>Network exposure</strong></td>
+        <td>No inbound ports on engineer laptops; outbound-only HTTPS to ALB</td>
+        <td>Security groups: allow outbound 443 only; no inbound rules on client machines</td>
+      </tr>
+      <tr>
+        <td><strong>Model weight theft</strong></td>
+        <td>S3 bucket policies; VPC endpoints for S3; no public internet access to weight storage</td>
+        <td>S3 gateway endpoint in VPC; bucket policy restricting access to VPC endpoint only</td>
+      </tr>
+      <tr>
+        <td><strong>Lateral movement</strong></td>
+        <td>Micro-segmentation; each pillar in its own subnet with strict security groups</td>
+        <td>Separate subnets for gateway, inference, and storage; security groups reference other SGs, not CIDRs</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <h4>VPC Network Layout</h4>
+
+  <div class="arch-svg">
+    <img src="assets/arch-vpc.svg" alt="VPC network layout: public, private gateway, private inference, and private data subnets" style="width:100%;height:auto;display:block;border-radius:6px"/>
+  </div>
+
+  <div class="callout">
+    <strong>Key security principle:</strong> the inference subnet has <em>no internet access</em> &mdash; no NAT gateway, no internet gateway route. Model weights are loaded from S3 via a VPC gateway endpoint. Prompts and responses never leave your AWS environment. This is the difference between &ldquo;self-hosted&rdquo; and &ldquo;private subnet with internet egress.&rdquo;
+  </div>
+
+  <!-- ===== 3.9 INFERENCE ENGINES ===== -->
+  <h3>3.9 &ensp;Inference Engines</h3>
+
+  <p>The inference engine loads model weights, manages GPU memory, and serves tokens. For a coding platform, the engine must support long contexts (32K+ tokens), structured output (JSON tool calls), and streaming responses.</p>
+
+  <div class="tbl"><table>
+    <thead><tr>
+      <th>Engine</th>
+      <th style="text-align:center">Setup</th>
+      <th style="text-align:center">Throughput</th>
+      <th style="text-align:center">OpenAI API</th>
+      <th style="text-align:center">TP / PP</th>
+      <th>Best For</th>
+    </tr></thead>
+    <tbody>
+      <tr class="highlight">
+        <td><strong>vLLM</strong></td>
+        <td style="text-align:center">&lt;2 min</td>
+        <td style="text-align:center">High</td>
+        <td style="text-align:center"><span class="cmp yes">Built-in</span></td>
+        <td style="text-align:center">TP + PP</td>
+        <td>Production default. Widest model support. Start here.</td>
+      </tr>
+      <tr>
+        <td><strong>SGLang</strong></td>
+        <td style="text-align:center">&lt;2 min</td>
+        <td style="text-align:center">High</td>
+        <td style="text-align:center"><span class="cmp yes">Built-in</span></td>
+        <td style="text-align:center">TP + PP</td>
+        <td>Agentic workloads; structured outputs; 29% faster with repeated context (RadixAttention prefix caching).</td>
+      </tr>
+      <tr>
+        <td><strong>TensorRT-LLM</strong></td>
+        <td style="text-align:center">1&ndash;2 weeks</td>
+        <td style="text-align:center"><span class="s-pass">Highest</span></td>
+        <td style="text-align:center"><span class="cmp partial">Via wrapper</span></td>
+        <td style="text-align:center">TP + PP</td>
+        <td>NVIDIA-only, max throughput. 15&ndash;30% faster than vLLM on H100. Worth the compile overhead at scale.</td>
+      </tr>
+      <tr>
+        <td><strong>LMDeploy</strong></td>
+        <td style="text-align:center">Fast</td>
+        <td style="text-align:center">High</td>
+        <td style="text-align:center"><span class="cmp yes">Built-in</span></td>
+        <td style="text-align:center">TP</td>
+        <td>Strong for Qwen/InternLM models. Up to 1.8&times; vLLM in specific configs.</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>For coding platforms:</strong> SGLang is worth evaluating alongside vLLM. Coding workloads have heavy prefix sharing (system prompts, repository context, tool definitions) &mdash; SGLang&rsquo;s RadixAttention caches these prefixes and avoids redundant computation, delivering 29% higher throughput on agentic workloads.
+  </div>
+
+  <!-- ===== 3.10 QUANTIZATION ===== -->
+  <h3>3.10 &ensp;Quantization &mdash; Halving VRAM Without Killing Quality</h3>
+
+  <div class="flow">
+    <div class="flow-node" style="border-left:3px solid var(--olive)">
+      <div class="node-zone storage">FP16 / BF16</div>
+      <div class="node-label">2 bytes/param</div>
+      <div class="node-detail">100% quality<br>140 GB for 70B</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node" style="border-left:3px solid var(--sky)">
+      <div class="node-zone compute">FP8</div>
+      <div class="node-label">1 byte/param</div>
+      <div class="node-detail">98&ndash;99.5% quality<br>70 GB for 70B</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node" style="border-left:3px solid var(--clay)">
+      <div class="node-zone proxy">INT4 (AWQ)</div>
+      <div class="node-label">0.5 bytes/param</div>
+      <div class="node-detail">97&ndash;99% quality<br>35 GB for 70B</div>
+    </div>
+    <div class="flow-caption">Lower precision = less VRAM = smaller GPU = lower cost. FP8 is near-lossless on H100+. INT4 AWQ is the practical floor for production coding workloads.</div>
+  </div>
+
+  <div class="tbl"><table>
+    <thead><tr>
+      <th>Format</th>
+      <th style="text-align:center">Bytes/Param</th>
+      <th style="text-align:center">70B VRAM</th>
+      <th style="text-align:center">Quality vs FP16</th>
+      <th style="text-align:center">Hardware</th>
+      <th>When to Use</th>
+    </tr></thead>
+    <tbody>
+      <tr><td><strong>BF16</strong></td><td style="text-align:center">2.0</td><td style="text-align:center">~140 GB</td><td style="text-align:center">Baseline</td><td style="text-align:center">Any GPU</td><td>Compliance, medical, legal. When quality cannot be risked.</td></tr>
+      <tr class="highlight"><td><strong>FP8</strong></td><td style="text-align:center">1.0</td><td style="text-align:center">~70 GB</td><td style="text-align:center"><span class="s-pass">98&ndash;99.5%</span></td><td style="text-align:center">H100+ native</td><td>Production default on Hopper. Near-lossless. 1.4&ndash;1.8&times; throughput.</td></tr>
+      <tr class="highlight"><td><strong>INT4 (AWQ)</strong></td><td style="text-align:center">0.5</td><td style="text-align:center">~35 GB</td><td style="text-align:center"><span class="s-total">97&ndash;99%</span></td><td style="text-align:center">Any GPU</td><td>Production 4-bit. Fastest INT4 kernels (Marlin). Best VRAM savings.</td></tr>
+      <tr><td><strong>INT4 (GPTQ)</strong></td><td style="text-align:center">0.5</td><td style="text-align:center">~35 GB</td><td style="text-align:center"><span class="s-total">95&ndash;98%</span></td><td style="text-align:center">Any GPU</td><td>Fallback when AWQ weights unavailable.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>Coding-specific guidance:</strong> quantization affects code generation quality more than general text. Test your specific coding benchmarks (SWE-bench, HumanEval) after quantization. FP8 on H100 is the safe default. INT4 AWQ is acceptable for autocomplete and inline suggestions where latency matters more than perfection. Never use INT4 for agentic multi-step coding tasks without benchmarking first.
+  </div>
+
+  <!-- ===== 3.11 SERVING PATTERNS ===== -->
+  <h3>3.11 &ensp;Serving Patterns &mdash; Scaling Across GPUs</h3>
+
+  <div class="decision-tree">
+    <pre><strong>Deployment Decision Tree</strong>
+
+Model fits in one GPU?
+  |-> YES -> <strong>Single GPU</strong> (simplest, lowest cost)
+  |
+  |-> NO -> Model fits across GPUs in one node (NVLink)?
+        |-> YES -> <strong>Tensor Parallel</strong> (split layers across GPUs)
+        |
+        |-> NO -> High concurrent traffic?
+              |-> YES -> <strong>Disaggregated Prefill/Decode</strong>
+              |
+              |-> NO -> <strong>Pipeline Parallel</strong> (split layers across nodes)</pre>
+  </div>
+
+  <div class="arch-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0 1.8rem">
+    <div class="arch-box">
+      <h4>Pattern A &mdash; Single GPU</h4>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">All model layers on one GPU. Simplest setup.</p>
+      <ul>
+        <li>vLLM defaults work out of the box</li>
+        <li>Up to ~35 GB weights (INT4 70B) or ~70 GB (FP8)</li>
+        <li>Good for: dev/testing, teams &lt;10 users</li>
+        <li>AWS: g6.12xlarge (L4) or g6e.48xlarge (L40S)</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>Pattern B &mdash; Tensor Parallel</h4>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">Split each layer across N GPUs. All GPUs process every token.</p>
+      <ul>
+        <li>vLLM: <code>--tensor-parallel-size 4|8</code></li>
+        <li>Requires NVLink for near-linear scaling</li>
+        <li>Best latency profile for coding workloads</li>
+        <li>AWS: p4de (8&times;A100 NVLink) or p5 (8&times;H100 NVLink)</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>Pattern C &mdash; Pipeline Parallel</h4>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">Different GPUs handle different layers sequentially.</p>
+      <ul>
+        <li>vLLM: <code>--pipeline-parallel-size N</code> + Ray</li>
+        <li>Requires EFA (Elastic Fabric Adapter) between nodes</li>
+        <li>Good for: massive models exceeding single-node VRAM</li>
+        <li>AWS: p5.48xlarge with EFA (3200 Gbps)</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4>Pattern D &mdash; Disaggregated Prefill/Decode</h4>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">Separate prefill (compute-heavy) from decode (memory-heavy).</p>
+      <ul>
+        <li>2&ndash;7&times; throughput gains in production</li>
+        <li>Prefill nodes build KV cache, transfer to decode nodes</li>
+        <li>Good for: high-concurrency coding platforms (50+ devs)</li>
+        <li>AWS: separate ASGs for prefill (p5) and decode (g6e) pools</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== 3.12 COST OPTIMIZATION ===== -->
+  <h3>3.12 &ensp;Cost Optimization</h3>
+
+  <p>GPU hours are the dominant cost. Three strategies to reduce your bill:</p>
+
+  <div class="arch-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.2rem 0 1.8rem">
+    <div class="arch-box" style="border-left:3px solid var(--olive)">
+      <h4>Spot Instances</h4>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">60&ndash;70% cheaper than on-demand</p>
+      <ul>
+        <li>Use for dev/test and batch workloads</li>
+        <li>P5/P4 spot availability varies by region</li>
+        <li>Need checkpointing for interruption recovery</li>
+        <li>Combine with on-demand fallback via ASG</li>
+      </ul>
+    </div>
+    <div class="arch-box" style="border-left:3px solid var(--sky)">
+      <h4>Reserved Instances</h4>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">30&ndash;40% cheaper for 1-year commitment</p>
+      <ul>
+        <li>Best for 24/7 production workloads</li>
+        <li>1-year or 3-year terms</li>
+        <li>Recommended once usage pattern stabilises</li>
+        <li>SageMaker also offers 1-year RI pricing</li>
+      </ul>
+    </div>
+    <div class="arch-box" style="border-left:3px solid var(--clay)">
+      <h4>Right-Sizing</h4>
+      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">Drop GPU tier entirely</p>
+      <ul>
+        <li>INT4 AWQ halves VRAM &rarr; smaller instance</li>
+        <li>Qwen3-Coder-7B on g6 (L4) for autocomplete</li>
+        <li>80% of coding quality at 10% of the cost</li>
+        <li>SGLang prefix caching reduces redundant compute</li>
+      </ul>
+    </div>
+  </div>
+
+  <h4>Cost Breakdown: Small Team (10 Engineers)</h4>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Component</th><th>AWS Service</th><th>Instance / Config</th><th style="text-align:center">Monthly Cost (OD)</th></tr></thead>
+    <tbody>
+      <tr><td>Inference</td><td>EC2 / SageMaker</td><td>g6e.48xlarge (8&times;L40S) &mdash; Qwen3-Coder-32B FP8</td><td style="text-align:center">~$11,500</td></tr>
+      <tr><td>AI Gateway</td><td>ECS Fargate</td><td>1 vCPU / 2 GB RAM &mdash; LiteLLM proxy</td><td style="text-align:center">~$50</td></tr>
+      <tr><td>Auth</td><td>Cognito</td><td>MAU-based pricing (free tier: 50K MAU)</td><td style="text-align:center">~$0</td></tr>
+      <tr><td>Storage</td><td>S3 + EFS</td><td>~200 GB model weights + config</td><td style="text-align:center">~$10</td></tr>
+      <tr><td>Networking</td><td>ALB + NAT + VPC Endpoints</td><td>ALB hours + data processing</td><td style="text-align:center">~$100</td></tr>
+      <tr><td>Monitoring</td><td>CloudWatch</td><td>Logs + metrics + alarms</td><td style="text-align:center">~$50</td></tr>
+      <tr class="highlight"><td colspan="3"><strong>Total (on-demand)</strong></td><td style="text-align:center"><strong>~$11,710/mo</strong></td></tr>
+      <tr><td colspan="3"><strong>Total (1-year RI, ~35% discount on compute)</strong></td><td style="text-align:center"><strong>~$7,800/mo</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>Break-even analysis:</strong> Claude Sonnet API costs ~$3/M input tokens + $15/M output tokens. A team of 10 engineers generating ~2M tokens/day (typical for active coding) spends ~$1,800/mo on API costs. The self-hosted platform breaks even at ~4.4 months on reserved instances. Beyond that, every additional token is essentially free &mdash; and your code never leaves your VPC.
+  </div>
+
+  <!-- ===== 3.13 MONITORING ===== -->
+  <h3>3.13 &ensp;Monitoring &amp; Observability</h3>
+
+  <div class="tbl"><table>
+    <thead><tr>
+      <th>Metric</th>
+      <th>What it tells you</th>
+      <th>Alert threshold</th>
+    </tr></thead>
+    <tbody>
+      <tr><td><strong>GPU utilisation %</strong></td><td>Whether you&rsquo;re over- or under-provisioned</td><td>&lt;30% = scale down; &gt;90% = scale up</td></tr>
+      <tr><td><strong>Token throughput (tok/s)</strong></td><td>Aggregate output rate across all requests</td><td>Baseline per model + alert on 20%+ drop</td></tr>
+      <tr><td><strong>TTFT p50/p99</strong></td><td>Time to first token &mdash; user-perceived latency</td><td>p99 &gt; 5s for interactive coding; &gt; 30s for batch</td></tr>
+      <tr><td><strong>Queue depth</strong></td><td>Requests waiting for a GPU slot</td><td>Sustained &gt; 10 = need more replicas</td></tr>
+      <tr><td><strong>KV cache utilisation</strong></td><td>How full is your GPU memory cache</td><td>&gt;85% = risk of OOM; reduce max-model-len</td></tr>
+      <tr><td><strong>Cost per 1M tokens</strong></td><td>Effective unit economics</td><td>Compare against Claude/GPT API pricing</td></tr>
+      <tr><td><strong>Auth failures / 401s</strong></td><td>Security events or misconfigured clients</td><td>&gt;5/min from single IP = investigate</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ===== 3.14 REFERENCE ARCHITECTURES ===== -->
+  <h3>3.14 &ensp;Reference Architectures &amp; Further Reading</h3>
+
+  <p>The following resources provide complete, production-tested implementations of the patterns described above:</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Resource</th><th>Focus</th><th>Key Takeaway</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a href="https://www.doit.com/blog/hosting-your-llm-model-on-amazon-sagemaker-for-ai-assisted-coding" target="_blank">DoIT: Hosting LLM on SageMaker for AI-Assisted Coding</a></td>
+        <td>SageMaker + ECS Fargate + LiteLLM</td>
+        <td>Complete walkthrough: SageMaker endpoint behind ECS Fargate proxy, SSM port forwarding to local IDE, VPC endpoint configuration</td>
+      </tr>
+      <tr>
+        <td><a href="https://docs.aws.amazon.com/solutions/deploying-model-context-protocol-servers-on-aws/" target="_blank">AWS: Deploying MCP Servers on AWS</a></td>
+        <td>MCP + Cognito OAuth + CDK</td>
+        <td>Official AWS CDK implementation: Cognito OAuth flow, DynamoDB session management, ECS Fargate hosting, WAF protection</td>
+      </tr>
+      <tr>
+        <td><a href="https://medium.com/appstack-labs/deploying-a-self-hosted-llm-api-on-aws-with-cdk-d403c0936289" target="_blank">AppStack: Self-Hosted LLM API with CDK</a></td>
+        <td>CDK + DynamoDB + ECS Fargate</td>
+        <td>Infrastructure-as-code: DynamoDB for API keys, Fargate for app layer, Route53 for DNS, complete CDK stack</td>
+      </tr>
+      <tr>
+        <td><a href="https://aws.amazon.com/blogs/machine-learning/extend-large-language-models-powered-by-amazon-sagemaker-ai-using-model-context-protocol/" target="_blank">AWS: Extend SageMaker LLMs with MCP</a></td>
+        <td>SageMaker + MCP tool execution</td>
+        <td>How to wire MCP servers to SageMaker endpoints so the LLM can safely invoke tools within your VPC</td>
+      </tr>
+      <tr>
+        <td><a href="https://dev.to/gitaroktato/using-your-own-architecture-agent-with-opencode-and-aws-mcp-servers-2j26" target="_blank">OpenCode + AWS MCP Servers</a></td>
+        <td>Local harness + cloud LLM</td>
+        <td>End-to-end integration: configuring OpenCode to use AWS-hosted LLM with local MCP servers for file/git operations</td>
+      </tr>
+      <tr>
+        <td><a href="https://aws.amazon.com/blogs/machine-learning/its-safe-to-close-your-laptop-now-hosting-coding-agents-on-amazon-bedrock-agentcore/" target="_blank">AWS: Hosting Coding Agents on Bedrock AgentCore</a></td>
+        <td>Agent workspaces in VPC</td>
+        <td>Platform team pattern: secure coding agent workspace inside VPC, corporate identity integration, agent lifecycle management</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>Start here:</strong> if you are building from scratch, begin with the <a href="https://docs.aws.amazon.com/solutions/deploying-model-context-protocol-servers-on-aws/" target="_blank">AWS MCP Server Guidance</a> (CDK stack deploys in ~30 minutes), add a SageMaker inference endpoint, and connect OpenCode via SSM port forwarding. This gives you a working coding platform in under a day. Scale from there.
+  </div>
+
+</section>
+
+<div class="page-nav">
+  <a href="benchmark.html">&larr; Benchmark Framework</a>
+  <a href="serving.html" class="next">Serving &rarr;</a>
+</div>
+
+<footer class="foot">
+  <span>Self-Hosting LLM</span>
+  <span>Last updated 2026-06-14</span>
+</footer>
+
+</div>
+</body>
+</html>
