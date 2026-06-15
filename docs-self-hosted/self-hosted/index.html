@@ -84,6 +84,47 @@
 
 </div>
 
+<!-- ══════════════════════════════════════════ INSIGHTS -->
+<section class="eval" id="insights">
+  <h2>Building for a 50-Person Team</h2>
+
+  <p>Practical insights for deploying a self-hosted LLM coding platform on AWS, sized for ~50 engineers doing daily coding and code analysis.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th style="width:22%">Topic</th><th>Insight</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Cost break-even</strong></td>
+        <td>50 engineers generating ~10M tokens/day spend ~$12K/mo on managed APIs (Claude Sonnet pricing). Self-hosted on EKS with Qwen3-Coder-32B (g6e.48xlarge, FP8) runs ~$11.5K/mo on-demand, or ~$7.8K/mo on 1-year RI. Break-even at ~3 months. After that, marginal cost per token approaches zero.</td>
+      </tr>
+      <tr>
+        <td><strong>Model strategy</strong></td>
+        <td>Run a two-tier setup: Qwen3-Coder-7B on g6.12xlarge for fast inline completions (low latency, high volume), and Qwen3-Coder-32B on g6e.48xlarge for complex agentic tasks (multi-file edits, architecture reasoning). LiteLLM routes by request type. This halves your GPU bill vs. running the larger model for everything.</td>
+      </tr>
+      <tr>
+        <td><strong>Infrastructure</strong></td>
+        <td>EKS with Karpenter is the right pattern at 50 users. It auto-provisions GPU nodes when engineers start working and consolidates when idle. Spot instances for batch workloads (code review, test generation) save 60%. Plan for 15&ndash;20 concurrent users at peak, not 50.</td>
+      </tr>
+      <tr>
+        <td><strong>Engine choice</strong></td>
+        <td>Use SGLang for agentic coding workloads &mdash; its RadixAttention caches shared system prompts and repository context, delivering ~29% higher throughput than vLLM when engineers work on the same codebase. Use vLLM for general-purpose completions where model breadth matters more.</td>
+      </tr>
+      <tr>
+        <td><strong>Security posture</strong></td>
+        <td>50 developers = 50 potential leak vectors. Lock down the inference subnet (no NAT, no internet gateway). Use Cognito OAuth per developer with DynamoDB-tracked quotas. Disable prompt logging or redact sensitive patterns at the gateway. Every request must carry a short-lived JWT &mdash; no shared API keys.</td>
+      </tr>
+      <tr>
+        <td><strong>MCP integration</strong></td>
+        <td>Non-negotiable for a coding platform. MCP lets the LLM safely read internal docs, query databases, and check CI/CD status without unrestricted access. Deploy 3&ndash;4 MCP servers (docs, git, database, CI/CD) on ECS Fargate within your VPC. The local coding harness controls all execution &mdash; the cloud LLM only suggests, never executes.</td>
+      </tr>
+      <tr>
+        <td><strong>Go / No-go</strong></td>
+        <td>Self-host if: team &gt;30 engineers, token spend &gt;$8K/mo, or data sovereignty is a hard requirement. Stay on managed APIs if: team &lt;15, usage is sporadic, or you lack Kubernetes ops capacity. The hybrid approach &mdash; self-host for sensitive repos, use APIs for non-sensitive work &mdash; is a valid middle ground.</td>
+      </tr>
+    </tbody>
+  </table></div>
+</section>
+
 <!-- ══════════════════════════════════════════ 1. WHY SELF-HOST -->
 <section class="eval" id="why">
   <h2>Why Self-Host?</h2>
