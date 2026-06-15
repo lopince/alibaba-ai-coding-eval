@@ -181,13 +181,13 @@
     <div class="pillar-card p-metrics">
       <div class="pillar-label">3 &mdash; Metrics</div>
       <div class="pillar-item">Task Completion Rate</div>
-      <div class="pillar-sub"><span class="target">&gt;30%</span> SWE-V</div>
+      <div class="pillar-sub"><span class="target">&gt;60%</span> SWE-V</div>
       <div class="pillar-item">Tool Syntax Error Rate</div>
-      <div class="pillar-sub"><span class="target">&lt;5%</span></div>
+      <div class="pillar-sub"><span class="target">&lt;3%</span></div>
       <div class="pillar-item">Plan Adherence</div>
-      <div class="pillar-sub"><span class="target">&gt;7/10</span></div>
+      <div class="pillar-sub"><span class="target">&gt;8/10</span></div>
       <div class="pillar-item">Code Quality</div>
-      <div class="pillar-sub"><span class="target">&gt;7/10</span></div>
+      <div class="pillar-sub"><span class="target">&gt;8/10</span></div>
       <div class="pillar-item">TTFT at 32k ctx</div>
       <div class="pillar-sub"><span class="target">&lt;200ms</span></div>
     </div>
@@ -335,12 +335,12 @@
   <div class="tbl"><table>
     <thead><tr><th>Metric</th><th style="text-align:center">Unit</th><th>PoC Target</th><th>Why It Matters</th></tr></thead>
     <tbody>
-      <tr><td><strong>Task Completion Rate</strong></td><td style="text-align:center">%</td><td><span class="target">&gt;30%</span> SWE-V, <span class="target">&gt;15%</span> SWE-Pro</td><td>Baseline viability &mdash; can the platform fix real bugs at all?</td></tr>
-      <tr><td><strong>Tool Syntax Error Rate</strong></td><td style="text-align:center">%</td><td><span class="target">&lt;5%</span></td><td>Agent formats commands correctly and doesn&rsquo;t get stuck in loops</td></tr>
-      <tr><td><strong>Plan Adherence</strong></td><td style="text-align:center">1&ndash;10</td><td><span class="target">&gt;7/10</span></td><td>Agent follows its own plan instead of looping aimlessly through files</td></tr>
-      <tr><td><strong>Code Quality</strong></td><td style="text-align:center">1&ndash;10</td><td><span class="target">&gt;7/10</span> (LLM-Judge)</td><td>Code is clean and well-structured, not just barely passing unit tests</td></tr>
-      <tr><td><strong>Line-Level Recall</strong></td><td style="text-align:center">%</td><td><span class="target">&gt;25%</span></td><td>Agent finds exact lines to edit, not whole-file rewrites (industry avg: 14&ndash;19%)</td></tr>
-      <tr><td><strong>Cost per Task</strong></td><td style="text-align:center">$</td><td><span class="target">&lt; managed equiv</span></td><td>Self-hosted must beat managed API cost at your throughput</td></tr>
+      <tr><td><strong>Task Completion Rate</strong></td><td style="text-align:center">%</td><td><span class="target">&gt;60%</span> SWE-V, <span class="target">&gt;35%</span> SWE-Pro</td><td>Must approach Opus 4.6 baseline (~80% SWE-V, ~55% SWE-Pro)</td></tr>
+      <tr><td><strong>Tool Syntax Error Rate</strong></td><td style="text-align:center">%</td><td><span class="target">&lt;3%</span></td><td>Agent formats commands correctly and doesn&rsquo;t get stuck in loops</td></tr>
+      <tr><td><strong>Plan Adherence</strong></td><td style="text-align:center">1&ndash;10</td><td><span class="target">&gt;8/10</span></td><td>Agent follows its own plan instead of looping aimlessly through files</td></tr>
+      <tr><td><strong>Code Quality</strong></td><td style="text-align:center">1&ndash;10</td><td><span class="target">&gt;8/10</span> (LLM-Judge)</td><td>Code is clean and well-structured, not just barely passing unit tests</td></tr>
+      <tr><td><strong>Line-Level Recall</strong></td><td style="text-align:center">%</td><td><span class="target">&gt;35%</span></td><td>Agent finds exact lines to edit, not whole-file rewrites (industry avg: 14&ndash;19%)</td></tr>
+      <tr><td><strong>Cost per Task</strong></td><td style="text-align:center">$</td><td><span class="target">&lt; managed equiv</span></td><td>Self-hosted must beat Opus 4.6 API cost at your throughput</td></tr>
       <tr><td><strong>TTFT at 32k context</strong></td><td style="text-align:center">ms</td><td><span class="target">&lt;200ms</span></td><td>Usable interactive experience with large codebases</td></tr>
     </tbody>
   </table></div>
@@ -349,9 +349,9 @@
     <h4>PoC Go / No-Go</h4>
     <p style="margin-top:0">A coding platform PoC passes when <strong>all three</strong> conditions are met:</p>
     <ul>
-      <li><strong>Capability:</strong> Task Completion Rate &ge;30% on SWE-bench Verified (or &ge;15% on SWE-bench Pro)</li>
-      <li><strong>Reliability:</strong> Tool Syntax Error Rate &lt;5% AND Plan Adherence &ge;7/10</li>
-      <li><strong>Infrastructure:</strong> TTFT &lt;200ms at 32k context AND cost/task &lt; managed API equivalent</li>
+      <li><strong>Capability:</strong> Task Completion Rate &ge;60% on SWE-bench Verified (or &ge;35% on SWE-bench Pro) &mdash; within 75% of Opus 4.6 baseline</li>
+      <li><strong>Reliability:</strong> Tool Syntax Error Rate &lt;3% AND Plan Adherence &ge;8/10</li>
+      <li><strong>Infrastructure:</strong> TTFT &lt;200ms at 32k context AND cost/task &lt; Opus 4.6 API equivalent</li>
     </ul>
     <p style="margin-bottom:0;color:var(--ink-soft);font-size:.88rem">If capability passes but reliability fails, the model is strong but the harness needs work. If reliability passes but capability fails, the model is too weak. If infrastructure fails, you need more GPUs or a smaller model.</p>
   </div>
@@ -447,7 +447,7 @@ python swe-bench/harness/run_eval.py --predictions results/</code></pre>
   <div class="crumb">Results</div>
   <h2>PoC Results</h2>
 
-  <p>Run each benchmark with each model, keeping the harness identical. Report every result as <strong>model + harness</strong>.</p>
+  <p>Run each benchmark with each model, keeping the harness identical. Report every result as <strong>model + harness</strong>. The first row shows the <strong>Opus 4.6 + Claude Code baseline</strong> &mdash; every self-hosted result should be measured as a percentage of this reference.</p>
 
   <div class="tbl"><table>
     <thead><tr>
@@ -460,6 +460,33 @@ python swe-bench/harness/run_eval.py --predictions results/</code></pre>
       <th style="text-align:center">Cost / Task</th>
     </tr></thead>
     <tbody>
+      <tr style="background:rgba(217,119,87,.06);border-left:3px solid var(--clay)">
+        <td><strong>Opus 4.6</strong> + Claude Code &ensp;<span class="pill warn">baseline</span></td>
+        <td style="text-align:center"><em>~80%</em></td>
+        <td style="text-align:center"><em>~55%</em></td>
+        <td style="text-align:center"><em>~65%</em></td>
+        <td style="text-align:center"><em>~78%</em></td>
+        <td style="text-align:center"><em>~12</em></td>
+        <td style="text-align:center"><em>~$2.50</em></td>
+      </tr>
+      <tr>
+        <td><strong>Qwen3-Coder-480B</strong> + OpenCode</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+      </tr>
+      <tr>
+        <td><strong>DeepSeek-V4-Pro</strong> + OpenCode</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+        <td style="text-align:center">&mdash;</td>
+      </tr>
       <tr>
         <td><strong>Qwen3-235B</strong> + OpenCode</td>
         <td style="text-align:center">&mdash;</td>

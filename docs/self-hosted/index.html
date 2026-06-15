@@ -84,77 +84,27 @@
 
 </div>
 
-<!-- ══════════════════════════════════════════ INSIGHTS -->
-<section class="eval" id="insights">
-  <h2>Self-Hosted LLM for a 50-Person Team</h2>
-
-  <p>A quick assessment based on the research in these pages, assuming current setup is <strong>Bedrock (Anthropic Claude) + Claude Code</strong>.</p>
-
-  <div class="arch-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0 1.8rem">
-    <div class="arch-box" style="border-left:3px solid var(--olive)">
-      <h4>What it looks like</h4>
-      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">EKS cluster on AWS running open-weight coding models (Qwen3-Coder). Engineers keep using their local tools (Claude Code, OpenCode, Cursor) &mdash; pointed at your own endpoint instead of Bedrock. All code stays inside your VPC.</p>
-    </div>
-    <div class="arch-box" style="border-left:3px solid var(--sky)">
-      <h4>Expected performance</h4>
-      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">Qwen3-Coder-32B scores ~72% on SWE-bench Verified (vs Claude Sonnet ~80%). For daily coding and analysis, the gap is narrow &mdash; noticeable on complex multi-file refactors, negligible on standard code gen, explanations, and debugging.</p>
-    </div>
-    <div class="arch-box" style="border-left:3px solid var(--clay)">
-      <h4>Cost</h4>
-      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">Current Bedrock spend for 50 devs: est. $10&ndash;15K/mo. Self-hosted: ~$8K/mo on reserved instances. Break-even at ~3 months. After that, marginal cost is near zero &mdash; no per-token billing surprises.</p>
-    </div>
-    <div class="arch-box" style="border-left:3px solid var(--g500)">
-      <h4>Success criteria</h4>
-      <p style="font-size:.88rem;color:var(--ink-soft);margin:0 0 .5em">Task completion rate &ge;70% on SWE-bench. TTFT p99 &lt;5s for interactive coding. Zero code leakage outside VPC. Developer satisfaction parity with Claude Code within 4 weeks of rollout.</p>
-    </div>
-  </div>
-
-  <h4>Benefits vs current Bedrock + Claude Code</h4>
-  <div class="two-col">
-    <div class="product" style="border-left:3px solid var(--olive)">
-      <strong style="color:var(--olive)">Benefits</strong>
-      <ul class="product-features">
-        <li>Code never leaves your VPC &mdash; eliminates third-party data exposure</li>
-        <li>Fixed cost at scale &mdash; no per-token billing spikes during crunch periods</li>
-        <li>Full control over model selection, quantization, and latency tuning</li>
-        <li>No vendor dependency &mdash; swap models without changing tools</li>
-      </ul>
-    </div>
-    <div class="product" style="border-left:3px solid var(--clay)">
-      <strong style="color:var(--clay)">Risks</strong>
-      <ul class="product-features">
-        <li>~8&ndash;10% quality gap on complex agentic tasks vs frontier models</li>
-        <li>Kubernetes ops burden &mdash; needs 1&ndash;2 engineers maintaining the platform</li>
-        <li>GPU capacity planning &mdash; under-provisioning causes queue buildup at peak</li>
-        <li>No extended thinking or advanced reasoning that Claude provides natively</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="callout">
-    <strong>Bottom line:</strong> self-hosting makes sense if data sovereignty is non-negotiable or Bedrock spend exceeds $10K/mo. The quality gap is real but manageable for daily coding. Consider a hybrid approach: self-host for sensitive repos, keep Bedrock for complex architecture tasks where Claude&rsquo;s reasoning edge matters.
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════ 1. WHY SELF-HOST -->
+<!-- ══════════════════════════════════════════ WHY SELF-HOST -->
 <section class="eval" id="why">
   <h2>Why Self-Host?</h2>
 
-  <p>Managed frontier APIs (Claude, GPT-5) are the default for AI coding tools, but they come with real constraints that make self-hosting worth evaluating for the right use cases:</p>
+  <p>A 50-person team currently on <strong>Opus 4.6 + Claude Code</strong> &mdash; is self-hosting worth it? The table below compares the two options across the dimensions that matter for daily coding and analysis.</p>
 
   <div class="tbl"><table>
-    <thead><tr><th>Concern</th><th>Managed API</th><th>Self-Hosted</th></tr></thead>
+    <thead><tr><th></th><th>Opus 4.6 + Claude Code</th><th>Self-Hosted (AWS)</th></tr></thead>
     <tbody>
-      <tr><td><strong>Data privacy</strong></td><td>Prompts transit provider infrastructure</td><td>All data stays on-prem or in your VPC</td></tr>
-      <tr><td><strong>Cost at scale</strong></td><td>Per-token billing; expensive at high volume</td><td>Fixed hardware cost; amortizes over throughput</td></tr>
-      <tr><td><strong>Latency control</strong></td><td>Subject to provider load and rate limits</td><td>Tune batch size and hardware for your SLA</td></tr>
-      <tr><td><strong>Model customization</strong></td><td>Fine-tuning limited or unavailable</td><td>Full control over weights, LoRA, quantization</td></tr>
-      <tr><td><strong>Regulatory compliance</strong></td><td>Data residency constraints</td><td>Full auditability; air-gapped deployment possible</td></tr>
+      <tr><td><strong>Data privacy</strong></td><td>Prompts transit provider infra</td><td>All data stays in your VPC</td></tr>
+      <tr><td><strong>Cost (50 devs)</strong></td><td>$30&ndash;60K/mo (Opus 4.6 pricing)</td><td>~$12K/mo reserved instances; break-even ~2 mo</td></tr>
+      <tr><td><strong>Models</strong></td><td>Opus 4.6 (proprietary, frontier)</td><td>DeepSeek, Qwen, GLM, Kimi (open-weight)</td></tr>
+      <tr><td><strong>Quality gap</strong></td><td>Frontier baseline</td><td>~5% below on daily coding; ~15&ndash;25% below on complex agentic tasks (multi-file refactors, architecture)</td></tr>
+      <tr><td><strong>Harness effect</strong></td><td>Claude Code: proprietary agent harness (tool use, planning, context mgmt) tightly coupled to Opus 4.6</td><td>OpenCode: open-source harness &mdash; same model scores differently; harness gap compounds model gap</td></tr>
+      <tr><td><strong>Ops burden</strong></td><td>None</td><td>1&ndash;2 engineers for EKS/GPU platform</td></tr>
+      <tr><td><strong>Latency</strong></td><td>Subject to provider load</td><td>Tunable; TTFT p99 &lt;5s achievable</td></tr>
     </tbody>
   </table></div>
 
   <div class="callout">
-    The core question is not whether self-hosting is cheaper &mdash; at low volume it rarely is. The question is whether the throughput-cost curve crosses below managed API pricing at your usage level, and whether data sovereignty requirements make the option mandatory regardless of cost.
+    Self-hosting makes sense if data sovereignty is non-negotiable or Opus 4.6 spend exceeds $30K/mo. The quality gap is real: ~5% on daily coding but 15&ndash;25% on complex agentic tasks, compounded by the harness gap (Claude Code vs OpenCode). Open-weight wins on latency, fine-tuning, and unlimited context. Consider a hybrid: self-host for sensitive repos and high-volume daily coding, keep Opus 4.6 + Claude Code for complex architecture and multi-step reasoning where the frontier edge matters.
   </div>
 </section>
 

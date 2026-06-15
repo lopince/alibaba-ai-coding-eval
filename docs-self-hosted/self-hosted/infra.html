@@ -246,16 +246,18 @@ Need managed endpoint with auto-scaling + VPC integration?
       <th>Coding Use Case</th>
     </tr></thead>
     <tbody>
-      <tr class="highlight"><td>Qwen3-Coder-32B</td><td style="text-align:center">FP8</td><td style="text-align:center">~36 GB</td><td style="text-align:center">g6e.48xlarge (8&times;L40S)</td><td style="text-align:center">~$11,500</td><td>Best balance of quality and cost for agentic coding</td></tr>
-      <tr><td>Qwen3-Coder-7B</td><td style="text-align:center">FP16</td><td style="text-align:center">~16 GB</td><td style="text-align:center">g6.12xlarge (4&times;L4)</td><td style="text-align:center">~$3,600</td><td>Low-latency inline completions; autocomplete</td></tr>
-      <tr><td>Devstral-Small-2 (24B)</td><td style="text-align:center">FP8</td><td style="text-align:center">~28 GB</td><td style="text-align:center">g6e.48xlarge (8&times;L40S)</td><td style="text-align:center">~$11,500</td><td>Optimized for SE agents; strong on agentic benchmarks</td></tr>
+      <tr class="highlight"><td>Qwen3-Coder-480B-A35B (MoE)</td><td style="text-align:center">FP8</td><td style="text-align:center">~490 GB</td><td style="text-align:center">p5.48xlarge (8&times;H100)</td><td style="text-align:center">~$93,600</td><td>Best quality &mdash; closest to Opus 4.6 on agentic coding; 35B active params</td></tr>
+      <tr><td>DeepSeek-V4-Pro (MoE)</td><td style="text-align:center">FP8</td><td style="text-align:center">~1.6 TB</td><td style="text-align:center">2&times; p5.48xlarge (PP=2)</td><td style="text-align:center">~$187,200</td><td>1M context; 49B active params; strongest open-weight reasoning</td></tr>
+      <tr><td>Kimi-K2.7-Code (MoE)</td><td style="text-align:center">FP8</td><td style="text-align:center">~1 TB</td><td style="text-align:center">2&times; p5.48xlarge (PP=2)</td><td style="text-align:center">~$187,200</td><td>32B active; strong agentic coding; 256K context</td></tr>
+      <tr><td>Qwen3-Coder-32B</td><td style="text-align:center">FP8</td><td style="text-align:center">~36 GB</td><td style="text-align:center">g6e.48xlarge (8&times;L40S)</td><td style="text-align:center">~$11,500</td><td>Cost-efficient daily coding; ~15&ndash;25% below Opus 4.6 on complex tasks</td></tr>
+      <tr><td>Qwen3-Coder-7B</td><td style="text-align:center">FP16</td><td style="text-align:center">~16 GB</td><td style="text-align:center">g6.12xlarge (4&times;L4)</td><td style="text-align:center">~$3,600</td><td>Low-latency inline completions; autocomplete only</td></tr>
       <tr><td>DeepSeek-Coder-V3 (671B MoE)</td><td style="text-align:center">FP8</td><td style="text-align:center">~680 GB</td><td style="text-align:center">p5.48xlarge (8&times;H100)</td><td style="text-align:center">~$93,600</td><td>160K context; deep workspace analysis</td></tr>
-      <tr><td>Qwen3-235B-A22B (MoE)</td><td style="text-align:center">INT4</td><td style="text-align:center">~142 GB</td><td style="text-align:center">p4de.24xlarge (8&times;A100)</td><td style="text-align:center">~$34,500</td><td>High-quality code gen; 22B active params</td></tr>
+      <tr><td>Qwen3-235B-A22B (MoE)</td><td style="text-align:center">INT4</td><td style="text-align:center">~142 GB</td><td style="text-align:center">p4de.24xlarge (8&times;A100)</td><td style="text-align:center">~$34,500</td><td>Mid-tier quality; 22B active params; good cost/quality balance</td></tr>
     </tbody>
   </table></div>
 
   <div class="callout">
-    <strong>Sizing for coding workloads:</strong> coding models generate long outputs (multi-file diffs, full implementations) and receive large prompts (entire repository context). Prioritize models with 32K+ context windows and sufficient KV cache headroom. A Qwen3-Coder-32B on g6e.48xlarge with FP8 is the recommended starting point &mdash; it handles 128K context and fits comfortably within 8&times;L40S VRAM.
+    <strong>Sizing for coding workloads:</strong> coding models generate long outputs (multi-file diffs, full implementations) and receive large prompts (entire repository context). Prioritize models with 32K+ context windows and sufficient KV cache headroom. To approach Opus 4.6 quality, start with <strong>Qwen3-Coder-480B-A35B on p5.48xlarge</strong> (FP8, 35B active params, 256K context). For cost-efficient daily coding where the 15&ndash;25% quality gap is acceptable, <strong>Qwen3-Coder-32B on g6e.48xlarge</strong> handles 128K context at ~$11.5K/mo.
   </div>
 
   <!-- ===== 3.5 PILLAR 2: AI GATEWAY ===== -->
@@ -620,12 +622,28 @@ Model fits in one GPU?
     </div>
   </div>
 
-  <h4>Cost Breakdown: Small Team (10 Engineers)</h4>
+  <h4>Cost Breakdown: Quality-Parity Deployment (50 Engineers)</h4>
 
   <div class="tbl"><table>
     <thead><tr><th>Component</th><th>AWS Service</th><th>Instance / Config</th><th style="text-align:center">Monthly Cost (OD)</th></tr></thead>
     <tbody>
-      <tr><td>Inference</td><td>EC2 / SageMaker</td><td>g6e.48xlarge (8&times;L40S) &mdash; Qwen3-Coder-32B FP8</td><td style="text-align:center">~$11,500</td></tr>
+      <tr><td>Inference (quality)</td><td>EC2</td><td>p5.48xlarge (8&times;H100) &mdash; Qwen3-Coder-480B FP8</td><td style="text-align:center">~$93,600</td></tr>
+      <tr><td>AI Gateway</td><td>ECS Fargate</td><td>2 vCPU / 4 GB RAM &mdash; LiteLLM proxy</td><td style="text-align:center">~$100</td></tr>
+      <tr><td>Auth</td><td>Cognito</td><td>MAU-based pricing (free tier: 50K MAU)</td><td style="text-align:center">~$0</td></tr>
+      <tr><td>Storage</td><td>S3 + EFS</td><td>~500 GB model weights + config</td><td style="text-align:center">~$25</td></tr>
+      <tr><td>Networking</td><td>ALB + NAT + VPC Endpoints</td><td>ALB hours + data processing</td><td style="text-align:center">~$150</td></tr>
+      <tr><td>Monitoring</td><td>CloudWatch</td><td>Logs + metrics + alarms</td><td style="text-align:center">~$100</td></tr>
+      <tr class="highlight"><td colspan="3"><strong>Total (on-demand)</strong></td><td style="text-align:center"><strong>~$94,000/mo</strong></td></tr>
+      <tr><td colspan="3"><strong>Total (1-year RI, ~35% discount on compute)</strong></td><td style="text-align:center"><strong>~$61,100/mo</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Cost Breakdown: Cost-Efficient Deployment (50 Engineers)</h4>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Component</th><th>AWS Service</th><th>Instance / Config</th><th style="text-align:center">Monthly Cost (OD)</th></tr></thead>
+    <tbody>
+      <tr><td>Inference (daily coding)</td><td>EC2</td><td>g6e.48xlarge (8&times;L40S) &mdash; Qwen3-Coder-32B FP8</td><td style="text-align:center">~$11,500</td></tr>
       <tr><td>AI Gateway</td><td>ECS Fargate</td><td>1 vCPU / 2 GB RAM &mdash; LiteLLM proxy</td><td style="text-align:center">~$50</td></tr>
       <tr><td>Auth</td><td>Cognito</td><td>MAU-based pricing (free tier: 50K MAU)</td><td style="text-align:center">~$0</td></tr>
       <tr><td>Storage</td><td>S3 + EFS</td><td>~200 GB model weights + config</td><td style="text-align:center">~$10</td></tr>
@@ -637,7 +655,7 @@ Model fits in one GPU?
   </table></div>
 
   <div class="callout">
-    <strong>Break-even analysis:</strong> Claude Sonnet API costs ~$3/M input tokens + $15/M output tokens. A team of 10 engineers generating ~2M tokens/day (typical for active coding) spends ~$1,800/mo on API costs. The self-hosted platform breaks even at ~4.4 months on reserved instances. Beyond that, every additional token is essentially free &mdash; and your code never leaves your VPC.
+    <strong>Break-even analysis:</strong> Opus 4.6 API costs ~$15/M input tokens + $75/M output tokens. A team of 50 engineers generating ~10M tokens/day (typical for active coding) spends ~$40&ndash;60K/mo on API costs. The cost-efficient deployment (32B) breaks even at <strong>~1 month</strong>. The quality-parity deployment (480B) costs more than Opus 4.6 API but keeps all data in your VPC &mdash; the ROI is data sovereignty, not cost savings. For the best of both: run 480B for complex tasks + 32B for daily coding, with LiteLLM routing by task type.
   </div>
 
   <!-- ===== 3.13 MONITORING ===== -->
