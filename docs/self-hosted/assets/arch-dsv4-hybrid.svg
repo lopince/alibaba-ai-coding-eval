@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="Inter,system-ui,sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#78706A"/>
+    </marker>
+    <marker id="arr-clay" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#A0522D"/>
+    </marker>
+    <marker id="arr-sky" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#3B7DD8"/>
+    </marker>
+    <marker id="arr-olive" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#6B7F3B"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="24" text-anchor="middle" font-size="14" font-weight="700" fill="#141413">Hybrid Multi-Tier Deployment — DeepSeek V4 Pro + V4-Flash</text>
+
+  <!-- Developer laptops -->
+  <rect x="15" y="50" width="160" height="80" rx="6" fill="#f0f7ed" stroke="#788C5D" stroke-width="1.5"/>
+  <text x="95" y="72" text-anchor="middle" font-size="11" font-weight="700" fill="#5a6b45" letter-spacing=".04em">50 DEVELOPERS</text>
+  <rect x="30" y="82" width="130" height="36" rx="4" fill="#fff" stroke="#d4d0c8"/>
+  <text x="95" y="100" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">IDE + Coding Harness</text>
+  <text x="95" y="113" text-anchor="middle" font-size="9" fill="#78706A">OpenCode / Cursor</text>
+
+  <!-- Arrow: Devs → CloudFront -->
+  <line x1="175" y1="90" x2="218" y2="90" stroke="#D97757" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="197" y="82" text-anchor="middle" font-size="8" font-weight="600" fill="#D97757">HTTPS</text>
+
+  <!-- CloudFront + WAF -->
+  <rect x="222" y="55" width="120" height="70" rx="6" fill="#fef9ee" stroke="#c77b00" stroke-width="1.5"/>
+  <text x="282" y="78" text-anchor="middle" font-size="11" font-weight="700" fill="#c77b00">CloudFront</text>
+  <text x="282" y="94" text-anchor="middle" font-size="11" font-weight="700" fill="#c77b00">+ WAF</text>
+  <text x="282" y="112" text-anchor="middle" font-size="8" fill="#78706A">TLS · DDoS · Rate limit</text>
+
+  <!-- Arrow: CF → LiteLLM -->
+  <line x1="342" y1="90" x2="385" y2="90" stroke="#78706A" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- LiteLLM Gateway -->
+  <rect x="388" y="48" width="170" height="85" rx="6" fill="#fef3ed" stroke="#D97757" stroke-width="2"/>
+  <text x="473" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="#D97757">LiteLLM Proxy</text>
+  <text x="473" y="87" text-anchor="middle" font-size="9" fill="#78706A">Task-based routing</text>
+  <text x="473" y="101" text-anchor="middle" font-size="9" fill="#78706A">Cognito JWT validation</text>
+  <text x="473" y="115" text-anchor="middle" font-size="9" fill="#78706A">Rate limits · Cost tracking</text>
+  <text x="473" y="128" text-anchor="middle" font-size="9" font-weight="600" fill="#D97757">/v1/chat/completions</text>
+
+  <!-- Three routing arrows from LiteLLM -->
+  <!-- Arrow 1: → Autocomplete (left) -->
+  <line x1="440" y1="133" x2="140" y2="210" stroke="#6B7F3B" stroke-width="2" marker-end="url(#arr-olive)"/>
+  <rect x="230" y="158" width="110" height="18" rx="3" fill="rgba(107,127,59,.1)"/>
+  <text x="285" y="171" text-anchor="middle" font-size="9" font-weight="600" fill="#6B7F3B">&lt;50 tok, &lt;2K in</text>
+
+  <!-- Arrow 2: → V4-Flash (center) -->
+  <line x1="473" y1="133" x2="473" y2="210" stroke="#3B7DD8" stroke-width="2" marker-end="url(#arr-sky)"/>
+  <rect x="418" y="160" width="110" height="18" rx="3" fill="rgba(59,125,216,.1)"/>
+  <text x="473" y="173" text-anchor="middle" font-size="9" font-weight="600" fill="#3B7DD8">&lt;2K out, &lt;8K in</text>
+
+  <!-- Arrow 3: → V4-Pro (right) -->
+  <line x1="510" y1="133" x2="800" y2="210" stroke="#A0522D" stroke-width="2" marker-end="url(#arr-clay)"/>
+  <rect x="595" y="158" width="118" height="18" rx="3" fill="rgba(160,82,45,.1)"/>
+  <text x="654" y="171" text-anchor="middle" font-size="9" font-weight="600" fill="#A0522D">&gt;2K out, &gt;8K in</text>
+
+  <!-- ===== TIER 3: Autocomplete ===== -->
+  <rect x="30" y="215" width="230" height="130" rx="6" fill="rgba(107,127,59,.06)" stroke="#6B7F3B" stroke-width="1.5"/>
+  <rect x="35" y="220" width="95" height="16" rx="2" fill="rgba(107,127,59,.15)"/>
+  <text x="40" y="232" font-size="9" font-weight="700" fill="#6B7F3B">TIER 3 — FAST</text>
+
+  <rect x="45" y="244" width="200" height="42" rx="4" fill="#fff" stroke="#6B7F3B" stroke-width=".75"/>
+  <text x="145" y="262" text-anchor="middle" font-size="11" font-weight="600" fill="#141413">Qwen3-Coder-7B FP16</text>
+  <text x="145" y="278" text-anchor="middle" font-size="9" fill="#78706A">Inline autocomplete · &lt;500ms</text>
+
+  <rect x="45" y="296" width="200" height="38" rx="4" fill="#f0f7ed" stroke="#6B7F3B" stroke-width=".5"/>
+  <text x="145" y="313" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">g6.12xlarge</text>
+  <text x="145" y="328" text-anchor="middle" font-size="9" fill="#78706A">4× L4 · 96 GB VRAM · ~$3.6K/mo</text>
+
+  <!-- ===== TIER 3b: V4-Flash ===== -->
+  <rect x="335" y="215" width="230" height="130" rx="6" fill="rgba(59,125,216,.06)" stroke="#3B7DD8" stroke-width="1.5"/>
+  <rect x="340" y="220" width="120" height="16" rx="2" fill="rgba(59,125,216,.15)"/>
+  <text x="345" y="232" font-size="9" font-weight="700" fill="#3B7DD8">TIER 3 — V4-FLASH</text>
+
+  <rect x="350" y="244" width="200" height="42" rx="4" fill="#fff" stroke="#3B7DD8" stroke-width=".75"/>
+  <text x="450" y="262" text-anchor="middle" font-size="11" font-weight="600" fill="#141413">DeepSeek V4-Flash FP8</text>
+  <text x="450" y="278" text-anchor="middle" font-size="9" fill="#78706A">284B total · 13B active · TP=4</text>
+
+  <rect x="350" y="296" width="200" height="38" rx="4" fill="#e8f4f8" stroke="#3B7DD8" stroke-width=".5"/>
+  <text x="450" y="313" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">g6e.48xlarge</text>
+  <text x="450" y="328" text-anchor="middle" font-size="9" fill="#78706A">8× L40S · 384 GB · ~$11.5K/mo</text>
+
+  <!-- ===== TIER 2: V4-Pro INT4 ===== -->
+  <rect x="640" y="215" width="245" height="130" rx="6" fill="rgba(160,82,45,.06)" stroke="#A0522D" stroke-width="1.5"/>
+  <rect x="645" y="220" width="120" height="16" rx="2" fill="rgba(160,82,45,.15)"/>
+  <text x="650" y="232" font-size="9" font-weight="700" fill="#A0522D">TIER 2 — V4-PRO</text>
+
+  <rect x="655" y="244" width="215" height="42" rx="4" fill="#fff" stroke="#A0522D" stroke-width=".75"/>
+  <text x="762" y="262" text-anchor="middle" font-size="11" font-weight="600" fill="#141413">DeepSeek V4-Pro INT4 AWQ</text>
+  <text x="762" y="278" text-anchor="middle" font-size="9" fill="#78706A">1.6T total · 49B active · TP=8</text>
+
+  <rect x="655" y="296" width="215" height="38" rx="4" fill="#fef3ed" stroke="#A0522D" stroke-width=".5"/>
+  <text x="762" y="313" text-anchor="middle" font-size="10" font-weight="600" fill="#141413">p5.48xlarge</text>
+  <text x="762" y="328" text-anchor="middle" font-size="9" fill="#78706A">8× H100 · 640 GB VRAM · ~$93.6K/mo</text>
+
+  <!-- Request distribution bar -->
+  <rect x="30" y="370" width="855" height="55" rx="6" fill="#fff" stroke="#d4d0c8" stroke-width="1"/>
+  <text x="457" y="389" text-anchor="middle" font-size="11" font-weight="700" fill="#141413">Request Distribution (50 Devs, Daily)</text>
+  <!-- 60% bar -->
+  <rect x="45" y="398" width="507" height="18" rx="3" fill="rgba(107,127,59,.25)" stroke="#6B7F3B" stroke-width=".5"/>
+  <text x="298" y="411" text-anchor="middle" font-size="9" font-weight="600" fill="#5a6b45">60% — Autocomplete + Quick Edits (Tier 3)</text>
+  <!-- 30% bar -->
+  <rect x="552" y="398" width="254" height="18" rx="3" fill="rgba(59,125,216,.25)" stroke="#3B7DD8" stroke-width=".5"/>
+  <text x="679" y="411" text-anchor="middle" font-size="9" font-weight="600" fill="#3B7DD8">30% — Coding / Review (V4-Flash)</text>
+  <!-- 10% bar -->
+  <rect x="806" y="398" width="68" height="18" rx="3" fill="rgba(160,82,45,.25)" stroke="#A0522D" stroke-width=".5"/>
+  <text x="840" y="411" text-anchor="middle" font-size="8" font-weight="600" fill="#A0522D">10%</text>
+
+  <!-- Cost summary -->
+  <rect x="30" y="442" width="855" height="60" rx="6" fill="#fef9ee" stroke="#c77b00" stroke-width="1.5"/>
+  <text x="457" y="464" text-anchor="middle" font-size="12" font-weight="700" fill="#c77b00">Total Monthly Cost (Hybrid Tier 2 + Tier 3)</text>
+  <text x="300" y="488" text-anchor="middle" font-size="11" fill="#141413">On-Demand: <tspan font-weight="700" fill="#A0522D">~$109K/mo</tspan></text>
+  <text x="620" y="488" text-anchor="middle" font-size="11" fill="#141413">1-Year RI: <tspan font-weight="700" fill="#6B7F3B">~$71K/mo</tspan></text>
+  <text x="830" y="488" text-anchor="middle" font-size="10" fill="#78706A">~$1,420/dev/mo RI</text>
+</svg>

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" font-family="Inter,system-ui,sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#78706A"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="24" text-anchor="middle" font-size="14" font-weight="700" fill="#141413">VRAM Budget — DeepSeek V4 Pro on AWS</text>
+
+  <!-- ===== TIER 1: FP8 PP=2 ===== -->
+  <text x="30" y="60" font-size="12" font-weight="700" fill="#A0522D">Tier 1 — FP8, PP=2</text>
+  <text x="30" y="76" font-size="10" fill="#78706A">2× p5.48xlarge · 1,280 GB total · 19% headroom</text>
+
+  <!-- Available VRAM bar -->
+  <rect x="30" y="86" width="840" height="36" rx="4" fill="#f5f0eb" stroke="#d4d0c8" stroke-width=".5"/>
+  <text x="870" y="109" text-anchor="end" font-size="9" fill="#78706A">1,280 GB</text>
+
+  <!-- Weights: 865 GB = 865/1280 * 840 = 567 -->
+  <rect x="30" y="86" width="567" height="36" rx="4" fill="rgba(160,82,45,.3)" stroke="#A0522D" stroke-width=".5"/>
+  <text x="314" y="109" text-anchor="middle" font-size="10" font-weight="600" fill="#A0522D">Model Weights ~865 GB</text>
+
+  <!-- KV cache: 120 GB = 120/1280 * 840 = 79 -->
+  <rect x="597" y="86" width="79" height="36" fill="rgba(59,125,216,.3)" stroke="#3B7DD8" stroke-width=".5"/>
+  <text x="636" y="109" text-anchor="middle" font-size="9" font-weight="600" fill="#3B7DD8">KV 120</text>
+
+  <!-- Runtime: 50 GB = 50/1280 * 840 = 33 -->
+  <rect x="676" y="86" width="33" height="36" fill="rgba(199,123,0,.3)" stroke="#c77b00" stroke-width=".5"/>
+  <text x="715" y="99" font-size="8" font-weight="600" fill="#c77b00">RT 50</text>
+
+  <!-- Headroom: 245 GB = 245/1280 * 840 = 161 -->
+  <rect x="709" y="86" width="161" height="36" rx="0 4 4 0" fill="rgba(107,127,59,.15)" stroke="#6B7F3B" stroke-width=".5" stroke-dasharray="3 2"/>
+  <text x="789" y="109" text-anchor="middle" font-size="9" font-weight="500" fill="#6B7F3B">Headroom 245 GB</text>
+
+  <!-- ===== TIER 2: INT4 TP=8 ===== -->
+  <text x="30" y="162" font-size="12" font-weight="700" fill="#3B7DD8">Tier 2 — INT4 AWQ, TP=8 (Recommended)</text>
+  <text x="30" y="178" font-size="10" fill="#78706A">1× p5.48xlarge · 640 GB total · 18% headroom</text>
+
+  <!-- Available VRAM bar -->
+  <rect x="30" y="188" width="420" height="36" rx="4" fill="#e8f4f8" stroke="#d4d0c8" stroke-width=".5"/>
+  <text x="450" y="211" text-anchor="end" font-size="9" fill="#78706A">640 GB</text>
+
+  <!-- Weights: 432 GB = 432/640 * 420 = 284 -->
+  <rect x="30" y="188" width="284" height="36" rx="4" fill="rgba(59,125,216,.3)" stroke="#3B7DD8" stroke-width=".5"/>
+  <text x="172" y="211" text-anchor="middle" font-size="10" font-weight="600" fill="#3B7DD8">Model Weights ~432 GB</text>
+
+  <!-- KV cache: 60 GB = 60/640 * 420 = 39 -->
+  <rect x="314" y="188" width="39" height="36" fill="rgba(107,127,59,.3)" stroke="#6B7F3B" stroke-width=".5"/>
+  <text x="358" y="201" font-size="8" font-weight="600" fill="#6B7F3B">KV 60</text>
+
+  <!-- Runtime: 30 GB = 30/640 * 420 = 20 -->
+  <rect x="353" y="188" width="20" height="36" fill="rgba(199,123,0,.3)" stroke="#c77b00" stroke-width=".5"/>
+  <text x="382" y="201" font-size="8" font-weight="600" fill="#c77b00">RT 30</text>
+
+  <!-- Headroom: 118 GB = 118/640 * 420 = 77 -->
+  <rect x="373" y="188" width="77" height="36" rx="0 4 4 0" fill="rgba(107,127,59,.15)" stroke="#6B7F3B" stroke-width=".5" stroke-dasharray="3 2"/>
+  <text x="412" y="211" text-anchor="middle" font-size="9" font-weight="500" fill="#6B7F3B">Head 118</text>
+
+  <!-- ===== TIER 3: V4-Flash FP8 TP=4 ===== -->
+  <text x="30" y="264" font-size="12" font-weight="700" fill="#6B7F3B">Tier 3 — V4-Flash FP8, TP=4</text>
+  <text x="30" y="280" font-size="10" fill="#78706A">1× g6e.48xlarge · 384 GB total · 44% headroom</text>
+
+  <!-- Available VRAM bar -->
+  <rect x="30" y="290" width="252" height="36" rx="4" fill="#f0f7ed" stroke="#d4d0c8" stroke-width=".5"/>
+  <text x="282" y="313" text-anchor="end" font-size="9" fill="#78706A">384 GB</text>
+
+  <!-- Weights: 160 GB = 160/384 * 252 = 105 -->
+  <rect x="30" y="290" width="105" height="36" rx="4" fill="rgba(107,127,59,.3)" stroke="#6B7F3B" stroke-width=".5"/>
+  <text x="82" y="313" text-anchor="middle" font-size="10" font-weight="600" fill="#6B7F3B">Weights 160</text>
+
+  <!-- KV cache: 40 GB = 40/384 * 252 = 26 -->
+  <rect x="135" y="290" width="26" height="36" fill="rgba(59,125,216,.3)" stroke="#3B7DD8" stroke-width=".5"/>
+  <text x="170" y="303" font-size="8" font-weight="600" fill="#3B7DD8">KV 40</text>
+
+  <!-- Runtime: 15 GB = 15/384 * 252 = 10 -->
+  <rect x="161" y="290" width="10" height="36" fill="rgba(199,123,0,.3)" stroke="#c77b00" stroke-width=".5"/>
+  <text x="180" y="303" font-size="8" font-weight="600" fill="#c77b00">RT 15</text>
+
+  <!-- Headroom: 169 GB = 169/384 * 252 = 111 -->
+  <rect x="171" y="290" width="111" height="36" rx="0 4 4 0" fill="rgba(107,127,59,.15)" stroke="#6B7F3B" stroke-width=".5" stroke-dasharray="3 2"/>
+  <text x="226" y="313" text-anchor="middle" font-size="9" font-weight="500" fill="#6B7F3B">Head 169</text>
+
+  <!-- Legend -->
+  <rect x="530" y="152" width="340" height="100" rx="6" fill="#fff" stroke="#d4d0c8" stroke-width=".75"/>
+  <text x="545" y="172" font-size="10" font-weight="700" fill="#141413">Legend</text>
+  <rect x="545" y="182" width="18" height="12" rx="2" fill="rgba(160,82,45,.3)" stroke="#A0522D" stroke-width=".5"/>
+  <text x="570" y="192" font-size="9" fill="#78706A">Model Weights (FP8 or INT4 AWQ quantized)</text>
+  <rect x="545" y="200" width="18" height="12" rx="2" fill="rgba(59,125,216,.3)" stroke="#3B7DD8" stroke-width=".5"/>
+  <text x="570" y="210" font-size="9" fill="#78706A">KV Cache (DSA compressed, 128K ctx, 10 concurrent)</text>
+  <rect x="545" y="218" width="18" height="12" rx="2" fill="rgba(199,123,0,.3)" stroke="#c77b00" stroke-width=".5"/>
+  <text x="570" y="228" font-size="9" fill="#78706A">Runtime Overhead (vLLM, activations, temporary buffers)</text>
+  <rect x="545" y="236" width="18" height="12" rx="2" fill="rgba(107,127,59,.15)" stroke="#6B7F3B" stroke-width=".5" stroke-dasharray="3 2"/>
+  <text x="570" y="246" font-size="9" fill="#78706A">Headroom (available for batch scaling, longer contexts)</text>
+
+  <!-- DSA callout -->
+  <rect x="530" y="264" width="340" height="50" rx="6" fill="#e8f4f8" stroke="#3B7DD8" stroke-width="1"/>
+  <text x="700" y="282" text-anchor="middle" font-size="10" font-weight="600" fill="#3B7DD8">DSA Sparse Attention = 4× KV Cache Compression</text>
+  <text x="700" y="298" text-anchor="middle" font-size="9" fill="#78706A">Without DSA, 128K ctx × 10 sessions would need ~480 GB KV cache for V4-Pro FP8</text>
+  <text x="700" y="310" text-anchor="middle" font-size="9" fill="#78706A">— pushing total VRAM well beyond 2-node p5 cluster capacity</text>
+</svg>
