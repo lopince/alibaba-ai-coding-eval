@@ -43,7 +43,7 @@
 
 <header class="top">
   <h1><a href="index.html">Self-Hosting LLM</a></h1>
-  <div class="meta">Research &middot; 4 sections</div>
+  <div class="meta">Research &middot; 6 sections</div>
 </header>
 
 <p class="tldr">Designing a self-hosted LLM coding platform on AWS &mdash; open-weight model selection, benchmark evaluation, infrastructure architecture, and serving optimization.</p>
@@ -54,32 +54,39 @@
   <a href="benchmark.html">Benchmark</a>
   <a href="infra.html">Infrastructure</a>
   <a href="serving.html">Serving</a>
+  <a href="deepseek-v4.html">Serving DeepSeek V4 Pro</a>
 </div></nav>
 
 <div class="card-grid">
 
   <a class="card" href="models.html">
-    <div class="card-crumb">Section 1</div>
+    <div class="card-crumb">Section 2</div>
     <h3>Models</h3>
     <p>16 open-weight models from DeepSeek, Qwen, Zhipu AI, Moonshot AI, and MiniMax &mdash; parameter counts, context windows, MoE vs dense architecture, licensing, and HuggingFace deployment recipes.</p>
   </a>
 
   <a class="card" href="benchmark.html">
-    <div class="card-crumb">Section 2</div>
+    <div class="card-crumb">Section 3</div>
     <h3>Benchmark</h3>
     <p>Four-pillar PoC evaluation framework &mdash; open benchmarks (SWE-bench, LiveCodeBench, Terminal-Bench), lean eval tools, go/no-go success metrics, and a Docker-based evaluation pipeline with custom internal datasets.</p>
   </a>
 
   <a class="card" href="infra.html">
-    <div class="card-crumb">Section 3</div>
+    <div class="card-crumb">Section 4</div>
     <h3>Infrastructure</h3>
     <p>AWS reference architecture for a self-hosted LLM coding platform &mdash; three-pillar design (inference core, AI gateway, MCP tooling), hybrid local-cloud execution, security-first VPC design, and cost optimization.</p>
   </a>
 
   <a class="card" href="serving.html">
-    <div class="card-crumb">Section 4</div>
+    <div class="card-crumb">Section 5</div>
     <h3>Serving</h3>
     <p>Five techniques that determine serving performance &mdash; roofline analysis, prefill/decode asymmetry, KV cache management, parallelism strategies, and disaggregated serving &mdash; plus a practical deployment sizing guide.</p>
+  </a>
+
+  <a class="card" href="deepseek-v4.html">
+    <div class="card-crumb">Section 6</div>
+    <h3>Serving DeepSeek V4 Pro</h3>
+    <p>Concrete infrastructure options, resource sizing, and cost estimates for self-hosting DeepSeek V4 Pro on AWS for a 50-developer coding team &mdash; three deployment tiers, hybrid routing, and a production checklist.</p>
   </a>
 
 </div>

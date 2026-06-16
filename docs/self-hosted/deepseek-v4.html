@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Serving DeepSeek V4 Pro &mdash; Self-Hosting LLM</title>
+<link rel="stylesheet" href="../style.css"/>
+<style>
+.formula-box { background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--sky); padding: 1rem 1.4rem; margin: 1.2rem 0; border-radius: 4px; }
+.formula-box pre { background: none; border: none; padding: 0; margin: 0; font: 14px/1.6 var(--mono); color: var(--ink); }
+.tier-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.2rem; margin-bottom: 1rem; }
+.tier-card h4 { margin: 0 0 .5em; font: 600 15px/1.2 var(--sans); text-transform: none; letter-spacing: 0; color: var(--ink); }
+.tier-card .tier-price { font: 600 13px/1 var(--sans); color: var(--clay); margin-bottom: .6em; }
+.tier-card ul { margin: .4em 0; padding-left: 1.2em; font-size: .88rem; color: var(--ink-soft); }
+.tier-card li { margin-bottom: .2em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Self-Hosting LLM</a></h1>
+  <div class="meta">Section 6 of 6</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="models.html">Models</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="infra.html">Infrastructure</a>
+  <a href="serving.html">Serving</a>
+  <a href="deepseek-v4.html" class="active">Serving DeepSeek V4 Pro</a>
+</div></nav>
+
+</div>
+
+<div class="wrap">
+
+<section class="eval">
+  <div class="crumb">Section 6</div>
+  <h2>Serving DeepSeek V4 Pro &mdash; 50-Developer Production Deployment</h2>
+
+  <p>A concrete infrastructure design, resource sizing, and cost estimate for self-hosting <strong>DeepSeek-V4-Pro</strong> on AWS to build a coding platform serving a 50-developer team doing daily coding and code analysis. This section translates the general architecture from <a href="infra.html">Section 4 (Infrastructure)</a> and the serving techniques from <a href="serving.html">Section 5 (Serving)</a> into specific hardware, parallelism, and budget decisions for DeepSeek V4 Pro.</p>
+
+  <h3>Model Profile: DeepSeek V4 Pro (1.6T MoE)</h3>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Attribute</th><th>Value</th><th>Implication for Sizing</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Total parameters</strong></td><td>1.6 trillion (MoE)</td><td>Full weight set must reside in GPU VRAM or be sharded</td></tr>
+      <tr><td><strong>Active per token</strong></td><td>49B (top-k expert routing)</td><td>Only ~3% of weights activated per inference step; compute cost resembles a dense 49B model</td></tr>
+      <tr><td><strong>Context window</strong></td><td>1M tokens (128K default, extendable)</td><td>KV cache dominates VRAM at long contexts; DSA compression mitigates this</td></tr>
+      <tr><td><strong>Max output</strong></td><td>384K tokens</td><td>Long generation cycles (multi-file diffs, full implementations) require sustained decode throughput</td></tr>
+      <tr><td><strong>FP8 weight size</strong></td><td>~865 GB (on disk)</td><td>Minimum 1 TB VRAM with FP8; production needs 1.2 TB+ for KV cache headroom</td></tr>
+      <tr><td><strong>INT4 (Q4) weight size</strong></td><td>~432 GB (on disk)</td><td>Minimum 512 GB VRAM; production needs 640 GB+ for KV cache headroom</td></tr>
+      <tr><td><strong>Attention mechanism</strong></td><td>DSA (DeepSeek Sparse Attention) + 4&times; token compression</td><td>Compression reduces KV cache to ~25% of dense-equivalent; critical for 1M context feasibility</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ===== THREE DEPLOYMENT TIERS ===== -->
+  <h3>Infrastructure Options: Three Tiers</h3>
+
+  <p>For a 50-developer coding team, three deployment tiers balance quality, cost, and operational complexity. The key variable is <strong>quantization + parallelism</strong> &mdash; which determines how many GPUs and which instance types you need.</p>
+
+  <div class="tier-card" style="border-left:3px solid var(--clay)">
+    <h4>Tier 1 &mdash; Maximum Quality (FP8, Full Model)</h4>
+    <div class="tier-price">~$187,200/mo (on-demand) &mdash; best coding quality, lowest degradation</div>
+    <ul>
+      <li><strong>Quantization:</strong> FP8 (near-lossless, 98&ndash;99.5% of BF16 quality)</li>
+      <li><strong>Parallelism:</strong> Pipeline Parallel (PP=2) across 2 nodes, Tensor Parallel (TP=8) within each node</li>
+      <li><strong>Hardware:</strong> 2&times; p5.48xlarge (16&times;H100, 1,280 GB VRAM total)</li>
+      <li><strong>Context:</strong> Full 128K default context; 1M context with DSA compression</li>
+      <li><strong>Concurrent users:</strong> 20&ndash;25 simultaneous coding sessions at 128K context</li>
+      <li><strong>Use case:</strong> Complex multi-file refactors, deep codebase analysis, agentic workflows</li>
+    </ul>
+  </div>
+
+  <div class="tier-card" style="border-left:3px solid var(--sky)">
+    <h4>Tier 2 &mdash; Balanced (INT4 AWQ, Single Node) &mdash; <em>Recommended</em></h4>
+    <div class="tier-price">~$93,600/mo (on-demand) &mdash; strong quality at 50% cost reduction</div>
+    <ul>
+      <li><strong>Quantization:</strong> INT4 AWQ (97&ndash;99% of BF16 quality; benchmark on your coding tasks first)</li>
+      <li><strong>Parallelism:</strong> Tensor Parallel (TP=8) within single node</li>
+      <li><strong>Hardware:</strong> 1&times; p5.48xlarge (8&times;H100, 640 GB VRAM)</li>
+      <li><strong>Context:</strong> 128K default context with headroom; 1M possible with aggressive DSA + reduced batch</li>
+      <li><strong>Concurrent users:</strong> 10&ndash;15 simultaneous coding sessions at 128K context</li>
+      <li><strong>Use case:</strong> Daily coding, code review, inline suggestions, moderate-complexity agentic tasks</li>
+    </ul>
+  </div>
+
+  <div class="tier-card" style="border-left:3px solid var(--olive)">
+    <h4>Tier 3 &mdash; Cost-Efficient (V4-Flash FP8, Lightweight)</h4>
+    <div class="tier-price">~$16,000/mo (on-demand) &mdash; acceptable quality for routine coding</div>
+    <ul>
+      <li><strong>Model:</strong> DeepSeek V4-Flash (284B total, 13B active) &mdash; the lighter variant</li>
+      <li><strong>Quantization:</strong> FP8 (~160 GB weights, 192&ndash;256 GB VRAM needed)</li>
+      <li><strong>Parallelism:</strong> Tensor Parallel (TP=4) on 4 GPUs within a node</li>
+      <li><strong>Hardware:</strong> 1&times; g6e.48xlarge (8&times;L40S, 384 GB VRAM) &mdash; or 1&times; p5en.48xlarge for H200</li>
+      <li><strong>Context:</strong> 128K default; 1M with DSA compression</li>
+      <li><strong>Concurrent users:</strong> 30&ndash;40 simultaneous sessions at 128K (smaller active params = more throughput)</li>
+      <li><strong>Use case:</strong> Autocomplete, quick edits, simple Q&amp;A; pair with Tier 2 for complex tasks</li>
+    </ul>
+  </div>
+
+  <div class="callout">
+    <strong>Recommended pattern for 50 devs:</strong> Deploy <strong>Tier 2 (INT4 on p5.48xlarge)</strong> as the primary model for daily coding and code analysis. Add <strong>Tier 3 (V4-Flash on g6e.48xlarge)</strong> as a fast-autocomplete tier. Route via LiteLLM: simple edits &rarr; V4-Flash, complex tasks &rarr; V4-Pro INT4. Total cost: ~$110K/mo OD (~$72K/mo RI) with both tiers running 24/7. Scale V4-Pro to FP8 (Tier 1) only if your coding benchmarks show meaningful quality gaps.
+  </div>
+
+  <!-- ===== RESOURCE SIZING ===== -->
+  <h3>Resource Sizing: DeepSeek V4 Pro on AWS</h3>
+
+  <p>Concrete VRAM budgets, parallelism configs, and throughput estimates for each tier. Numbers assume vLLM with PagedAttention and continuous batching enabled.</p>
+
+  <div class="tbl"><table>
+    <thead><tr>
+      <th>Resource</th>
+      <th style="text-align:center">Tier 1 (FP8, PP=2)</th>
+      <th style="text-align:center">Tier 2 (INT4, TP=8)</th>
+      <th style="text-align:center">Tier 3 (V4-Flash FP8, TP=4)</th>
+    </tr></thead>
+    <tbody>
+      <tr><td><strong>Model weights in VRAM</strong></td><td style="text-align:center">~865 GB</td><td style="text-align:center">~432 GB</td><td style="text-align:center">~160 GB</td></tr>
+      <tr><td><strong>KV cache (128K ctx, 10 concurrent)</strong></td><td style="text-align:center">~120 GB (DSA compressed)</td><td style="text-align:center">~60 GB (DSA compressed)</td><td style="text-align:center">~40 GB (DSA compressed)</td></tr>
+      <tr><td><strong>Runtime overhead (vLLM, activations)</strong></td><td style="text-align:center">~50 GB</td><td style="text-align:center">~30 GB</td><td style="text-align:center">~15 GB</td></tr>
+      <tr><td><strong>Total VRAM needed</strong></td><td style="text-align:center"><strong>~1,035 GB</strong></td><td style="text-align:center"><strong>~522 GB</strong></td><td style="text-align:center"><strong>~215 GB</strong></td></tr>
+      <tr><td><strong>Available VRAM</strong></td><td style="text-align:center">1,280 GB (2&times; p5)</td><td style="text-align:center">640 GB (1&times; p5)</td><td style="text-align:center">384 GB (1&times; g6e)</td></tr>
+      <tr><td><strong>Headroom for batch scaling</strong></td><td style="text-align:center"><span class="s-pass">245 GB (19%)</span></td><td style="text-align:center"><span class="s-pass">118 GB (18%)</span></td><td style="text-align:center"><span class="s-pass">169 GB (44%)</span></td></tr>
+      <tr><td><strong>Max concurrent sessions (128K ctx)</strong></td><td style="text-align:center">20&ndash;25</td><td style="text-align:center">10&ndash;15</td><td style="text-align:center">30&ndash;40</td></tr>
+      <tr><td><strong>Est. throughput (output tok/s)</strong></td><td style="text-align:center">~3,000&ndash;4,000</td><td style="text-align:center">~2,000&ndash;3,000</td><td style="text-align:center">~4,000&ndash;6,000</td></tr>
+      <tr><td><strong>TTFT p50 (128K prompt)</strong></td><td style="text-align:center">~3&ndash;5s</td><td style="text-align:center">~4&ndash;7s</td><td style="text-align:center">~2&ndash;3s</td></tr>
+      <tr><td><strong>EFA inter-node bandwidth</strong></td><td style="text-align:center">3,200 Gbps (PP required)</td><td style="text-align:center">N/A (single node, NVLink)</td><td style="text-align:center">N/A (single node)</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>DSA compression is the key enabler:</strong> DeepSeek V4&rsquo;s Sparse Attention compresses the KV cache by ~4&times; compared to dense attention. Without it, 128K context at 10 concurrent sessions would need ~480 GB of KV cache for V4-Pro FP8 &mdash; pushing total VRAM well beyond a 2-node p5 cluster. Always enable DSA (or equivalent sparse attention) when self-hosting DeepSeek V4 at long contexts.
+  </div>
+
+  <!-- ===== PARALLELISM CONFIG ===== -->
+  <h3>Parallelism Configuration Detail</h3>
+
+  <div class="tbl"><table>
+    <thead><tr>
+      <th>Config</th>
+      <th>Tier 1 (FP8)</th>
+      <th>Tier 2 (INT4)</th>
+      <th>Tier 3 (V4-Flash FP8)</th>
+    </tr></thead>
+    <tbody>
+      <tr><td><strong>vLLM launch command</strong></td><td><code>--tensor-parallel-size 8 --pipeline-parallel-size 2</code></td><td><code>--tensor-parallel-size 8</code></td><td><code>--tensor-parallel-size 4</code></td></tr>
+      <tr><td><strong>Ray cluster</strong></td><td>2 nodes, 8 GPUs each; EFA interconnect</td><td>Single node, 8 GPUs; NVLink intra-node</td><td>Single node, 4 GPUs used (4 spare for batch)</td></tr>
+      <tr><td><strong>Expert parallelism</strong></td><td>MoE experts distributed via TP across 8 GPUs per node</td><td>MoE experts sharded across 8 GPUs via TP</td><td>MoE experts sharded across 4 GPUs via TP</td></tr>
+      <tr><td><strong>Max model length</strong></td><td><code>--max-model-len 131072</code></td><td><code>--max-model-len 131072</code></td><td><code>--max-model-len 131072</code></td></tr>
+      <tr><td><strong>GPU memory util</strong></td><td><code>--gpu-memory-utilization 0.92</code></td><td><code>--gpu-memory-utilization 0.90</code></td><td><code>--gpu-memory-utilization 0.85</code></td></tr>
+      <tr><td><strong>Quantization flag</strong></td><td><code>--quantization fp8</code></td><td><code>--quantization awq</code></td><td><code>--quantization fp8</code></td></tr>
+      <tr><td><strong>KV cache dtype</strong></td><td>FP8 (auto with weight quant)</td><td>FP8 (separate from AWQ weights)</td><td>FP8 (auto with weight quant)</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ===== WORKLOAD MODEL ===== -->
+  <h3>Workload Model: 50-Developer Team</h3>
+
+  <p>To size correctly, estimate the daily token generation for a team of 50 developers doing coding and code analysis:</p>
+
+  <div class="formula-box">
+    <pre><strong>Daily Token Budget (50 devs, coding workloads)</strong>
+
+Active devs during peak hours:    ~30 (60% concurrency)
+Avg prompts per dev per day:       ~40 (coding sessions, reviews, Q&A)
+Avg input tokens per prompt:       ~8,000 (file context + system prompt + diffs)
+Avg output tokens per prompt:      ~2,000 (code generation, analysis, suggestions)
+
+Daily input tokens:  30 devs × 40 prompts × 8K = <strong>~960K input tokens/day</strong>
+Daily output tokens: 30 devs × 40 prompts × 2K = <strong>~240K output tokens/day</strong>
+Peak-hour throughput needed:       ~30 concurrent × ~50 tok/s each = <strong>~1,500 tok/s output</strong>
+
+Sustained daily total:             <strong>~1.2M tokens/day</strong> (input + output)
+Monthly total:                     <strong>~36M tokens/month</strong></pre>
+  </div>
+
+  <div class="callout">
+    <strong>Coding vs chat workloads:</strong> coding prompts are 3&ndash;5&times; longer than chat prompts (8K vs 2K input) because they include file context, git diffs, and repository maps. Output is also longer (2K vs 500 tokens) because the model generates multi-file diffs and full implementations. This makes coding workloads VRAM-heavy (large KV cache) and decode-heavy (long output sequences). Prioritize KV cache headroom and decode throughput over raw prefill speed.
+  </div>
+
+  <!-- ===== COST ESTIMATE ===== -->
+  <h3>Cost Estimate: DeepSeek V4 Pro on AWS (50 Developers)</h3>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Component</th><th>AWS Service</th><th>Config</th><th style="text-align:center">Tier 1 (FP8)</th><th style="text-align:center">Tier 2 (INT4)</th><th style="text-align:center">Tier 3 (V4-Flash)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Inference GPU</strong></td><td>EC2</td><td>p5.48xlarge / p5.48xlarge / g6e.48xlarge</td><td style="text-align:center">2&times; p5 = ~$187K</td><td style="text-align:center">1&times; p5 = ~$94K</td><td style="text-align:center">1&times; g6e = ~$12K</td></tr>
+      <tr><td><strong>Autocomplete GPU</strong></td><td>EC2</td><td>g6.12xlarge (4&times;L4, Qwen3-Coder-7B FP16)</td><td style="text-align:center">~$3.6K</td><td style="text-align:center">~$3.6K</td><td style="text-align:center">included (spare L40S)</td></tr>
+      <tr><td><strong>AI Gateway</strong></td><td>ECS Fargate</td><td>2 vCPU / 4 GB &mdash; LiteLLM proxy</td><td style="text-align:center">~$100</td><td style="text-align:center">~$100</td><td style="text-align:center">~$100</td></tr>
+      <tr><td><strong>Auth</strong></td><td>Cognito</td><td>MAU-based (free tier: 50K)</td><td style="text-align:center">~$0</td><td style="text-align:center">~$0</td><td style="text-align:center">~$0</td></tr>
+      <tr><td><strong>Model storage</strong></td><td>S3</td><td>~1 TB FP8 / ~500 GB INT4 / ~200 GB Flash</td><td style="text-align:center">~$23</td><td style="text-align:center">~$12</td><td style="text-align:center">~$5</td></tr>
+      <tr><td><strong>Config + cache storage</strong></td><td>EFS</td><td>50 GB shared config</td><td style="text-align:center">~$15</td><td style="text-align:center">~$15</td><td style="text-align:center">~$15</td></tr>
+      <tr><td><strong>Networking</strong></td><td>ALB + VPC Endpoints</td><td>ALB hours + S3 GW endpoint + EFA</td><td style="text-align:center">~$200</td><td style="text-align:center">~$150</td><td style="text-align:center">~$100</td></tr>
+      <tr><td><strong>Monitoring</strong></td><td>CloudWatch</td><td>Logs + metrics + alarms + dashboards</td><td style="text-align:center">~$100</td><td style="text-align:center">~$100</td><td style="text-align:center">~$50</td></tr>
+      <tr class="highlight"><td colspan="3"><strong>Total monthly (on-demand, 24/7)</strong></td><td style="text-align:center"><strong>~$191K</strong></td><td style="text-align:center"><strong>~$98K</strong></td><td style="text-align:center"><strong>~$12.3K</strong></td></tr>
+      <tr><td colspan="3"><strong>Total monthly (1-year RI, ~35% GPU discount)</strong></td><td style="text-align:center"><strong>~$124K</strong></td><td style="text-align:center"><strong>~$64K</strong></td><td style="text-align:center"><strong>~$8.2K</strong></td></tr>
+      <tr><td colspan="3"><strong>Total monthly (Spot + OD fallback, ~60% GPU discount)</strong></td><td style="text-align:center"><strong>~$77K*</strong></td><td style="text-align:center"><strong>~$40K*</strong></td><td style="text-align:center"><strong>~$5.3K*</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <p style="font-size:.88rem;color:var(--ink-soft)">* Spot pricing assumes 60&ndash;70% discount on GPU instances with on-demand fallback for 2&times; p5 (Tier 1) or 1&times; p5 (Tier 2). P5 spot availability varies by region; use capacity-optimized block, not lowest-price. Not recommended for Tier 1 production due to PP=2 interruption sensitivity.</p>
+
+  <!-- ===== HYBRID DEPLOYMENT ===== -->
+  <h3>Recommended: Hybrid Tier 2 + Tier 3</h3>
+
+  <p>For a 50-developer coding team, the optimal deployment combines Tier 2 (V4-Pro INT4 for complex tasks) and Tier 3 (V4-Flash FP8 for routine coding). LiteLLM routes requests by task type:</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Component</th><th>AWS Service</th><th>Config</th><th style="text-align:center">Monthly Cost (OD)</th><th style="text-align:center">Monthly Cost (1Y RI)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>V4-Pro INT4</strong> (complex coding, analysis)</td><td>EC2</td><td>p5.48xlarge (8&times;H100, 640 GB)</td><td style="text-align:center">~$93,600</td><td style="text-align:center">~$61,100</td></tr>
+      <tr><td><strong>V4-Flash FP8</strong> (autocomplete, quick edits)</td><td>EC2</td><td>g6e.48xlarge (8&times;L40S, 384 GB)</td><td style="text-align:center">~$11,520</td><td style="text-align:center">~$7,500</td></tr>
+      <tr><td><strong>Autocomplete</strong> (inline, &lt;500ms)</td><td>EC2</td><td>g6.12xlarge (4&times;L4, 96 GB) &mdash; Qwen3-Coder-7B</td><td style="text-align:center">~$3,600</td><td style="text-align:center">~$2,350</td></tr>
+      <tr><td><strong>AI Gateway</strong></td><td>ECS Fargate</td><td>2 vCPU / 4 GB &mdash; LiteLLM + task routing</td><td style="text-align:center">~$100</td><td style="text-align:center">~$100</td></tr>
+      <tr><td><strong>Auth</strong></td><td>Cognito</td><td>MAU-based (50 devs = free tier)</td><td style="text-align:center">~$0</td><td style="text-align:center">~$0</td></tr>
+      <tr><td><strong>Storage</strong></td><td>S3 + EFS</td><td>~700 GB models + 50 GB config</td><td style="text-align:center">~$18</td><td style="text-align:center">~$18</td></tr>
+      <tr><td><strong>Networking</strong></td><td>ALB + VPC Endpoints</td><td>ALB + S3 GW endpoint</td><td style="text-align:center">~$150</td><td style="text-align:center">~$150</td></tr>
+      <tr><td><strong>Monitoring</strong></td><td>CloudWatch</td><td>Logs + metrics + alarms</td><td style="text-align:center">~$100</td><td style="text-align:center">~$100</td></tr>
+      <tr class="highlight"><td colspan="3"><strong>Total monthly (on-demand)</strong></td><td style="text-align:center"><strong>~$109K</strong></td><td style="text-align:center">&mdash;</td></tr>
+      <tr class="highlight"><td colspan="3"><strong>Total monthly (1-year RI)</strong></td><td style="text-align:center">&mdash;</td><td style="text-align:center"><strong>~$71K</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>Routing logic (LiteLLM config):</strong> Inline autocomplete requests (&lt;50 token output, &lt;2K input) &rarr; Qwen3-Coder-7B on g6.12xlarge. Quick edits and Q&amp;A (&lt;2K output, &lt;8K input) &rarr; V4-Flash on g6e.48xlarge. Complex agentic tasks, multi-file refactors, deep analysis (&gt;2K output, &gt;8K input) &rarr; V4-Pro INT4 on p5.48xlarge. This tiered routing means ~60% of daily requests hit the cheap tier, ~30% hit the mid tier, and only ~10% hit the expensive tier &mdash; effective cost per developer is ~$1,420/mo OD or ~$930/mo RI.
+  </div>
+
+  <!-- ===== VS API COMPARISON ===== -->
+  <h3>Self-Hosted vs DeepSeek API: Break-Even Analysis</h3>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Scenario</th><th style="text-align:center">Monthly Cost</th><th style="text-align:center">Per-Dev/Mo</th><th style="text-align:center">Data Sovereignty</th><th style="text-align:center">Customization</th></tr></thead>
+    <tbody>
+      <tr><td><strong>DeepSeek V4 API</strong> (pay-per-token)</td><td style="text-align:center">~$18&ndash;36K*</td><td style="text-align:center">~$360&ndash;720</td><td style="text-align:center"><span class="cmp no">No</span></td><td style="text-align:center"><span class="cmp no">No</span></td></tr>
+      <tr><td><strong>Hybrid self-hosted (OD)</strong></td><td style="text-align:center">~$109K</td><td style="text-align:center">~$2,180</td><td style="text-align:center"><span class="cmp yes">Yes</span></td><td style="text-align:center"><span class="cmp yes">Full</span></td></tr>
+      <tr><td><strong>Hybrid self-hosted (1Y RI)</strong></td><td style="text-align:center">~$71K</td><td style="text-align:center">~$1,420</td><td style="text-align:center"><span class="cmp yes">Yes</span></td><td style="text-align:center"><span class="cmp yes">Full</span></td></tr>
+      <tr><td><strong>Tier 3 only (V4-Flash OD)</strong></td><td style="text-align:center">~$12.3K</td><td style="text-align:center">~$246</td><td style="text-align:center"><span class="cmp yes">Yes</span></td><td style="text-align:center"><span class="cmp yes">Full</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <p style="font-size:.88rem;color:var(--ink-soft)">* DeepSeek V4 API pricing: input ~$0.50&ndash;$1.00/M tokens, output ~$2&ndash;$4/M tokens. At 36M tokens/month (~960K input + 240K output per day), monthly API cost is ~$18&ndash;36K depending on input/output ratio and exact pricing tier.</p>
+
+  <div class="callout">
+    <strong>When self-hosting wins:</strong> (1) <strong>Data sovereignty</strong> &mdash; all code context stays in your VPC, never sent to a third-party API. This is the primary ROI for most enterprises. (2) <strong>Customization</strong> &mdash; you control quantization, context length limits, batching, and can fine-tune or merge LoRA adapters. (3) <strong>Break-even</strong> &mdash; at 36M tokens/month, the DeepSeek API costs ~$18&ndash;36K. Tier 3 (V4-Flash only) self-hosted at ~$12K/mo OD is cheaper <em>and</em> gives data sovereignty. The hybrid Tier 2+3 at ~$71K/mo RI is 2&ndash;4&times; the API price but provides V4-Pro quality for complex tasks with full data control. Choose based on whether data sovereignty is a requirement or a nice-to-have.
+  </div>
+
+  <!-- ===== OPERATIONAL CHECKLIST ===== -->
+  <h3>Production Checklist: DeepSeek V4 Pro on AWS</h3>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Category</th><th>Task</th><th>AWS Service</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Inference</strong></td><td>Deploy vLLM with PP/TP config on EKS or raw EC2</td><td>EKS + Karpenter / EC2</td><td>P0</td></tr>
+      <tr><td><strong>Inference</strong></td><td>Enable DSA sparse attention for long context</td><td>vLLM config</td><td>P0</td></tr>
+      <tr><td><strong>Inference</strong></td><td>Load AWQ/FP8 quantized weights from S3 via VPC endpoint</td><td>S3 + VPC GW endpoint</td><td>P0</td></tr>
+      <tr><td><strong>Gateway</strong></td><td>Deploy LiteLLM proxy with task-based model routing</td><td>ECS Fargate</td><td>P0</td></tr>
+      <tr><td><strong>Gateway</strong></td><td>Configure Cognito OAuth for developer authentication</td><td>Cognito</td><td>P0</td></tr>
+      <tr><td><strong>Gateway</strong></td><td>Set per-developer rate limits and token budgets</td><td>DynamoDB + LiteLLM</td><td>P1</td></tr>
+      <tr><td><strong>Security</strong></td><td>VPC with no internet access on inference subnet</td><td>VPC + Security Groups</td><td>P0</td></tr>
+      <tr><td><strong>Security</strong></td><td>WAF rules to block secrets/keys in prompts</td><td>WAF + LiteLLM middleware</td><td>P1</td></tr>
+      <tr><td><strong>Scaling</strong></td><td>Karpenter GPU autoscaling with Spot fallback for V4-Flash tier</td><td>EKS + Karpenter</td><td>P1</td></tr>
+      <tr><td><strong>Scaling</strong></td><td>Disaggregated prefill/decode if concurrent demand exceeds 25 sessions</td><td>Separate ASGs (p5 prefill, g6e decode)</td><td>P2 (scale phase)</td></tr>
+      <tr><td><strong>Monitoring</strong></td><td>GPU utilization, TTFT, throughput, KV cache % dashboards</td><td>CloudWatch + Grafana</td><td>P0</td></tr>
+      <tr><td><strong>Quality</strong></td><td>Run SWE-bench and HumanEval after quantization before production</td><td>Local benchmarking</td><td>P0</td></tr>
+    </tbody>
+  </table></div>
+
+</section>
+
+<div class="page-nav">
+  <a href="serving.html">&larr; Serving</a>
+</div>
+
+<footer class="foot">
+  <span>Self-Hosting LLM</span>
+  <span>Last updated 2026-06-16</span>
+</footer>
+
+</div>
+</body>
+</html>
