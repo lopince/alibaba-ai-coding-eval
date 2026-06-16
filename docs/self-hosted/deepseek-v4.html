@@ -57,10 +57,71 @@
     </tbody>
   </table></div>
 
-  <!-- ===== THREE DEPLOYMENT TIERS ===== -->
-  <h3>Infrastructure Options: Three Tiers</h3>
+  <!-- ===== INFRA DEPLOYMENT OPTIONS ===== -->
+  <h3>Infrastructure Deployment Options</h3>
 
-  <p>For a 50-developer coding team, three deployment tiers balance quality, cost, and operational complexity. The key variable is <strong>quantization + parallelism</strong> &mdash; which determines how many GPUs and which instance types you need.</p>
+  <p>Before choosing a quantization tier, decide <strong>which AWS deployment platform</strong> to run DeepSeek V4 Pro on. The choice of platform (SageMaker, EC2, or EKS) determines how much ops overhead you carry, whether you can autoscale, and how multi-model routing works. See <a href="infra.html">Section 4 (Infrastructure)</a> for the full architecture; below is the DeepSeek V4 Pro-specific analysis.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Dimension</th><th style="text-align:center">SageMaker AI</th><th style="text-align:center">EC2 + vLLM</th><th style="text-align:center">EKS + vLLM/SGLang</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Setup effort</strong></td><td style="text-align:center">Low (managed endpoint)</td><td style="text-align:center">Medium (SSH + scripts)</td><td style="text-align:center">High (K8s + Karpenter + Helm)</td></tr>
+      <tr><td><strong>Multi-node PP=2</strong></td><td style="text-align:center"><span class="cmp partial">Supported but limited</span></td><td style="text-align:center"><span class="cmp yes">Full control (EFA, Ray)</span></td><td style="text-align:center"><span class="cmp yes">Full control (EFA, Ray)</span></td></tr>
+      <tr><td><strong>Autoscaling</strong></td><td style="text-align:center"><span class="cmp yes">Built-in</span></td><td style="text-align:center"><span class="cmp no">Manual</span></td><td style="text-align:center"><span class="cmp yes">Karpenter GPU autoscaling</span></td></tr>
+      <tr><td><strong>Rolling deploys</strong></td><td style="text-align:center"><span class="cmp yes">Blue/green</span></td><td style="text-align:center"><span class="cmp no">Manual</span></td><td style="text-align:center"><span class="cmp yes">Native K8s</span></td></tr>
+      <tr><td><strong>Multi-model routing</strong></td><td style="text-align:center"><span class="cmp partial">Separate endpoints</span></td><td style="text-align:center"><span class="cmp partial">Manual LiteLLM</span></td><td style="text-align:center"><span class="cmp yes">K8s Services + LiteLLM</span></td></tr>
+      <tr><td><strong>VPC isolation</strong></td><td style="text-align:center"><span class="cmp yes">VPC-native</span></td><td style="text-align:center"><span class="cmp yes">Full control</span></td><td style="text-align:center"><span class="cmp yes">Full control</span></td></tr>
+      <tr><td><strong>Spot instance support</strong></td><td style="text-align:center"><span class="cmp no">No</span></td><td style="text-align:center"><span class="cmp yes">Yes</span></td><td style="text-align:center"><span class="cmp yes">Yes (Karpenter)</span></td></tr>
+      <tr><td><strong>Cost (p5.48xlarge equiv.)</strong></td><td style="text-align:center">~15&ndash;20% premium</td><td style="text-align:center">Base OD price</td><td style="text-align:center">Base OD + small EKS fee</td></tr>
+      <tr><td><strong>Best for</strong></td><td style="text-align:center">Small team, zero-ops</td><td style="text-align:center">Single model, full control</td><td style="text-align:center"><strong>50-dev production</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="tier-card" style="border-left:3px solid var(--clay)">
+    <h4>Option A: Amazon SageMaker AI</h4>
+    <div class="tier-price">Fastest to deploy &mdash; managed GPU endpoint with auto-scaling</div>
+    <ul>
+      <li><strong>How it works:</strong> Upload FP8/AWQ weights to S3, create a SageMaker inference endpoint, point LiteLLM at the endpoint URL</li>
+      <li><strong>DeepSeek V4 Pro specifics:</strong> Tier 2 (INT4, single p5 node) maps directly to a SageMaker endpoint. Tier 1 (FP8, PP=2) is possible but SageMaker&rsquo;s multi-node inference support has lower inter-node throughput than raw EFA</li>
+      <li><strong>Autoscaling:</strong> Built-in &mdash; scales from 1 to N instances based on request queue depth. Critical for cost efficiency when devs are offline</li>
+      <li><strong>Limitation:</strong> No Spot instances; higher per-hour cost (~15&ndash;20% premium); limited control over vLLM serving config; cannot run SGLang alongside vLLM</li>
+      <li><strong>Recommended for:</strong> Teams &lt;20 devs who want a working endpoint in &lt;1 day and accept the cost premium</li>
+    </ul>
+  </div>
+
+  <div class="tier-card" style="border-left:3px solid var(--sky)">
+    <h4>Option B: EC2 Bare Metal GPU</h4>
+    <div class="tier-price">Full control &mdash; SSH into p5 instances, run vLLM directly</div>
+    <ul>
+      <li><strong>How it works:</strong> Launch p5.48xlarge (or g6e.48xlarge for Flash), SSH in, clone vLLM, download weights from S3 via VPC endpoint, run <code>vllm serve</code></li>
+      <li><strong>DeepSeek V4 Pro specifics:</strong> Tier 1 (FP8, PP=2) works well &mdash; launch 2&times; p5 in a placement group with EFA, run Ray cluster across both nodes. Tier 2 (INT4) is single-node, simpler</li>
+      <li><strong>Advantage:</strong> Lowest cost (no platform premium), full control over vLLM flags, custom CUDA kernels, SGLang, speculative decoding, or TensorRT-LLM</li>
+      <li><strong>Limitation:</strong> No autoscaling &mdash; instance runs 24/7 even when idle. No health checks &mdash; if vLLM crashes, manual restart. No multi-model orchestration &mdash; LiteLLM runs separately on Fargate</li>
+      <li><strong>Recommended for:</strong> Proof-of-concept, single-model deployment, or teams with existing EC2 operational tooling</li>
+    </ul>
+  </div>
+
+  <div class="tier-card" style="border-left:3px solid var(--olive)">
+    <h4>Option C: EKS Kubernetes &mdash; <em>Recommended for Production</em></h4>
+    <div class="tier-price">Production-grade &mdash; autoscaling, rolling deploys, multi-model routing</div>
+    <ul>
+      <li><strong>How it works:</strong> EKS cluster with GPU node groups (Karpenter), vLLM/SGLang deployed as K8s Deployments with GPU resource requests, LiteLLM as a separate Deployment</li>
+      <li><strong>DeepSeek V4 Pro specifics:</strong> Deploy V4-Pro INT4 as one Deployment (p5 node), V4-Flash FP8 as another (g6e node), Qwen3-Coder-7B on a third (g6 node). Karpenter autoscales each node group independently based on GPU utilization</li>
+      <li><strong>Key advantage:</strong> Scale V4-Pro to zero during off-hours (nights/weekends) &mdash; save ~60% of GPU cost. Karpenter brings nodes back in ~2 minutes when requests arrive via LiteLLM</li>
+      <li><strong>Rolling deploys:</strong> Update vLLM config or model weights with zero downtime &mdash; K8s spins up new pods, drains old ones</li>
+      <li><strong>Spot support:</strong> Karpenter can use Spot for V4-Flash tier (g6e) with on-demand fallback. Avoid Spot for V4-Pro (p5) due to PP=2 interruption sensitivity</li>
+      <li><strong>Recommended for:</strong> 50-dev production platforms running 2+ models with cost optimization requirements</li>
+    </ul>
+  </div>
+
+  <div class="callout">
+    <strong>Recommendation for 50-dev team:</strong> Start with <strong>Option B (EC2)</strong> for initial proof-of-concept &mdash; get a working endpoint in hours. Migrate to <strong>Option C (EKS)</strong> once usage patterns stabilize and you need autoscaling, multi-model routing, or Spot cost savings. Option A (SageMaker) is viable if your team has no Kubernetes experience and you accept the cost premium.
+  </div>
+
+  <!-- ===== THREE DEPLOYMENT TIERS ===== -->
+  <h3>Quantization &amp; Sizing Tiers</h3>
+
+  <p>Once you&rsquo;ve chosen a deployment platform, the next decision is <strong>quantization + parallelism</strong> &mdash; which determines how many GPUs and which instance types you need. Three tiers balance quality, cost, and operational complexity:</p>
 
   <div class="tier-card" style="border-left:3px solid var(--clay)">
     <h4>Tier 1 &mdash; Maximum Quality (FP8, Full Model)</h4>
