@@ -34,6 +34,8 @@
   .tech-title .tag.hw { background: rgba(120,140,93,.12); color: var(--olive); }
   .tech-title .tag.mem { background: rgba(106,140,175,.12); color: var(--sky); }
   .tech-title .tag.sched { background: rgba(217,119,87,.12); color: var(--clay); }
+  .tech-num.engine { background: #8b7ab8; }
+  .tech-title .tag.engine { background: rgba(139,122,184,.12); color: #8b7ab8; }
   .tech p { color: var(--ink-soft); font-size: .92rem; margin: .6em 0; line-height: 1.55; }
 
   /* Book figure */
@@ -70,12 +72,12 @@
 
 <div class="wrap">
 
-<p class="tldr">The five key techniques that determine LLM serving performance &mdash; from hardware physics to scheduling. Each technique is illustrated with diagrams from the <a href="https://jax-ml.github.io/scaling-book/" target="_blank">JAX Scaling Book</a>.</p>
+<p class="tldr">The six key techniques that determine LLM serving performance &mdash; from hardware physics to inference engine features. Each technique is illustrated with diagrams from the <a href="https://jax-ml.github.io/scaling-book/" target="_blank">JAX Scaling Book</a>.</p>
 
 <!-- ══════════════════════════════════════════ OVERVIEW MAP -->
 <section class="eval" id="overview">
   <div class="crumb">Overview</div>
-  <h2>The Five Key Techniques</h2>
+  <h2>The Six Key Techniques</h2>
 
   <p>Self-hosting an LLM efficiently comes down to three layers. Every optimization falls into one of these categories:</p>
 
@@ -113,11 +115,16 @@
         <h4>5. Disaggregated Serving</h4>
         <p>Split prefill and decode onto separate clusters for independent scaling.</p>
       </a>
+      <a href="#engine" class="map-node" style="text-decoration:none;color:inherit">
+        <span class="map-icon">&#9881;</span>
+        <h4>6. Inference Engine</h4>
+        <p>vLLM vs SGLang. Continuous batching, paging, and structured generation.</p>
+      </a>
     </div>
   </div>
 
   <div class="callout">
-    <strong>The big picture:</strong> Decode is almost always <em>memory-bandwidth-bound</em> &mdash; you spend more time loading weights and KV cache from HBM than doing math. The five techniques above are all levers for either (a) reducing the amount of data you need to move, or (b) amortizing the cost across more tokens. The single most impactful number: <strong>2&times; latency tolerance &rarr; ~100&times; cost reduction</strong>.
+    <strong>The big picture:</strong> Decode is almost always <em>memory-bandwidth-bound</em> &mdash; you spend more time loading weights and KV cache from HBM than doing math. The six techniques above are all levers for either (a) reducing the amount of data you need to move, (b) amortizing the cost across more tokens, or (c) using the right engine for your workload. The single most impactful number: <strong>2&times; latency tolerance &rarr; ~100&times; cost reduction</strong>.
   </div>
 </section>
 
@@ -358,6 +365,103 @@
         <tr><td><strong>Chunked Prefill</strong></td><td>Split long prompts into chunks interleaved with decode</td><td>Smooth latency; no prefill spikes</td></tr>
       </tbody>
     </table></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ TECH 6: INFERENCE ENGINE -->
+<section class="eval" id="engine">
+  <div class="tech">
+    <div class="tech-header">
+      <div class="tech-num engine">6</div>
+      <div class="tech-title">
+        <h3>Inference Engine Features</h3>
+        <span class="tag engine">Engine</span>
+      </div>
+    </div>
+
+    <p>The inference engine is where software meets hardware. While the five techniques above describe <em>what</em> to optimize, the engine implements <em>how</em>. Modern engines bundle five key techniques that together determine real-world throughput and latency.</p>
+
+    <h4>1. Continuous Batching</h4>
+    <p>Without continuous batching, every request claims a fixed slot for its full duration. A short request waits behind a long one; GPUs idle when batches drain. With continuous (or "in-flight") batching, new requests join an already-running batch the moment a slot frees up. The GPU never waits.</p>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/continuous-batching.gif" alt="Continuous batching: requests dynamically join and leave the GPU batch" loading="lazy"/>
+      <div class="caption">Requests arrive and depart mid-step; the GPU stays saturated. Source: <a href="https://jax-ml.github.io/scaling-book/inference/" target="_blank">JAX Scaling Book, Ch.7 &mdash; Inference</a></div>
+    </div>
+
+    <div class="key-num">
+      <strong>3–10× throughput improvement</strong> vs static batching on real workloads
+    </div>
+
+    <h4>2. PagedAttention</h4>
+    <p>The KV cache is traditionally allocated as one contiguous block per sequence. If a sequence grows from 1K to 8K tokens, the engine reserves 8K up front — wasting memory on padding and preventing memory reuse. PagedAttention splits the KV cache into fixed-size <em>blocks</em> (like OS pages) and allocates them non-contiguously. Memory fragmentation drops to near zero.</p>
+
+    <div class="book-fig">
+      <img src="https://vllm.ai/blog-assets/figures/annimation0.gif" alt="PagedAttention overview: KV cache stored in non-contiguous blocks instead of one large contiguous tensor" loading="lazy"/>
+      <div class="caption">Left: contiguous allocation wastes memory. Right: PagedAttention uses fixed-size blocks, eliminating padding waste. Source: <a href="https://blog.vllm.ai/2023/06/20/vllm.html" target="_blank">vLLM Blog &mdash; PagedAttention</a></div>
+    </div>
+
+    <div class="key-num">
+      <strong>30–40% memory savings</strong> on KV cache &ensp;|&ensp; Enables 2–4× more concurrent sequences
+    </div>
+
+    <h4>3. Prefix Caching &amp; RadixAttention</h4>
+    <p>Coding platforms send the same system prompt and repository context on every turn. Prefix caching stores the KV vectors for shared prefixes so the engine skips prefill entirely on cache hits. vLLM implements this at the block level; SGLang extends it to <strong>RadixAttention</strong> — a trie structure that caches partial overlaps and entire conversation trees.</p>
+
+    <div class="book-fig">
+      <img src="https://lmsys.org/images/blog/sglang/radix_attn.jpg" alt="RadixAttention: a trie structure reuses KV cache across prompts with shared prefixes" loading="lazy"/>
+      <div class="caption">RadixAttention stores prompt prefixes in a trie. Any shared prefix is reused across requests. Source: <a href="https://lmsys.org/blog/2024-01-17-sglang/" target="_blank">SGLang Blog &mdash; RadixAttention</a></div>
+    </div>
+
+    <div class="key-num">
+      <strong>Near-zero prefill cost</strong> for cached system prompts &ensp;|&ensp; Critical for MCP agent loops
+    </div>
+
+    <h4>4. Speculative Decoding</h4>
+    <p>Decode is memory-bandwidth-bound — the GPU spends most of its time loading weights, not computing. A small <em>draft model</em> (e.g., 7B) guesses the next N tokens cheaply; the large target model (e.g., 671B) verifies all N in one parallel pass. If the draft is correct, you generated N tokens for the price of one step.</p>
+
+    <div class="book-fig">
+      <img src="https://jax-ml.github.io/scaling-book/assets/img/spec-sampling1.png" alt="Speculative decoding: draft model proposes tokens, target model verifies them in parallel" loading="lazy"/>
+      <div class="caption">The draft model runs cheaply; the target verifies multiple tokens in one pass. Source: <a href="https://jax-ml.github.io/scaling-book/inference/" target="_blank">JAX Scaling Book, Ch.7 &mdash; Inference</a></div>
+    </div>
+
+    <div class="key-num">
+      <strong>2–4× latency reduction</strong> when draft acceptance rate &gt;70%
+    </div>
+
+    <h4>5. Structured Generation</h4>
+    <p>LLMs for coding do not just emit free text — they emit <strong>tool calls</strong> (JSON with function names and arguments). Structured generation compiles a schema or regex into GPU kernels that constrain the output at every sampling step. Invalid tokens are masked out; the model can only produce syntactically valid JSON.</p>
+
+    <div class="tbl"><table>
+      <thead><tr><th>Without Structured Gen</th><th>With Structured Gen</th></tr></thead>
+      <tbody>
+        <tr><td>Model emits JSON, then parse &amp; retry on syntax error</td><td>Model emits <em>guaranteed-valid</em> JSON; no retry needed</td></tr>
+        <tr><td>~5–15% tool calls fail validation</td><td>&lt;0.1% failure rate</td></tr>
+        <tr><td>Latency: generation + parse + retry loop</td><td>Latency: single generation pass</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="key-num">
+      <strong>&lt;0.1% syntax error rate</strong> vs ~5–15% without structured generation
+    </div>
+
+    <h4>Engine Support Summary</h4>
+    <p>All five techniques are implemented in modern engines, but with different maturity:</p>
+
+    <div class="tbl"><table>
+      <thead><tr><th>Technique</th><th>vLLM</th><th>SGLang</th><th>TensorRT-LLM</th></tr></thead>
+      <tbody>
+        <tr><td>Continuous Batching</td><td><span class="cmp yes">Mature</span></td><td><span class="cmp yes">Mature</span></td><td><span class="cmp yes">Mature</span></td></tr>
+        <tr><td>PagedAttention</td><td><span class="cmp yes">Block-level</span></td><td><span class="cmp yes">RadixAttention</span></td><td><span class="cmp partial">In-flight</span></td></tr>
+        <tr><td>Prefix Caching</td><td><span class="cmp partial">Block-level</span></td><td><span class="cmp yes">Tree-level</span></td><td><span class="cmp partial">Limited</span></td></tr>
+        <tr><td>Speculative Decoding</td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td><td><span class="cmp yes">Yes</span></td></tr>
+        <tr><td>Structured Generation</td><td><span class="cmp partial">Basic</span></td><td><span class="cmp yes">Best-in-class</span></td><td><span class="cmp yes">Fast</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="callout">
+      <strong>Practical deployment pattern:</strong> Run <strong>vLLM</strong> as the default endpoint (widest model support, most stable). Run <strong>SGLang</strong> as a secondary endpoint for agentic workloads that need structured JSON tool calls and heavy prefix reuse. Route between them via LiteLLM proxy.
+    </div>
   </div>
 </section>
 
