@@ -43,7 +43,7 @@
 
 <header class="top">
   <h1><a href="index.html">Self-Hosting LLM</a></h1>
-  <div class="meta">Research &middot; 6 sections</div>
+  <div class="meta">Research &middot; 8 sections</div>
 </header>
 
 <p class="tldr">Designing a self-hosted LLM coding platform on AWS &mdash; open-weight model selection, benchmark evaluation, infrastructure architecture, and serving optimization.</p>
@@ -52,9 +52,11 @@
   <a href="index.html" class="active">Overview</a>
   <a href="models.html">Models</a>
   <a href="benchmark.html">Benchmark</a>
+  <a href="evaluation.html">Evaluation</a>
   <a href="infra.html">Infrastructure</a>
   <a href="serving.html">Serving</a>
   <a href="deepseek-v4.html">Serving DeepSeek V4 Pro</a>
+  <a href="glm-5.2.html">Serving GLM-5.2-NVFP4 on AWS KServe</a>
 </div></nav>
 
 <div class="card-grid">
@@ -69,6 +71,12 @@
     <div class="card-crumb">Section 3</div>
     <h3>Benchmark</h3>
     <p>Four-pillar PoC evaluation framework &mdash; open benchmarks (SWE-bench, LiveCodeBench, Terminal-Bench), lean eval tools, go/no-go success metrics, and a Docker-based evaluation pipeline with custom internal datasets.</p>
+  </a>
+
+  <a class="card" href="evaluation.html">
+    <div class="card-crumb">Evaluation</div>
+    <h3>Evaluation</h3>
+    <p>Practical replacement evaluation for self-hosted LLM + OpenCode against Claude Code + Opus &mdash; Terminal-Bench, SWE-bench Verified, serving performance metrics, and skill-driven SDLC quality checks.</p>
   </a>
 
   <a class="card" href="infra.html">
@@ -87,6 +95,12 @@
     <div class="card-crumb">Section 6</div>
     <h3>Serving DeepSeek V4 Pro</h3>
     <p>Concrete infrastructure options, resource sizing, and cost estimates for self-hosting DeepSeek V4 Pro on AWS for a 50-developer coding team &mdash; three deployment tiers, hybrid routing, and a production checklist.</p>
+  </a>
+
+  <a class="card" href="glm-5.2.html">
+    <div class="card-crumb">Section 7</div>
+    <h3>Serving GLM-5.2-NVFP4 on AWS KServe</h3>
+    <p>Kubernetes-native serving of NVIDIA&rsquo;s GLM-5.2-NVFP4 checkpoint on AWS &mdash; EKS, KServe RawDeployment, SGLang/vLLM runtimes, S3/FSx model caching, LiteLLM routing, and production controls for a 50-developer coding team.</p>
   </a>
 
 </div>

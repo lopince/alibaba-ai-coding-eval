@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Evaluation &mdash; Self-Hosting LLM</title>
+<link rel="stylesheet" href="../style.css"/>
+<style>
+  .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.2rem 0 1.8rem; }
+  .score-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem 1.1rem; }
+  .score-card h3 { margin: 0 0 .45em; font: 600 14px/1.2 var(--sans); }
+  .score-card p { margin: 0; color: var(--ink-soft); font-size: .88rem; }
+  .weight { color: var(--clay); font: 700 1.25rem/1 var(--mono); margin-bottom: .35em; }
+  .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: .6rem; margin: 1.4rem 0 1.8rem; }
+  .flow-step { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: .85rem; }
+  .flow-step .step { color: var(--g500); font: 700 11px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .4em; }
+  .flow-step .label { font: 600 13px/1.3 var(--sans); }
+  @media (max-width: 760px) { .flow { grid-template-columns: 1fr; } }
+  .promptfoo-diagram { display: grid; grid-template-columns: 1fr .9fr 1fr; gap: .75rem; align-items: stretch; margin: 1.4rem 0 1.6rem; }
+  .diagram-lane { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem; }
+  .diagram-lane h3 { margin: 0 0 .8em; font: 700 12px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--g500); }
+  .diagram-item { border: 1px solid var(--rule); border-radius: 4px; padding: .65rem .75rem; margin-bottom: .55rem; font: 600 13px/1.25 var(--sans); background: var(--bg); }
+  .diagram-item:last-child { margin-bottom: 0; }
+  .diagram-item span { display: block; margin-top: .25em; font: 12px/1.35 var(--serif); color: var(--ink-soft); }
+  .diagram-core { border-color: var(--clay); box-shadow: inset 0 0 0 1px rgba(217,119,87,.18); }
+  .diagram-core h3 { color: var(--clay); }
+  .diagram-arrow { text-align: center; color: var(--g500); font: 700 18px/1 var(--sans); margin: .2rem 0 .55rem; }
+  @media (max-width: 760px) { .promptfoo-diagram { grid-template-columns: 1fr; } .diagram-arrow { transform: rotate(90deg); margin: .4rem 0; } }
+  .eval-track { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.1rem 1.25rem; margin: 1rem 0 1.2rem; }
+  .eval-track h3 { margin: 0 0 .4em; font: 700 15px/1.25 var(--sans); }
+  .eval-track p { color: var(--ink-soft); margin: 0 0 .8em; }
+  .metric-list { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
+  .metric-pill { display: inline-block; font: 600 11px/1 var(--sans); color: var(--sky); background: rgba(106,140,175,.12); border-radius: 3px; padding: .35em .55em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Self-Hosting LLM</a></h1>
+  <div class="meta">Evaluation</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="models.html">Models</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="evaluation.html" class="active">Evaluation</a>
+  <a href="infra.html">Infrastructure</a>
+  <a href="serving.html">Serving</a>
+  <a href="deepseek-v4.html">Serving DeepSeek V4 Pro</a>
+  <a href="glm-5.2.html">Serving GLM-5.2 on Alibaba Cloud</a>
+</div></nav>
+
+<section class="eval">
+  <h2>Baseline Benchmark</h2>
+
+  <div class="eval-track">
+    <h3>Capability</h3>
+
+    <div class="tbl"><table>
+      <thead><tr><th>Selected Benchmark</th><th>Purpose</th><th>Primary Metrics</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Terminal-Bench</strong></td>
+          <td>Evaluates agentic terminal behavior: shell commands, debugging, file operations, environment navigation, and multi-step execution.</td>
+          <td>Task success rate, command error rate, time/task, failure category</td>
+        </tr>
+        <tr>
+          <td><strong>SWE-bench Verified</strong></td>
+          <td>Evaluates repo-level software engineering: issue understanding, code editing, regression fixing, and passing tests in real projects.</td>
+          <td>% resolved, test pass rate, time/task, tokens/task, cost/task</td>
+        </tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="eval-track">
+    <h3>Serving Performance</h3>
+    <p>Can the self-hosted serving stack deliver acceptable latency, throughput, reliability, and cost when traffic passes through the inference engine and LLM gateway layers?</p>
+
+    <div class="tbl"><table>
+      <thead><tr><th>Focus Area</th><th>Key Metrics</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Inference engine</strong></td>
+          <td>TTFT, TPOT / ITL, output tokens/sec, aggregate tokens/sec, GPU memory, GPU utilization</td>
+        </tr>
+        <tr>
+          <td><strong>LLM gateway</strong></td>
+          <td>Gateway overhead, p95 / p99 request latency, streaming stability, timeout rate, error rate</td>
+        </tr>
+        <tr>
+          <td><strong>End-to-end stack</strong></td>
+          <td>Max stable concurrency, requests/sec, tokens/sec under load, cost per 1M tokens, soak-test stability</td>
+        </tr>
+      </tbody>
+    </table></div>
+
+    <div class="metric-list">
+      <span class="metric-pill">TTFT</span>
+      <span class="metric-pill">TPOT / ITL</span>
+      <span class="metric-pill">tokens/sec</span>
+      <span class="metric-pill">p95 / p99 latency</span>
+      <span class="metric-pill">gateway overhead</span>
+      <span class="metric-pill">error rate</span>
+      <span class="metric-pill">max concurrency</span>
+      <span class="metric-pill">GPU utilization</span>
+    </div>
+  </div>
+</section>
+
+<section class="eval">
+  <h2>Long-Horizon Benchmark</h2>
+
+  <p>This benchmark is not a generic coding leaderboard. It measures whether a replacement model can preserve the same SDLC workflow quality that an existing Claude-based skill system already delivers in production.</p>
+
+  <div class="callout">
+    The production Claude artifacts are treated as the baseline, not perfect truth. GLM output is judged against the original requirement context, the stage skill, the prior artifacts, and the accepted baseline.
+  </div>
+
+  <h3>Core Score Model</h3>
+
+  <div class="score-grid">
+    <div class="score-card"><div class="weight">30%</div><h3>Context Retention</h3><p>Preserves requirements, constraints, decisions, and assumptions across stages.</p></div>
+    <div class="score-card"><div class="weight">30%</div><h3>Stage Completion</h3><p>Produces the expected deliverable for each stage well enough to move forward.</p></div>
+    <div class="score-card"><div class="weight">25%</div><h3>Workflow Continuity</h3><p>Moves the project forward coherently without drifting, restarting, or contradicting earlier work.</p></div>
+    <div class="score-card"><div class="weight">15%</div><h3>Reviewability</h3><p>Makes outputs clear enough for a human to review, approve, or correct efficiently.</p></div>
+  </div>
+
+  <h3>Promptfoo Local Evaluation Flow</h3>
+
+  <div class="promptfoo-diagram">
+    <div class="diagram-lane">
+      <h3>Inputs</h3>
+      <div class="diagram-item">SDLC cases<span>Brief, prior artifact, skill instruction, Claude baseline, GLM candidate.</span></div>
+      <div class="diagram-item">Rubrics<span>Faithfulness, completeness, traceability, actionability, and process adherence.</span></div>
+      <div class="diagram-item">Hard checks<span>Required sections, preserved IDs, no placeholders, valid structure.</span></div>
+    </div>
+
+    <div class="diagram-lane diagram-core">
+      <h3>Promptfoo</h3>
+      <div class="diagram-item">Loads cases</div>
+      <div class="diagram-arrow">&darr;</div>
+      <div class="diagram-item">Runs assertions</div>
+      <div class="diagram-arrow">&darr;</div>
+      <div class="diagram-item">Calls judge LLM</div>
+      <div class="diagram-arrow">&darr;</div>
+      <div class="diagram-item">Records scores</div>
+    </div>
+
+    <div class="diagram-lane">
+      <h3>Outputs</h3>
+      <div class="diagram-item">Metric scores<span>0&ndash;10 rubric scores with judge reasons and issue notes.</span></div>
+      <div class="diagram-item">Pass / fail report<span>Which cases meet threshold, which stages need review.</span></div>
+      <div class="diagram-item">Weighted summary<span>One capability score for deciding whether GLM is close enough to baseline.</span></div>
+    </div>
+  </div>
+
+</section>
+
+<section class="eval">
+  <div class="crumb">Appendix</div>
+  <h2>Key Benchmark Differences</h2>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Benchmark</th><th>Main Purpose</th><th>PoC Fit</th></tr></thead>
+    <tbody>
+      <tr><td><strong>SWE-bench Verified</strong></td><td>Fix real GitHub issues in existing repositories.</td><td><span class="cmp yes">Primary</span> Best practical repo-level coding signal.</td></tr>
+      <tr><td><strong>SWE-bench Pro</strong></td><td>Harder, stricter software engineering benchmark.</td><td><span class="cmp partial">Later</span> Use after Verified if stronger frontier comparison is needed.</td></tr>
+      <tr><td><strong>Terminal-Bench</strong></td><td>Complete tasks through terminal commands and environment interaction.</td><td><span class="cmp yes">Primary</span> Best agentic shell and harness-behavior signal.</td></tr>
+      <tr><td><strong>NL2Repo</strong></td><td>Build or modify repositories from natural-language requirements.</td><td><span class="cmp partial">Optional</span> Useful for feature-building tasks, heavier than first PoC needs.</td></tr>
+      <tr><td><strong>DeepSWE</strong></td><td>Software engineering task completion in controlled environments.</td><td><span class="cmp partial">Optional</span> Good secondary coding-agent signal.</td></tr>
+      <tr><td><strong>ProgramBench</strong></td><td>Programming and code-generation task capability.</td><td><span class="cmp partial">Optional</span> More code-focused, less harness-focused.</td></tr>
+      <tr><td><strong>BFCL</strong></td><td>Function calling and tool-call correctness.</td><td><span class="cmp partial">Optional</span> Add if structured tool calling is central.</td></tr>
+      <tr><td><strong>MCP-Atlas</strong></td><td>MCP/tool workflow capability.</td><td><span class="cmp partial">Optional</span> Add if the platform depends heavily on MCP tools.</td></tr>
+      <tr><td><strong>Tool-Decathlon</strong></td><td>General tool-use across multiple task types.</td><td><span class="cmp partial">Optional</span> Useful for broader tool orchestration testing.</td></tr>
+      <tr><td><strong>FrontierSWE</strong></td><td>Long-horizon open-ended engineering projects.</td><td><span class="cmp no">Skip PoC</span> Valuable but expensive and harder to reproduce.</td></tr>
+      <tr><td><strong>PostTrainBench</strong></td><td>Improve small models through post-training workflows.</td><td><span class="cmp no">Skip PoC</span> Specialized ML-engineering signal.</td></tr>
+      <tr><td><strong>SWE-Marathon</strong></td><td>Ultra-long-horizon software engineering.</td><td><span class="cmp no">Skip PoC</span> Too heavy for initial replacement validation.</td></tr>
+      <tr><td><strong>HLE / GPQA / AIME / HMMT</strong></td><td>General reasoning, science, and math intelligence.</td><td><span class="cmp no">Skip PoC</span> Useful model-marketing signal, less direct for harness replacement.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<div class="page-nav">
+  <a href="benchmark.html">&larr; Benchmark</a>
+  <a href="infra.html" class="next">Infrastructure &rarr;</a>
+</div>
+
+<footer class="foot">
+  <span>Self-Hosting LLM</span>
+  <span>Last updated 2026-06-28</span>
+</footer>
+
+</div>
+</body>
+</html>

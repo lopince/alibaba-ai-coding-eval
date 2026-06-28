@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Serving GLM-5.2-NVFP4 on AWS KServe &mdash; Self-Hosting LLM</title>
+<link rel="stylesheet" href="../style.css"/>
+<style>
+.formula-box { background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--sky); padding: 1rem 1.4rem; margin: 1.2rem 0; border-radius: 4px; }
+.formula-box pre { background: none; border: none; padding: 0; margin: 0; font: 13px/1.6 var(--mono); color: var(--ink); }
+.tier-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.2rem; margin-bottom: 1rem; }
+.tier-card h4 { margin: 0 0 .5em; font: 600 15px/1.2 var(--sans); text-transform: none; letter-spacing: 0; color: var(--ink); }
+.tier-card .tier-price { font: 600 13px/1 var(--sans); color: var(--clay); margin-bottom: .6em; }
+.tier-card ul { margin: .4em 0; padding-left: 1.2em; font-size: .88rem; color: var(--ink-soft); }
+.tier-card li { margin-bottom: .2em; }
+.arch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem; margin: 1.1rem 0 1.6rem; }
+.arch-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem; }
+.arch-card .label { font: 600 11px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--g500); margin-bottom: .45em; }
+.arch-card p { font-size: .88rem; color: var(--ink-soft); margin: 0; }
+.svg-diagram { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: .75rem; margin: 1.2rem 0 1.8rem; overflow-x: auto; }
+.svg-diagram svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.svg-diagram text { font-family: var(--sans); fill: var(--ink); }
+.svg-diagram .small { fill: var(--ink-soft); font-size: 12px; }
+.svg-diagram .label { fill: var(--g500); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.svg-diagram .title { font-size: 15px; font-weight: 750; }
+.svg-diagram .node { fill: var(--bg); stroke: var(--rule); stroke-width: 1.2; }
+.svg-diagram .aws-box { fill: rgba(106,140,175,.05); stroke: var(--sky); stroke-width: 1.4; }
+.svg-diagram .eks-box { fill: rgba(120,140,93,.06); stroke: var(--olive); stroke-width: 1.4; }
+.svg-diagram .clay { stroke: var(--clay); }
+.svg-diagram .sky { stroke: var(--sky); }
+.svg-diagram .olive { stroke: var(--olive); }
+.svg-diagram .muted { stroke: var(--g300); }
+.svg-diagram .arrow { stroke: var(--g500); stroke-width: 1.6; fill: none; marker-end: url(#arrowhead); }
+.svg-diagram .dash { stroke-dasharray: 5 5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Self-Hosting LLM</a></h1>
+  <div class="meta">Section 7 of 7</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="models.html">Models</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="evaluation.html">Evaluation</a>
+  <a href="infra.html">Infrastructure</a>
+  <a href="serving.html">Serving</a>
+  <a href="deepseek-v4.html">Serving DeepSeek V4 Pro</a>
+  <a href="glm-5.2.html" class="active">Serving GLM-5.2-NVFP4 on AWS KServe</a>
+</div></nav>
+
+</div>
+
+<div class="wrap">
+
+<section class="eval">
+  <div class="crumb">Section 7</div>
+  <h2>Serving GLM-5.2-NVFP4 on AWS KServe</h2>
+
+  <p>A concrete design for serving <strong><a href="https://huggingface.co/nvidia/GLM-5.2-NVFP4" target="_blank">nvidia/GLM-5.2-NVFP4</a></strong> on <strong>AWS EKS with KServe</strong>. This replaces the prior Alibaba Cloud sovereign deployment with a Kubernetes-native AWS reference architecture: GPU node groups, KServe-managed endpoints, SGLang or vLLM runtimes, private model storage, gateway routing, and production observability for a 50-developer coding platform.</p>
+
+  <div class="callout">
+    <strong>Positioning:</strong> GLM-5.2-NVFP4 is the NVIDIA Model Optimizer quantized checkpoint for GLM-5.2. It keeps the base model&rsquo;s 753B MoE shape, 40B active parameters, 1M context target, sparse-attention architecture, MIT license, and global deployment terms, while using NVFP4 quantization to make Blackwell-class inference practical for production serving.
+  </div>
+
+  <h3>Model Profile: NVIDIA GLM-5.2-NVFP4</h3>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Attribute</th><th>Value</th><th>AWS KServe Implication</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Checkpoint</strong></td><td><code>nvidia/GLM-5.2-NVFP4</code></td><td>Use Hugging Face model sync into private S3 or FSx cache; avoid runtime internet pulls in production</td></tr>
+      <tr><td><strong>Base model</strong></td><td>GLM-5.2, <code>GlmMoeDsaForCausalLM</code></td><td>Requires runtimes with <code>glm_moe_dsa</code> support and <code>trust_remote_code</code> enabled</td></tr>
+      <tr><td><strong>Scale</strong></td><td>753B total parameters, 40B active</td><td>MoE routing lowers active compute per token, but the resident weight set still drives GPU memory sizing</td></tr>
+      <tr><td><strong>Quantization</strong></td><td>NVFP4 1.0 via NVIDIA Model Optimizer</td><td>Target Blackwell GPUs first; keep FP8 checkpoint as fallback if NVFP4 runtime support is unavailable</td></tr>
+      <tr><td><strong>Context</strong></td><td>Up to 1M tokens</td><td>Set production defaults at 128K or 256K; expose 1M only through a separate long-context pool</td></tr>
+      <tr><td><strong>Supported runtimes</strong></td><td>SGLang and vLLM</td><td>Package one KServe runtime for SGLang and one for vLLM so the platform can benchmark both under identical traffic</td></tr>
+      <tr><td><strong>Runtime notes</strong></td><td>SGLang uses <code>modelopt_fp4</code>; vLLM uses expert parallelism and FP8 KV cache</td><td>Keep SGLang as the primary serving path and vLLM as a compatibility lane</td></tr>
+      <tr><td><strong>License</strong></td><td>MIT</td><td>Commercial and non-commercial use permitted; still run internal safety and licensing review</td></tr>
+      <tr><td><strong>Evaluation signal</strong></td><td>NVFP4 is close to the FP8 baseline across GPQA Diamond, SciCode, IFBench, AA-LCR, and tau2-Bench Telecom</td><td>Run the same benchmark pack after deployment; do not assume quantized quality on internal coding tasks</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Why KServe on AWS</h3>
+
+  <p>KServe gives the platform team a clean Kubernetes control plane for model endpoints while keeping the heavy inference path in GPU-optimized containers. On AWS, the natural stack is EKS, GPU node groups, Karpenter, FSx for Lustre or S3-backed weight distribution, private subnets, and an internal ingress in front of OpenAI-compatible model servers.</p>
+
+  <div class="arch-grid">
+    <div class="arch-card"><div class="label">Control Plane</div><p>EKS hosts KServe, Gateway API or Istio, NVIDIA GPU Operator, Karpenter, Prometheus, and the LiteLLM gateway.</p></div>
+    <div class="arch-card"><div class="label">Serving Plane</div><p>KServe <code>InferenceService</code> resources launch SGLang or vLLM pods with full-GPU allocation and model-specific runtime flags.</p></div>
+    <div class="arch-card"><div class="label">Storage Plane</div><p>Weights are mirrored from Hugging Face into private S3, then staged to FSx for Lustre or node-local NVMe for fast cold starts.</p></div>
+    <div class="arch-card"><div class="label">Access Plane</div><p>LiteLLM exposes one OpenAI-compatible endpoint, handles auth and budgets, and routes requests to KServe services by task type.</p></div>
+  </div>
+
+  <h3>Architecture Diagram</h3>
+
+  <div class="svg-diagram" role="img" aria-label="AWS KServe architecture diagram for GLM-5.2-NVFP4 serving">
+    <svg viewBox="0 0 1120 700" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#78706A"/>
+        </marker>
+      </defs>
+
+      <rect x="20" y="20" width="1080" height="650" rx="14" class="aws-box"/>
+      <text x="44" y="50" class="label">AWS Private VPC</text>
+      <text x="44" y="72" class="small">Private subnets, VPC endpoints, no public inference pods</text>
+
+      <rect x="315" y="105" width="745" height="385" rx="12" class="eks-box"/>
+      <text x="338" y="135" class="label">Amazon EKS + KServe</text>
+      <text x="338" y="157" class="small">Kubernetes lifecycle, rollout, health checks, autoscaling hooks</text>
+
+      <rect x="58" y="132" width="190" height="88" rx="8" class="node clay"/>
+      <circle cx="88" cy="164" r="13" fill="rgba(217,119,87,.18)" stroke="#D97757"/>
+      <path d="M82 165h12M88 159v12" stroke="#D97757" stroke-width="2"/>
+      <text x="112" y="158" class="title">Developers</text>
+      <text x="112" y="181" class="small">IDE agents, CI jobs</text>
+      <text x="112" y="199" class="small">OpenAI API clients</text>
+
+      <rect x="58" y="278" width="190" height="104" rx="8" class="node clay"/>
+      <rect x="78" y="304" width="28" height="28" rx="5" fill="rgba(217,119,87,.12)" stroke="#D97757"/>
+      <path d="M84 318h16M92 310v16" stroke="#D97757" stroke-width="2"/>
+      <text x="122" y="306" class="title">LiteLLM Gateway</text>
+      <text x="122" y="329" class="small">OIDC, budgets</text>
+      <text x="122" y="347" class="small">audit metadata</text>
+      <text x="122" y="365" class="small">task routing</text>
+
+      <rect x="350" y="205" width="185" height="100" rx="8" class="node sky"/>
+      <circle cx="382" cy="236" r="14" fill="rgba(106,140,175,.15)" stroke="#6A8CAF"/>
+      <path d="M374 236h16M382 228v16" stroke="#6A8CAF" stroke-width="2"/>
+      <text x="408" y="230" class="title">Private Ingress</text>
+      <text x="408" y="253" class="small">Internal ALB/NLB</text>
+      <text x="408" y="271" class="small">TLS + private DNS</text>
+
+      <rect x="590" y="130" width="190" height="100" rx="8" class="node sky"/>
+      <path d="M616 157h34v24h-34zM623 164h20M623 172h14" fill="none" stroke="#6A8CAF" stroke-width="1.8"/>
+      <text x="668" y="154" class="title">KServe Control</text>
+      <text x="668" y="177" class="small">Inference endpoints</text>
+      <text x="668" y="195" class="small">canary rollout</text>
+      <text x="668" y="213" class="small">health checks</text>
+
+      <rect x="590" y="285" width="190" height="118" rx="8" class="node olive"/>
+      <rect x="614" y="315" width="34" height="32" rx="5" fill="rgba(120,140,93,.14)" stroke="#788C5D"/>
+      <path d="M621 326h20M621 337h20" stroke="#788C5D" stroke-width="2"/>
+      <text x="668" y="310" class="title">GLM-5.2-NVFP4</text>
+      <text x="668" y="333" class="small">SGLang primary</text>
+      <text x="668" y="351" class="small">vLLM fallback</text>
+      <text x="668" y="369" class="small">Blackwell GPU pool</text>
+      <text x="668" y="387" class="small">128K-1M context lanes</text>
+
+      <rect x="830" y="285" width="185" height="118" rx="8" class="node olive"/>
+      <circle cx="860" cy="323" r="15" fill="rgba(120,140,93,.14)" stroke="#788C5D"/>
+      <path d="M852 323h16M860 315v16" stroke="#788C5D" stroke-width="2"/>
+      <text x="886" y="310" class="title">Assist Models</text>
+      <text x="886" y="333" class="small">autocomplete</text>
+      <text x="886" y="351" class="small">embeddings</text>
+      <text x="886" y="369" class="small">rerank + short edits</text>
+
+      <rect x="350" y="545" width="185" height="88" rx="8" class="node muted"/>
+      <path d="M379 570c-18 0-18 26 0 26h50c18 0 18-26 0-26-5-18-34-18-39 0z" fill="rgba(181,175,168,.15)" stroke="#B5AFA8" stroke-width="1.8"/>
+      <text x="408" y="570" class="title">S3 Model Store</text>
+      <text x="408" y="593" class="small">HF mirror, encrypted</text>
+      <text x="408" y="611" class="small">source of truth</text>
+
+      <rect x="590" y="545" width="185" height="88" rx="8" class="node muted"/>
+      <rect x="615" y="570" width="34" height="28" rx="4" fill="rgba(181,175,168,.15)" stroke="#B5AFA8"/>
+      <path d="M620 579h24M620 589h24" stroke="#B5AFA8" stroke-width="1.8"/>
+      <text x="668" y="570" class="title">FSx / NVMe Cache</text>
+      <text x="668" y="593" class="small">hot weights</text>
+      <text x="668" y="611" class="small">fast restart</text>
+
+      <rect x="830" y="545" width="185" height="88" rx="8" class="node muted"/>
+      <path d="M852 594h12v-18h-12zM870 594h12v-30h-12zM888 594h12v-42h-12z" fill="rgba(181,175,168,.18)" stroke="#B5AFA8" stroke-width="1.6"/>
+      <text x="914" y="570" class="title">Observability</text>
+      <text x="914" y="593" class="small">CloudWatch</text>
+      <text x="914" y="611" class="small">Prometheus + DCGM</text>
+
+      <path d="M248 176H315Q335 176 335 216V248H350" class="arrow"/>
+      <path d="M153 220V278" class="arrow"/>
+      <path d="M248 330H320Q340 330 340 255H350" class="arrow"/>
+      <path d="M535 255H560Q580 255 580 180H590" class="arrow"/>
+      <path d="M535 255H560Q580 255 580 344H590" class="arrow"/>
+      <path d="M780 180H810Q830 180 830 344" class="arrow dash"/>
+      <path d="M780 344H830" class="arrow"/>
+      <path d="M442 545V470Q442 450 590 392" class="arrow dash"/>
+      <path d="M535 589H590" class="arrow"/>
+      <path d="M682 545V403" class="arrow"/>
+      <path d="M780 344Q825 448 922 545" class="arrow dash"/>
+      <path d="M923 403V545" class="arrow dash"/>
+
+      <text x="265" y="165" class="small">requests</text>
+      <text x="264" y="318" class="small">auth + route</text>
+      <text x="808" y="168" class="small">rollout policy</text>
+      <text x="472" y="520" class="small">model artifacts</text>
+      <text x="706" y="493" class="small">hot weights</text>
+      <text x="830" y="470" class="small">metrics</text>
+    </svg>
+  </div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Layer</th><th>AWS Component</th><th>Recommended Configuration</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Kubernetes</strong></td><td>Amazon EKS</td><td>Private cluster endpoint, managed node groups for system pods, Karpenter for GPU capacity</td></tr>
+      <tr><td><strong>GPU workers</strong></td><td>Blackwell-class NVIDIA GPU nodes where available</td><td>One node pool for GLM-5.2-NVFP4, separate smaller pools for autocomplete and embedding models</td></tr>
+      <tr><td><strong>Runtime</strong></td><td>SGLang or vLLM container</td><td>SGLang first for prefix reuse and long coding contexts; vLLM as the compatibility baseline</td></tr>
+      <tr><td><strong>Serving API</strong></td><td>KServe RawDeployment mode</td><td>Avoid serverless scale-to-zero for the primary giant model; use KServe revisions and canary traffic instead</td></tr>
+      <tr><td><strong>Model cache</strong></td><td>S3 + FSx for Lustre</td><td>S3 is the durable source; FSx is the hot shared cache mounted into inference pods</td></tr>
+      <tr><td><strong>Ingress</strong></td><td>Internal NLB / ALB</td><td>Private endpoint only; no direct public access to inference pods</td></tr>
+      <tr><td><strong>Gateway</strong></td><td>LiteLLM on EKS</td><td>OAuth/OIDC, per-user token budgets, audit logs, model routing, and OpenAI-compatible API surface</td></tr>
+      <tr><td><strong>Observability</strong></td><td>CloudWatch + Prometheus + DCGM exporter</td><td>Track TTFT, output tok/s, queue depth, GPU memory, KV cache usage, and runtime errors</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Deployment Shape</h3>
+
+  <div class="tier-card" style="border-left:3px solid var(--clay)">
+    <h4>Tier 1 &mdash; Production NVFP4 Pool</h4>
+    <div class="tier-price">Primary path for daily coding and long-context work</div>
+    <ul>
+      <li><strong>Hardware:</strong> Blackwell-class NVIDIA GPU nodes, sized so one replica owns a complete 8-GPU slice. Use capacity reservations for predictable business-hour availability.</li>
+      <li><strong>Runtime:</strong> SGLang with <code>--quantization modelopt_fp4</code>, <code>--tensor-parallel-size 8</code>, <code>--chunked-prefill-size 16384</code>, and <code>--mem-fraction-static 0.80</code>.</li>
+      <li><strong>Context policy:</strong> 128K default, 256K elevated tier, 1M reserved for explicit long-context jobs.</li>
+      <li><strong>Scaling:</strong> Keep at least one warm replica during working hours. Add replicas through Karpenter-backed node provisioning when queue depth and TTFT breach SLOs.</li>
+    </ul>
+  </div>
+
+  <div class="tier-card" style="border-left:3px solid var(--sky)">
+    <h4>Tier 2 &mdash; vLLM Compatibility Pool</h4>
+    <div class="tier-price">Fallback and benchmark baseline</div>
+    <ul>
+      <li><strong>Runtime:</strong> <code>vllm/vllm-openai:v0.23.0</code> with <code>--enable-expert-parallel</code>, <code>--kv-cache-dtype fp8_e4m3</code>, <code>--enable-auto-tool-choice</code>, and GLM parser flags.</li>
+      <li><strong>Use case:</strong> A/B quality checks, runtime regressions, model-card parity, and workloads where vLLM scheduling outperforms SGLang.</li>
+      <li><strong>Traffic:</strong> Start at 5% canary through KServe traffic splitting, then promote only after internal benchmark and latency SLOs match the SGLang pool.</li>
+    </ul>
+  </div>
+
+  <div class="tier-card" style="border-left:3px solid var(--olive)">
+    <h4>Tier 3 &mdash; Small-Model Assist Pool</h4>
+    <div class="tier-price">Cost control for autocomplete and short requests</div>
+    <ul>
+      <li><strong>Model:</strong> Qwen Coder, DeepSeek Coder, or another smaller open-weight coding model deployed as a separate KServe service.</li>
+      <li><strong>Routing:</strong> LiteLLM sends inline autocomplete, short explanations, embeddings, and classification tasks here instead of waking GLM-5.2.</li>
+      <li><strong>Scaling:</strong> Allow scale-to-zero or aggressive spot capacity because requests are stateless and cheap to retry.</li>
+    </ul>
+  </div>
+
+  <div class="callout">
+    <strong>Recommendation for 50 developers:</strong> run one warm GLM-5.2-NVFP4 SGLang replica during core hours, keep vLLM as a 5% canary and emergency fallback, and route short tasks to a smaller model. This avoids burning giant-model GPU time on requests that do not need 753B MoE capacity.
+  </div>
+
+  <h3>AWS Reference Architecture</h3>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Concern</th><th>Implementation</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Networking</strong></td><td>Private EKS cluster, private GPU subnets, internal load balancer, VPC endpoints for S3/ECR/CloudWatch/STS</td><td>Inference pods do not need public internet; prompts and code context stay inside the VPC</td></tr>
+      <tr><td><strong>Model loading</strong></td><td>Mirror the checkpoint to S3, hydrate FSx for Lustre before rollout, mount FSx into pods</td><td>Large checkpoints should not be downloaded from Hugging Face during pod startup</td></tr>
+      <tr><td><strong>GPU provisioning</strong></td><td>Karpenter NodePool with GPU taints, topology spread, and capacity reservations</td><td>KServe pods request whole GPU nodes; autoscaling must understand expensive, scarce capacity</td></tr>
+      <tr><td><strong>Runtime isolation</strong></td><td>Dedicated node pool and namespace for GLM-5.2, separate pool for small models</td><td>Prevents small traffic spikes from evicting or starving the giant model</td></tr>
+      <tr><td><strong>Traffic routing</strong></td><td>LiteLLM routes to KServe service DNS names, not directly to pod IPs</td><td>Centralizes auth, budgets, audit logs, retries, and model selection</td></tr>
+      <tr><td><strong>Release safety</strong></td><td>KServe canary split, shadow traffic, and benchmark gate before promotion</td><td>Quantized runtime changes can silently alter tool use, reasoning, and long-context recall</td></tr>
+      <tr><td><strong>Secrets</strong></td><td>IRSA, AWS Secrets Manager, and short-lived service account credentials</td><td>No static AWS keys or Hugging Face tokens in runtime configuration</td></tr>
+      <tr><td><strong>Audit</strong></td><td>Gateway logs request metadata, token counts, model, latency, and user identity</td><td>Needed for cost attribution and incident response without storing full source-code prompts by default</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Sizing Model for a 50-Developer Team</h3>
+
+  <div class="formula-box">
+    <pre><strong>Daily workload assumptions</strong>
+Active developers during peak:        30
+Prompts per active developer/day:     45
+Average input tokens/request:         8K-12K
+Average output tokens/request:        1.5K-2K
+Peak concurrent long requests:        8-12
+Default production context:           128K
+Long-context lane:                    256K-1M by explicit routing
+
+Platform target:
+  p50 TTFT for 128K coding prompt:    &lt; 8s
+  p95 TTFT for 128K coding prompt:    &lt; 20s
+  per-user decode target:             35-60 tok/s
+  gateway availability target:        99.9%</pre>
+  </div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Pool</th><th>Replica Policy</th><th>Traffic</th><th>Scale Trigger</th></tr></thead>
+    <tbody>
+      <tr><td><strong>GLM-5.2-NVFP4 SGLang</strong></td><td>1 warm replica, up to 3</td><td>Daily coding, code review, long-context analysis</td><td>Queue depth, TTFT p95, GPU memory, and tokens/sec saturation</td></tr>
+      <tr><td><strong>GLM-5.2-NVFP4 vLLM</strong></td><td>0 warm replicas, 1 canary during upgrades</td><td>Canary, fallback, benchmark parity</td><td>Manual promotion or incident fallback</td></tr>
+      <tr><td><strong>Small coding model</strong></td><td>0-4 replicas</td><td>Autocomplete, small edits, short explanations</td><td>Request rate and p95 latency</td></tr>
+      <tr><td><strong>Embedding / rerank</strong></td><td>0-2 replicas</td><td>Repo retrieval and context packing</td><td>Batch queue and retrieval latency</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Cost Levers</h3>
+
+  <p>Exact Blackwell pricing and regional availability should be validated in the AWS console before commitment. The key design decision is not a single monthly estimate; it is avoiding waste from cold starts, over-serving small requests, and leaving scarce GPUs idle.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Lever</th><th>Default</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Route short tasks away from GLM</strong></td><td>LiteLLM task router</td><td>Usually the largest cost reduction; autocomplete should not hit the giant model</td></tr>
+      <tr><td><strong>Business-hour warm pool</strong></td><td>Warm GLM replica 10-12 hours/day</td><td>Keeps latency acceptable without paying 24/7 for every replica</td></tr>
+      <tr><td><strong>Capacity reservations</strong></td><td>Reserve primary GPU capacity</td><td>Protects the production lane from GPU scarcity</td></tr>
+      <tr><td><strong>Spot only for small models</strong></td><td>Spot autocomplete and embedding pools</td><td>Good savings with low blast radius; avoid spot for the primary 8-GPU GLM replica</td></tr>
+      <tr><td><strong>FSx hot cache</strong></td><td>Pre-hydrate before rollout</td><td>Shortens restart and canary time; lowers risk during node replacement</td></tr>
+      <tr><td><strong>Context gating</strong></td><td>128K default, approval for 1M</td><td>Controls KV-cache pressure and prevents one request from harming the queue</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Production Checklist</h3>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Category</th><th>Task</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Model</strong></td><td>Mirror <code>nvidia/GLM-5.2-NVFP4</code> from Hugging Face to private S3 and verify checksums</td><td>P0</td></tr>
+      <tr><td><strong>Runtime</strong></td><td>Build pinned SGLang and vLLM images with the required <code>transformers</code>, CUDA, and ModelOpt support</td><td>P0</td></tr>
+      <tr><td><strong>KServe</strong></td><td>Install KServe in RawDeployment mode and validate canary traffic splitting</td><td>P0</td></tr>
+      <tr><td><strong>GPU</strong></td><td>Install NVIDIA GPU Operator, DCGM exporter, and node-feature-discovery</td><td>P0</td></tr>
+      <tr><td><strong>Storage</strong></td><td>Provision FSx for Lustre or equivalent hot cache and pre-hydrate model files before pod rollout</td><td>P0</td></tr>
+      <tr><td><strong>Gateway</strong></td><td>Deploy LiteLLM with OIDC, budgets, audit logs, and route rules for GLM vs small-model traffic</td><td>P0</td></tr>
+      <tr><td><strong>Security</strong></td><td>Private subnets, no public inference endpoint, VPC endpoints for AWS APIs, IRSA for pod permissions</td><td>P0</td></tr>
+      <tr><td><strong>Quality</strong></td><td>Run internal coding evals, SWE-bench-style tasks, long-context recall, and tool-calling tests before promotion</td><td>P0</td></tr>
+      <tr><td><strong>Observability</strong></td><td>Dashboards for TTFT, tokens/sec, GPU memory, KV cache, queue depth, error rate, and per-user spend</td><td>P0</td></tr>
+      <tr><td><strong>Reliability</strong></td><td>Test node replacement, FSx remounts, runtime crash recovery, and KServe rollback</td><td>P1</td></tr>
+      <tr><td><strong>Cost</strong></td><td>Enforce context tiers and small-model routing; review idle GPU hours weekly</td><td>P1</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout">
+    <strong>Bottom line:</strong> on AWS, GLM-5.2-NVFP4 should be treated as a scarce, high-value inference lane, not a general autocomplete backend. Use EKS + KServe for lifecycle and rollout control, SGLang as the primary NVFP4 runtime, vLLM as the compatibility lane, S3/FSx for deterministic model loading, and LiteLLM for task routing. The winning architecture is a private, benchmark-gated KServe platform that only spends Blackwell GPU time when the request actually needs GLM-5.2.
+  </div>
+
+</section>
+
+<div class="page-nav">
+  <a href="deepseek-v4.html">&larr; Serving DeepSeek V4 Pro</a>
+  <a href="index.html">Overview &rarr;</a>
+</div>
+
+<footer class="foot">
+  <span>Self-Hosting LLM</span>
+  <span>Last updated 2026-06-28</span>
+</footer>
+
+</div>
+</body>
+</html>
