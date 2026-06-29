@@ -22,10 +22,20 @@
   .diagram-item { border: 1px solid var(--rule); border-radius: 4px; padding: .65rem .75rem; margin-bottom: .55rem; font: 600 13px/1.25 var(--sans); background: var(--bg); }
   .diagram-item:last-child { margin-bottom: 0; }
   .diagram-item span { display: block; margin-top: .25em; font: 12px/1.35 var(--serif); color: var(--ink-soft); }
+  .diagram-label { display: flex; align-items: center; gap: .45rem; }
+  .diagram-label svg { width: 16px; height: 16px; color: var(--sky); flex: 0 0 auto; stroke-width: 2; }
+  .diagram-core .diagram-label svg { color: var(--clay); }
   .diagram-core { border-color: var(--clay); box-shadow: inset 0 0 0 1px rgba(217,119,87,.18); }
   .diagram-core h3 { color: var(--clay); }
   .diagram-arrow { text-align: center; color: var(--g500); font: 700 18px/1 var(--sans); margin: .2rem 0 .55rem; }
   @media (max-width: 760px) { .promptfoo-diagram { grid-template-columns: 1fr; } .diagram-arrow { transform: rotate(90deg); margin: .4rem 0; } }
+  .horizon-flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: .65rem; margin: 1.2rem 0 1.8rem; }
+  .horizon-node { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: .85rem; position: relative; }
+  .horizon-node:not(:last-child)::after { content: "→"; position: absolute; right: -.55rem; top: 50%; transform: translateY(-50%); color: var(--g500); font: 700 14px/1 var(--sans); }
+  .horizon-node strong { display: block; font: 700 13px/1.25 var(--sans); margin-bottom: .35em; }
+  .horizon-node span { display: block; color: var(--ink-soft); font-size: .82rem; line-height: 1.35; }
+  .horizon-node.accent { border-color: var(--clay); box-shadow: inset 0 0 0 1px rgba(217,119,87,.18); }
+  @media (max-width: 900px) { .horizon-flow { grid-template-columns: 1fr; } .horizon-node:not(:last-child)::after { content: "↓"; right: 50%; top: auto; bottom: -.65rem; transform: translateX(50%); } }
   .eval-track { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.1rem 1.25rem; margin: 1rem 0 1.2rem; }
   .eval-track h3 { margin: 0 0 .4em; font: 700 15px/1.25 var(--sans); }
   .eval-track p { color: var(--ink-soft); margin: 0 0 .8em; }
@@ -53,21 +63,44 @@
 </div></nav>
 
 <section class="eval">
-  <h2>Baseline Benchmark</h2>
+  <h2>Evaluation Strategy</h2>
+
+  <p>The team currently uses Claude Code with Anthropic models for coding tasks and skill-driven SDLC workflows. The target replacement is a self-hosted model, such as GLM-5.2, combined with an open-source or internal harness.</p>
+
+  <p>The evaluation goal is to decide whether the replacement stack can support daily engineering work with comparable capability, reliability, and operating cost.</p>
+
+  <p>The result should be reported as a complete stack, not as the model alone:</p>
+  <ul>
+    <li><strong>Model</strong> determines reasoning, coding, instruction following, and long-context behavior.</li>
+    <li><strong>Harness</strong> determines tool use, file edits, terminal control, memory, and recovery behavior.</li>
+    <li><strong>Serving stack</strong> determines latency, reliability, concurrency, and operating cost.</li>
+  </ul>
+
+  <p>The framework uses two evaluation layers:</p>
+  <ul>
+    <li><strong>Baseline</strong> validates basic coding-agent capability and serving readiness with representative public benchmarks and performance tests.</li>
+    <li><strong>Long-Horizon</strong> validates whether the replacement stack works in daily SDLC practice by replaying existing SDLC cases, judging generated artifacts, and calibrating the result with human review.</li>
+  </ul>
+</section>
+
+<section class="eval">
+  <h2>Baseline</h2>
+
+  <p>The baseline layer provides a compact PoC signal. It should use a small number of representative benchmarks instead of a broad benchmark suite.</p>
 
   <div class="eval-track">
-    <h3>Capability</h3>
+    <h3>Standard Benchmarks</h3>
 
     <div class="tbl"><table>
       <thead><tr><th>Selected Benchmark</th><th>Purpose</th><th>Primary Metrics</th></tr></thead>
       <tbody>
         <tr>
-          <td><strong>Terminal-Bench</strong></td>
+          <td><strong><a href="https://www.tbench.ai/">Terminal-Bench</a></strong></td>
           <td>Evaluates agentic terminal behavior: shell commands, debugging, file operations, environment navigation, and multi-step execution.</td>
           <td>Task success rate, command error rate, time/task, failure category</td>
         </tr>
         <tr>
-          <td><strong>SWE-bench Verified</strong></td>
+          <td><strong><a href="https://www.swebench.com/verified.html">SWE-bench Verified</a></strong></td>
           <td>Evaluates repo-level software engineering: issue understanding, code editing, regression fixing, and passing tests in real projects.</td>
           <td>% resolved, test pass rate, time/task, tokens/task, cost/task</td>
         </tr>
@@ -111,12 +144,21 @@
 </section>
 
 <section class="eval">
-  <h2>Long-Horizon Benchmark</h2>
+  <h2>Long-Horizon</h2>
 
-  <p>This benchmark is not a generic coding leaderboard. It measures whether a replacement model can preserve the same SDLC workflow quality that an existing Claude-based skill system already delivers in production.</p>
+  <p>The long-horizon layer reuses existing SDLC projects to test whether the replacement stack can regenerate each stage artifact, from formal requirement to validation output, while preserving context, process quality, and workflow continuity. The generated candidate artifacts are judged against the original requirement context, the stage skill, prior artifacts, and the accepted Claude baseline.</p>
 
   <div class="callout">
-    The production Claude artifacts are treated as the baseline, not perfect truth. GLM output is judged against the original requirement context, the stage skill, the prior artifacts, and the accepted baseline.
+    The production Claude artifacts are treated as the baseline, not perfect truth.
+  </div>
+
+  <h3>Workflow</h3>
+
+  <div class="horizon-flow">
+    <div class="horizon-node"><strong>Generate Candidate Artifacts</strong><span>Run the same requirement-to-validation cases through the alternative model and harness, then capture each generated stage artifact.</span></div>
+    <div class="horizon-node accent"><strong>LLM-as-Judge</strong><span>Use Promptfoo to compare each artifact with the source context, stage rubric, hard checks, and Claude baseline.</span></div>
+    <div class="horizon-node"><strong>Calibrate With Human Review</strong><span>Manually inspect a small representative sample to calibrate the judge and catch workflow issues the rubric may miss.</span></div>
+    <div class="horizon-node"><strong>Report Replacement Readiness</strong><span>Aggregate scores, judge reasons, human findings, and failure patterns into one replacement-readiness view.</span></div>
   </div>
 
   <h3>Core Score Model</h3>
@@ -128,34 +170,52 @@
     <div class="score-card"><div class="weight">15%</div><h3>Reviewability</h3><p>Makes outputs clear enough for a human to review, approve, or correct efficiently.</p></div>
   </div>
 
-  <h3>Promptfoo Local Evaluation Flow</h3>
+  <h3>LLM-as-Judge Flow</h3>
+
+  <p>Promptfoo runs the local evaluation by loading each SDLC case, applying deterministic checks, and asking a judge model to score the candidate artifact against the rubric and baseline. The judge output is used as the primary scalable signal, while human review is used to calibrate the rubric and validate the scoring quality.</p>
 
   <div class="promptfoo-diagram">
     <div class="diagram-lane">
       <h3>Inputs</h3>
-      <div class="diagram-item">SDLC cases<span>Brief, prior artifact, skill instruction, Claude baseline, GLM candidate.</span></div>
-      <div class="diagram-item">Rubrics<span>Faithfulness, completeness, traceability, actionability, and process adherence.</span></div>
-      <div class="diagram-item">Hard checks<span>Required sections, preserved IDs, no placeholders, valid structure.</span></div>
+      <div class="diagram-item"><div class="diagram-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h4"/><path d="M8 13h8M8 17h5"/></svg>SDLC cases</div><span>Brief, prior artifact, skill instruction, Claude baseline, candidate artifact.</span></div>
+      <div class="diagram-item"><div class="diagram-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 6h13M8 12h13M8 18h13"/><path d="m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2"/></svg>Rubrics</div><span>Faithfulness, completeness, traceability, actionability, and process adherence.</span></div>
+      <div class="diagram-item"><div class="diagram-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3 5 6v5c0 4.5 2.8 8.5 7 10 4.2-1.5 7-5.5 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg>Hard checks</div><span>Required sections, preserved IDs, no placeholders, valid structure.</span></div>
     </div>
 
     <div class="diagram-lane diagram-core">
       <h3>Promptfoo</h3>
-      <div class="diagram-item">Loads cases</div>
+      <div class="diagram-item"><div class="diagram-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Loads cases</div></div>
       <div class="diagram-arrow">&darr;</div>
-      <div class="diagram-item">Runs assertions</div>
+      <div class="diagram-item"><div class="diagram-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m4 12 5 5L20 6"/></svg>Runs assertions</div></div>
       <div class="diagram-arrow">&darr;</div>
-      <div class="diagram-item">Calls judge LLM</div>
+      <div class="diagram-item"><div class="diagram-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v18M6 7h12M8 7l-4 7h8zm8 0-4 7h8z"/></svg>Calls judge LLM</div></div>
       <div class="diagram-arrow">&darr;</div>
-      <div class="diagram-item">Records scores</div>
+      <div class="diagram-item"><div class="diagram-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19V5"/><path d="M8 17v-5M13 17V8M18 17v-9"/><path d="M3 19h18"/></svg>Records scores</div></div>
     </div>
 
     <div class="diagram-lane">
       <h3>Outputs</h3>
-      <div class="diagram-item">Metric scores<span>0&ndash;10 rubric scores with judge reasons and issue notes.</span></div>
-      <div class="diagram-item">Pass / fail report<span>Which cases meet threshold, which stages need review.</span></div>
-      <div class="diagram-item">Weighted summary<span>One capability score for deciding whether GLM is close enough to baseline.</span></div>
+      <div class="diagram-item"><div class="diagram-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19h16"/><path d="M7 16v-5M12 16V7M17 16v-3"/></svg>Metric scores</div><span>0&ndash;10 rubric scores with judge reasons and issue notes.</span></div>
+      <div class="diagram-item"><div class="diagram-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12l4 4L19 6"/><path d="M19 18H5"/></svg>Pass / fail report</div><span>Which cases meet threshold, which stages need review.</span></div>
+      <div class="diagram-item"><div class="diagram-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 19h14"/><path d="M7 15l4-4 3 3 5-7"/><path d="M7 15v-4M11 11V7M14 14v-4M19 7v8"/></svg>Weighted summary</div><span>One capability score for deciding whether the candidate stack is close enough to baseline.</span></div>
     </div>
   </div>
+
+  <h3>Human Review</h3>
+
+  <div class="callout">
+    Manually review a small sample of generated artifacts using the same score model. Use the review to confirm whether judge scores match team expectations and to tune the rubric before a larger run.
+  </div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Step</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Select sample</strong></td><td>Pick a small but representative set, such as 5 projects across 2&ndash;3 SDLC stages.</td></tr>
+      <tr><td><strong>Human score</strong></td><td>Have reviewers score the same four metrics: context retention, stage completion, workflow continuity, and reviewability.</td></tr>
+      <tr><td><strong>Compare judge</strong></td><td>Check whether the LLM judge is too generous, too strict, or missing important workflow issues.</td></tr>
+      <tr><td><strong>Tune rubric</strong></td><td>Adjust judge prompts, scoring anchors, or hard checks before running the larger evaluation.</td></tr>
+    </tbody>
+  </table></div>
 
 </section>
 
@@ -166,19 +226,46 @@
   <div class="tbl"><table>
     <thead><tr><th>Benchmark</th><th>Main Purpose</th><th>PoC Fit</th></tr></thead>
     <tbody>
-      <tr><td><strong>SWE-bench Verified</strong></td><td>Fix real GitHub issues in existing repositories.</td><td><span class="cmp yes">Primary</span> Best practical repo-level coding signal.</td></tr>
-      <tr><td><strong>SWE-bench Pro</strong></td><td>Harder, stricter software engineering benchmark.</td><td><span class="cmp partial">Later</span> Use after Verified if stronger frontier comparison is needed.</td></tr>
-      <tr><td><strong>Terminal-Bench</strong></td><td>Complete tasks through terminal commands and environment interaction.</td><td><span class="cmp yes">Primary</span> Best agentic shell and harness-behavior signal.</td></tr>
-      <tr><td><strong>NL2Repo</strong></td><td>Build or modify repositories from natural-language requirements.</td><td><span class="cmp partial">Optional</span> Useful for feature-building tasks, heavier than first PoC needs.</td></tr>
-      <tr><td><strong>DeepSWE</strong></td><td>Software engineering task completion in controlled environments.</td><td><span class="cmp partial">Optional</span> Good secondary coding-agent signal.</td></tr>
-      <tr><td><strong>ProgramBench</strong></td><td>Programming and code-generation task capability.</td><td><span class="cmp partial">Optional</span> More code-focused, less harness-focused.</td></tr>
-      <tr><td><strong>BFCL</strong></td><td>Function calling and tool-call correctness.</td><td><span class="cmp partial">Optional</span> Add if structured tool calling is central.</td></tr>
-      <tr><td><strong>MCP-Atlas</strong></td><td>MCP/tool workflow capability.</td><td><span class="cmp partial">Optional</span> Add if the platform depends heavily on MCP tools.</td></tr>
-      <tr><td><strong>Tool-Decathlon</strong></td><td>General tool-use across multiple task types.</td><td><span class="cmp partial">Optional</span> Useful for broader tool orchestration testing.</td></tr>
-      <tr><td><strong>FrontierSWE</strong></td><td>Long-horizon open-ended engineering projects.</td><td><span class="cmp no">Skip PoC</span> Valuable but expensive and harder to reproduce.</td></tr>
-      <tr><td><strong>PostTrainBench</strong></td><td>Improve small models through post-training workflows.</td><td><span class="cmp no">Skip PoC</span> Specialized ML-engineering signal.</td></tr>
-      <tr><td><strong>SWE-Marathon</strong></td><td>Ultra-long-horizon software engineering.</td><td><span class="cmp no">Skip PoC</span> Too heavy for initial replacement validation.</td></tr>
-      <tr><td><strong>HLE / GPQA / AIME / HMMT</strong></td><td>General reasoning, science, and math intelligence.</td><td><span class="cmp no">Skip PoC</span> Useful model-marketing signal, less direct for harness replacement.</td></tr>
+      <tr><td><strong><a href="https://www.swebench.com/verified.html">SWE-bench Verified</a></strong></td><td>Fix real GitHub issues in existing repositories.</td><td><span class="cmp yes">Primary</span> Best practical repo-level coding signal.</td></tr>
+      <tr><td><strong><a href="https://www.swebench.com/">SWE-bench Pro</a></strong></td><td>Harder, stricter software engineering benchmark.</td><td><span class="cmp partial">Later</span> Use after Verified if stronger frontier comparison is needed.</td></tr>
+      <tr><td><strong><a href="https://www.tbench.ai/">Terminal-Bench</a></strong></td><td>Complete tasks through terminal commands and environment interaction.</td><td><span class="cmp yes">Primary</span> Best agentic shell and harness-behavior signal.</td></tr>
+      <tr><td><strong><a href="https://github.com/multimodal-art-projection/NL2RepoBench">NL2Repo</a></strong></td><td>Build or modify repositories from natural-language requirements.</td><td><span class="cmp partial">Optional</span> Useful for feature-building tasks, heavier than first PoC needs.</td></tr>
+      <tr><td><strong><a href="https://deepswe.datacurve.ai/">DeepSWE</a></strong></td><td>Software engineering task completion in controlled environments.</td><td><span class="cmp partial">Optional</span> Good secondary coding-agent signal.</td></tr>
+      <tr><td><strong><a href="https://arxiv.org/html/2605.03546v1">ProgramBench</a></strong></td><td>Programming and code-generation task capability.</td><td><span class="cmp partial">Optional</span> More code-focused, less harness-focused.</td></tr>
+      <tr><td><strong><a href="https://gorilla.cs.berkeley.edu/leaderboard.html">BFCL</a></strong></td><td>Function calling and tool-call correctness.</td><td><span class="cmp partial">Optional</span> Add if structured tool calling is central.</td></tr>
+      <tr><td><strong><a href="https://labs.scale.com/leaderboard/mcp_atlas">MCP-Atlas</a></strong></td><td>MCP/tool workflow capability.</td><td><span class="cmp partial">Optional</span> Add if the platform depends heavily on MCP tools.</td></tr>
+      <tr><td><strong><a href="https://github.com/hkust-nlp/Toolathlon">Tool-Decathlon</a></strong></td><td>General tool-use across multiple task types.</td><td><span class="cmp partial">Optional</span> Useful for broader tool orchestration testing.</td></tr>
+      <tr><td><strong><a href="https://www.frontierswe.com/">FrontierSWE</a></strong></td><td>Long-horizon open-ended engineering projects.</td><td><span class="cmp no">Skip PoC</span> Valuable but expensive and harder to reproduce.</td></tr>
+      <tr><td><strong><a href="https://posttrainbench.com/">PostTrainBench</a></strong></td><td>Improve small models through post-training workflows.</td><td><span class="cmp no">Skip PoC</span> Specialized ML-engineering signal.</td></tr>
+      <tr><td><strong><a href="https://www.swe-marathon.org/">SWE-Marathon</a></strong></td><td>Ultra-long-horizon software engineering.</td><td><span class="cmp no">Skip PoC</span> Too heavy for initial replacement validation.</td></tr>
+      <tr><td><strong><a href="https://agi.safe.ai/">HLE</a> / <a href="https://arxiv.org/abs/2311.12022">GPQA</a> / <a href="https://www.kaggle.com/benchmarks/open-benchmarks/aime-2025">AIME</a> / <a href="https://www.hmmt.org/">HMMT</a></strong></td><td>General reasoning, science, and math intelligence.</td><td><span class="cmp no">Skip PoC</span> Useful model-marketing signal, less direct for harness replacement.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="eval">
+  <div class="crumb">Appendix</div>
+  <h2>Serving Performance Metric Meaning</h2>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Metric</th><th>Meaning</th><th>Why It Matters</th></tr></thead>
+    <tbody>
+      <tr><td><strong>TTFT</strong></td><td>Time to first token after the request is sent.</td><td>Measures perceived responsiveness for chat and agent workflows.</td></tr>
+      <tr><td><strong>TPOT / ITL</strong></td><td>Time per output token, also called inter-token latency.</td><td>Shows how smooth and fast streaming feels after generation starts.</td></tr>
+      <tr><td><strong>Output tokens/sec</strong></td><td>Generation speed for one request.</td><td>Useful for comparing model and inference-engine speed on the same prompt set.</td></tr>
+      <tr><td><strong>Aggregate tokens/sec</strong></td><td>Total tokens produced across concurrent requests.</td><td>Measures serving capacity under load, not just single-user speed.</td></tr>
+      <tr><td><strong>GPU memory</strong></td><td>Peak and steady memory used by model weights, KV cache, and runtime overhead.</td><td>Determines model size, context length, batching headroom, and hardware cost.</td></tr>
+      <tr><td><strong>GPU utilization</strong></td><td>How much of the GPU compute capacity is actively used.</td><td>Helps identify underused hardware, bottlenecks, or inefficient batching.</td></tr>
+      <tr><td><strong>Gateway overhead</strong></td><td>Extra latency added by routing, auth, logging, policy, and protocol translation.</td><td>Separates pure inference speed from platform-layer cost.</td></tr>
+      <tr><td><strong>p95 / p99 latency</strong></td><td>Request latency at the 95th and 99th percentile.</td><td>Captures tail latency that affects real users more than averages.</td></tr>
+      <tr><td><strong>Streaming stability</strong></td><td>Whether streaming responses remain continuous without stalls or broken chunks.</td><td>Important for coding agents because interrupted streams can break tool loops.</td></tr>
+      <tr><td><strong>Timeout rate</strong></td><td>Percentage of requests that exceed the configured timeout.</td><td>Shows whether long prompts or long generations are reliable enough.</td></tr>
+      <tr><td><strong>Error rate</strong></td><td>Percentage of failed requests, including 4xx, 5xx, provider, and gateway errors.</td><td>Measures operational reliability of the full serving path.</td></tr>
+      <tr><td><strong>Max stable concurrency</strong></td><td>Highest concurrent request level that keeps latency and errors within acceptable range.</td><td>Defines practical capacity before the service becomes unstable.</td></tr>
+      <tr><td><strong>Requests/sec</strong></td><td>Number of completed requests per second.</td><td>Useful for workload planning when request sizes are relatively consistent.</td></tr>
+      <tr><td><strong>Tokens/sec under load</strong></td><td>Total throughput while multiple users or agents are active.</td><td>Measures real serving throughput for production-like traffic.</td></tr>
+      <tr><td><strong>Cost per 1M tokens</strong></td><td>Estimated infrastructure or provider cost normalized by token volume.</td><td>Connects performance results to economic feasibility.</td></tr>
+      <tr><td><strong>Soak-test stability</strong></td><td>Whether the service remains healthy during a long sustained load test.</td><td>Finds memory leaks, queue buildup, degradation, and restart patterns.</td></tr>
     </tbody>
   </table></div>
 </section>
@@ -190,7 +277,7 @@
 
 <footer class="foot">
   <span>Self-Hosting LLM</span>
-  <span>Last updated 2026-06-28</span>
+  <span>Last updated 2026-06-29</span>
 </footer>
 
 </div>
