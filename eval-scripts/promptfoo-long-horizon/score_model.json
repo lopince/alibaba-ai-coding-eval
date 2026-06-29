@@ -1,0 +1,18 @@
+{
+  "context_retention": {
+    "weight": 30,
+    "purpose": "Preserves requirements, constraints, decisions, and assumptions across stages."
+  },
+  "stage_completion": {
+    "weight": 30,
+    "purpose": "Produces the expected deliverable for the current SDLC stage."
+  },
+  "workflow_continuity": {
+    "weight": 25,
+    "purpose": "Moves the project forward without drifting, restarting, or contradicting prior work."
+  },
+  "reviewability": {
+    "weight": 15,
+    "purpose": "Keeps the artifact clear enough for human review, approval, or correction."
+  }
+}

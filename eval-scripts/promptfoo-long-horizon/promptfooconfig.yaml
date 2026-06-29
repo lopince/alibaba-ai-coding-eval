@@ -13,40 +13,90 @@ defaultTest:
     - type: contains
       value: "{{required_id}}"
       metric: required_id_present
-      weight: 1
+      weight: 0
     - type: not-contains
       value: "TBD"
       metric: no_placeholders
-      weight: 1
+      weight: 0
     - type: llm-rubric
       provider: openai:gpt-4.1-mini
-      metric: long_horizon_quality
-      weight: 8
+      metric: context_retention
+      weight: 30
       value: |
-        You are judging whether a candidate SDLC artifact is acceptable for a long-horizon skill-driven workflow.
+        Judge only Context Retention for this SDLC artifact.
 
-        Score the candidate artifact from 0 to 10 across these dimensions:
-        - Context Retention: preserves requirements, constraints, decisions, and assumptions.
-        - Stage Completion: produces the expected deliverable for the current SDLC stage.
-        - Workflow Continuity: moves the project forward without drift or contradiction.
-        - Reviewability: is clear enough for a human to review, approve, or correct.
+        Pass if the candidate preserves the important requirements, constraints,
+        decisions, assumptions, and required identifiers from the source context,
+        prior artifact, and Claude baseline. Fail if it drops important context,
+        changes constraints, invents unsupported requirements, or loses required
+        ID {{required_id}}.
 
         Case ID: {{case_id}}
         Stage: {{stage}}
-
-        Original requirement context:
+        Requirement context:
         {{requirement_context}}
-
         Prior artifact:
         {{prior_artifact}}
-
-        Accepted Claude baseline:
+        Claude baseline:
         {{claude_baseline}}
-
-        Candidate artifact to judge:
+        Candidate artifact:
         {{candidate_artifact}}
+    - type: llm-rubric
+      provider: openai:gpt-4.1-mini
+      metric: stage_completion
+      weight: 30
+      value: |
+        Judge only Stage Completion for this SDLC artifact.
 
-        The artifact should preserve required ID {{required_id}}.
-        Penalize missing constraints, contradiction with prior artifacts, vague placeholders, and stage-inappropriate output.
+        Pass if the candidate produces the expected deliverable for stage
+        "{{stage}}" and is complete enough for the workflow to move to the next
+        stage. Fail if it is incomplete, stage-inappropriate, mostly generic, or
+        missing the core deliverable content expected for this stage.
+
+        Case ID: {{case_id}}
+        Stage: {{stage}}
+        Requirement context:
+        {{requirement_context}}
+        Claude baseline:
+        {{claude_baseline}}
+        Candidate artifact:
+        {{candidate_artifact}}
+    - type: llm-rubric
+      provider: openai:gpt-4.1-mini
+      metric: workflow_continuity
+      weight: 25
+      value: |
+        Judge only Workflow Continuity for this SDLC artifact.
+
+        Pass if the candidate continues logically from the prior artifact and
+        Claude baseline, keeps decisions consistent, and advances the project
+        without restarting, drifting, or contradicting earlier work. Fail if it
+        ignores prior decisions, changes direction without reason, or creates
+        contradictions that would break the SDLC chain.
+
+        Case ID: {{case_id}}
+        Stage: {{stage}}
+        Prior artifact:
+        {{prior_artifact}}
+        Claude baseline:
+        {{claude_baseline}}
+        Candidate artifact:
+        {{candidate_artifact}}
+    - type: llm-rubric
+      provider: openai:gpt-4.1-mini
+      metric: reviewability
+      weight: 15
+      value: |
+        Judge only Reviewability for this SDLC artifact.
+
+        Pass if a human reviewer can efficiently inspect, approve, or correct
+        the artifact. The output should be clear, structured, specific, and free
+        of vague placeholders. Fail if it is hard to review, ambiguous,
+        unstructured, or contains unresolved placeholders.
+
+        Case ID: {{case_id}}
+        Stage: {{stage}}
+        Candidate artifact:
+        {{candidate_artifact}}
 
 tests: file://tests/sdlc_cases.yaml
