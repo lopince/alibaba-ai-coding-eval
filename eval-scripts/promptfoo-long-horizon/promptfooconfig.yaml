@@ -1,0 +1,52 @@
+description: Long-Horizon SDLC LLM-as-Judge evaluation
+
+prompts:
+  - file://prompts/candidate_artifact.txt
+
+providers:
+  - id: echo
+    label: candidate-artifact
+
+defaultTest:
+  threshold: 0.65
+  assert:
+    - type: contains
+      value: "{{required_id}}"
+      metric: required_id_present
+      weight: 1
+    - type: not-contains
+      value: "TBD"
+      metric: no_placeholders
+      weight: 1
+    - type: llm-rubric
+      provider: openai:gpt-4.1-mini
+      metric: long_horizon_quality
+      weight: 8
+      value: |
+        You are judging whether a candidate SDLC artifact is acceptable for a long-horizon skill-driven workflow.
+
+        Score the candidate artifact from 0 to 10 across these dimensions:
+        - Context Retention: preserves requirements, constraints, decisions, and assumptions.
+        - Stage Completion: produces the expected deliverable for the current SDLC stage.
+        - Workflow Continuity: moves the project forward without drift or contradiction.
+        - Reviewability: is clear enough for a human to review, approve, or correct.
+
+        Case ID: {{case_id}}
+        Stage: {{stage}}
+
+        Original requirement context:
+        {{requirement_context}}
+
+        Prior artifact:
+        {{prior_artifact}}
+
+        Accepted Claude baseline:
+        {{claude_baseline}}
+
+        Candidate artifact to judge:
+        {{candidate_artifact}}
+
+        The artifact should preserve required ID {{required_id}}.
+        Penalize missing constraints, contradiction with prior artifacts, vague placeholders, and stage-inappropriate output.
+
+tests: file://tests/sdlc_cases.yaml

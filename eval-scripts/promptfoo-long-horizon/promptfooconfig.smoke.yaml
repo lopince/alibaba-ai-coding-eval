@@ -1,0 +1,26 @@
+description: Long-Horizon SDLC deterministic smoke evaluation
+
+prompts:
+  - file://prompts/candidate_artifact.txt
+
+providers:
+  - id: echo
+    label: candidate-artifact
+
+defaultTest:
+  threshold: 0.7
+  assert:
+    - type: contains
+      value: "{{required_id}}"
+      metric: required_id_present
+      weight: 2
+    - type: contains
+      value: "{{stage}}"
+      metric: stage_named
+      weight: 1
+    - type: not-contains
+      value: "TBD"
+      metric: no_placeholders
+      weight: 1
+
+tests: file://tests/sdlc_cases.yaml

@@ -1,0 +1,36 @@
+- description: requirement-stage candidate keeps required requirement ID
+  vars:
+    case_id: crm-login-001
+    stage: Formal Requirement
+    required_id: FR-001
+    requirement_context: |
+      The CRM must allow enterprise users to sign in with SSO. The session timeout must be 30 minutes, audit events must be recorded, and error messages must not reveal whether the username exists.
+    prior_artifact: |
+      User brief: enable secure enterprise login while preserving auditability and privacy.
+    claude_baseline: |
+      FR-001: The system shall support SSO login for enterprise users.
+      FR-002: The system shall expire inactive sessions after 30 minutes.
+      FR-003: The system shall record login success and failure audit events.
+      FR-004: The system shall use generic authentication failure messages.
+    candidate_artifact: |
+      Stage: Formal Requirement
+      FR-001: The system shall support SSO login for enterprise users.
+      FR-002: The system shall expire inactive sessions after 30 minutes.
+      FR-003: The system shall record login success and failure audit events.
+      FR-004: The system shall show a generic authentication failure message that does not reveal whether the username exists.
+
+- description: architecture-stage candidate keeps prior decisions
+  vars:
+    case_id: billing-export-002
+    stage: Architecture Design
+    required_id: ADR-002
+    requirement_context: |
+      Finance users need a monthly invoice export. The export must be asynchronous, preserve tenant isolation, and support retry after transient storage errors.
+    prior_artifact: |
+      Use case UC-002: Finance user requests invoice export, receives notification when the file is ready, and downloads the file from tenant-scoped storage.
+    claude_baseline: |
+      ADR-002: Use an asynchronous export worker that reads tenant-scoped invoices, writes the generated file to tenant-scoped object storage, and emits a completion event.
+    candidate_artifact: |
+      Stage: Architecture Design
+      ADR-002: Use an asynchronous export worker for monthly invoice generation.
+      The worker reads invoices within the requesting tenant boundary, writes the result to tenant-scoped object storage, retries transient storage failures, and emits a completion event for notification delivery.
