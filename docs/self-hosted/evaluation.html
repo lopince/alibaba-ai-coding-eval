@@ -77,7 +77,7 @@
 
   <p>The team currently uses Claude Code with Anthropic models for coding tasks and skill-driven SDLC workflows. The target replacement is a self-hosted model, such as GLM-5.2, combined with an open-source or internal harness.</p>
 
-  <p>The evaluation goal is to decide whether the replacement stack can support daily engineering work with comparable capability, reliability, and operating cost.</p>
+  <p>The evaluation goal is to decide whether the replacement stack can support the team&rsquo;s real daily work with comparable capability, reliability, latency, and operating cost.</p>
 
   <p>The result should be reported as a complete stack, not as the model alone:</p>
   <ul>
@@ -86,10 +86,11 @@
     <li><strong>Serving stack</strong> determines latency, reliability, concurrency, and operating cost.</li>
   </ul>
 
-  <p>The framework uses two evaluation layers:</p>
+  <p>The framework uses three evaluation layers:</p>
   <ul>
-    <li><strong>Baseline</strong> validates basic coding-agent capability and serving readiness with representative public benchmarks and performance tests.</li>
-    <li><strong>Long-Horizon</strong> validates whether the replacement stack works in daily SDLC practice by replaying existing SDLC cases, judging generated artifacts, and calibrating the result with human review.</li>
+    <li><strong>Baseline</strong> validates public capability signals and serving readiness with benchmark screenshots, selected public benchmarks, and performance tests.</li>
+    <li><strong>Practical Capability</strong> validates whether the stack can produce acceptable task results for real daily work across backend, frontend, data, QA, BA, and platform roles.</li>
+    <li><strong>Long-Horizon</strong> validates whether the stack preserves context and workflow continuity across multi-stage SDLC cases, using LLM-as-judge plus calibrated human review.</li>
   </ul>
 </section>
 
@@ -197,6 +198,98 @@
 </section>
 
 <section class="eval">
+  <h2>Practical Capability</h2>
+
+  <p>This layer asks teammates to replay the daily work patterns they already know well and judge whether the self-hosted LLM is capable enough for real team use. Each task should be run against the candidate stack and, where possible, against the current Claude Code baseline using the same repository, prompt, time box, and acceptance criteria.</p>
+
+  <h3>Role-based Task Categories</h3>
+
+  <div class="role-grid">
+    <div class="role-card">
+      <h3>Backend Engineer</h3>
+      <p>API, service, integration, and data-model changes.</p>
+      <ul>
+        <li>Implement endpoint or business rule changes</li>
+        <li>Fix production-like bugs with logs and tests</li>
+        <li>Refactor multi-file service logic without behavior drift</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3>Frontend Engineer</h3>
+      <p>UI behavior, state, accessibility, and integration tasks.</p>
+      <ul>
+        <li>Build or modify a workflow screen</li>
+        <li>Fix component state, validation, or API wiring</li>
+        <li>Preserve design-system and responsive behavior</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3>Data Developer</h3>
+      <p>SQL, ETL, data quality, and analytics pipeline work.</p>
+      <ul>
+        <li>Create or modify transformations and checks</li>
+        <li>Debug schema, freshness, or reconciliation failures</li>
+        <li>Explain data lineage and edge-case handling</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3>QA Engineer</h3>
+      <p>Test design, defect reproduction, and regression confidence.</p>
+      <ul>
+        <li>Generate meaningful unit, API, or E2E tests</li>
+        <li>Reproduce a bug and verify the proposed fix</li>
+        <li>Identify missing edge cases and false positives</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3>Business Analyst</h3>
+      <p>Requirement clarification, acceptance criteria, and traceability.</p>
+      <ul>
+        <li>Convert requirement notes into user stories</li>
+        <li>Draft acceptance criteria and test scenarios</li>
+        <li>Detect ambiguity, conflicts, and missing business rules</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3>DevOps / Platform</h3>
+      <p>CI/CD, infrastructure, runtime, and operational tasks.</p>
+      <ul>
+        <li>Fix pipeline, deployment, or environment failures</li>
+        <li>Improve scripts, config, observability, or runbooks</li>
+        <li>Preserve security and rollback requirements</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Score Model</h3>
+
+  <p>This score model is designed to judge whether the self-hosted LLM can produce acceptable results across different daily task types. It focuses on concrete, evidence-based criteria so teammates can evaluate outputs consistently with less subjective judgment. Use it after rerunning a familiar task: score the specific LLM output across each dimension, then use the weighted result to compare task quality across roles, task types, and model runs.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Dimension</th><th>Weight</th><th>What the Teammate Judges</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Task fulfillment</strong></td><td><span class="s-total">30%</span></td><td>Did the output satisfy the requested task and explicit acceptance criteria?</td></tr>
+      <tr><td><strong>Result correctness</strong></td><td><span class="s-total">25%</span></td><td>Is the solution logically, technically, and domain-wise correct?</td></tr>
+      <tr><td><strong>Verification quality</strong></td><td><span class="s-total">20%</span></td><td>Does the output include enough tests, checks, repro steps, or evidence to prove it works and avoid regression?</td></tr>
+      <tr><td><strong>Context fit</strong></td><td><span class="s-total">15%</span></td><td>Does it follow the existing codebase, data model, business rules, workflow, and team conventions?</td></tr>
+      <tr><td><strong>Rework required</strong></td><td><span class="s-total">10%</span></td><td>How much human correction is needed before the result can be accepted?</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Score</th><th>General Anchor</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s-total">5</span></td><td>Accepted as-is or with only trivial edits.</td></tr>
+      <tr><td><span class="s-total">4</span></td><td>Mostly correct; minor fix needed.</td></tr>
+      <tr><td><span class="s-total">3</span></td><td>Partially useful; meaningful rework needed.</td></tr>
+      <tr><td><span class="s-total">2</span></td><td>Mostly wrong; only small parts reusable.</td></tr>
+      <tr><td><span class="s-total">1</span></td><td>Unusable, unsafe, or misleading.</td></tr>
+    </tbody>
+  </table></div>
+
+</section>
+
+<section class="eval">
   <h2>Long-Horizon</h2>
 
   <p>The long-horizon layer reuses existing SDLC projects to test whether the replacement stack can regenerate each stage artifact, from formal requirement to validation output, while preserving context, process quality, and workflow continuity. The generated candidate artifacts are judged against the original requirement context, the stage skill, prior artifacts, and the accepted Claude baseline.</p>
@@ -272,86 +365,6 @@
 
 </section>
 
-<section class="eval">
-  <h2>Practical Capability</h2>
-
-  <p>This layer asks teammates to replay the daily work patterns they already know well and judge whether the self-hosted LLM is capable enough for real team use. Each task should be run against the candidate stack and, where possible, against the current Claude Code baseline using the same repository, prompt, time box, and acceptance criteria.</p>
-
-  <h3>Role-based Task Categories</h3>
-
-  <div class="role-grid">
-    <div class="role-card">
-      <h3>Backend Engineer</h3>
-      <p>API, service, integration, and data-model changes.</p>
-      <ul>
-        <li>Implement endpoint or business rule changes</li>
-        <li>Fix production-like bugs with logs and tests</li>
-        <li>Refactor multi-file service logic without behavior drift</li>
-      </ul>
-    </div>
-    <div class="role-card">
-      <h3>Frontend Engineer</h3>
-      <p>UI behavior, state, accessibility, and integration tasks.</p>
-      <ul>
-        <li>Build or modify a workflow screen</li>
-        <li>Fix component state, validation, or API wiring</li>
-        <li>Preserve design-system and responsive behavior</li>
-      </ul>
-    </div>
-    <div class="role-card">
-      <h3>Data Developer</h3>
-      <p>SQL, ETL, data quality, and analytics pipeline work.</p>
-      <ul>
-        <li>Create or modify transformations and checks</li>
-        <li>Debug schema, freshness, or reconciliation failures</li>
-        <li>Explain data lineage and edge-case handling</li>
-      </ul>
-    </div>
-    <div class="role-card">
-      <h3>QA Engineer</h3>
-      <p>Test design, defect reproduction, and regression confidence.</p>
-      <ul>
-        <li>Generate meaningful unit, API, or E2E tests</li>
-        <li>Reproduce a bug and verify the proposed fix</li>
-        <li>Identify missing edge cases and false positives</li>
-      </ul>
-    </div>
-    <div class="role-card">
-      <h3>Business Analyst</h3>
-      <p>Requirement clarification, acceptance criteria, and traceability.</p>
-      <ul>
-        <li>Convert requirement notes into user stories</li>
-        <li>Draft acceptance criteria and test scenarios</li>
-        <li>Detect ambiguity, conflicts, and missing business rules</li>
-      </ul>
-    </div>
-    <div class="role-card">
-      <h3>DevOps / Platform</h3>
-      <p>CI/CD, infrastructure, runtime, and operational tasks.</p>
-      <ul>
-        <li>Fix pipeline, deployment, or environment failures</li>
-        <li>Improve scripts, config, observability, or runbooks</li>
-        <li>Preserve security and rollback requirements</li>
-      </ul>
-    </div>
-  </div>
-
-  <h3>Score Model</h3>
-
-  <p>After rerunning a familiar daily task, the teammate scores the specific result produced by the self-hosted LLM. Use a 1&ndash;5 score for each dimension and write one short note explaining the score. The unit of judgment is the task output, not the reviewer&rsquo;s overall feeling about the model.</p>
-
-  <div class="tbl"><table>
-    <thead><tr><th>Dimension</th><th>Weight</th><th>What the Teammate Judges</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Task completion</strong></td><td><span class="s-total">30%</span></td><td>Did the output satisfy the requested task and acceptance criteria?</td></tr>
-      <tr><td><strong>Correctness</strong></td><td><span class="s-total">25%</span></td><td>Is the result technically and contextually correct for this system and domain?</td></tr>
-      <tr><td><strong>Validation evidence</strong></td><td><span class="s-total">20%</span></td><td>Does the result include or preserve enough evidence to prove it works?</td></tr>
-      <tr><td><strong>Integration fit</strong></td><td><span class="s-total">15%</span></td><td>Does the output fit the existing codebase, workflow, and artifact conventions?</td></tr>
-      <tr><td><strong>Review effort</strong></td><td><span class="s-total">10%</span></td><td>How much human correction is needed before the result can be accepted?</td></tr>
-    </tbody>
-  </table></div>
-
-</section>
 
 <section class="eval">
   <h2>Go / No-Go Criteria</h2>
