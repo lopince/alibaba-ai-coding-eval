@@ -41,6 +41,16 @@
   .eval-track p { color: var(--ink-soft); margin: 0 0 .8em; }
   .metric-list { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
   .metric-pill { display: inline-block; font: 600 11px/1 var(--sans); color: var(--sky); background: rgba(106,140,175,.12); border-radius: 3px; padding: .35em .55em; }
+  .benchmark-gallery { display: grid; grid-template-columns: 1fr; gap: .9rem; margin: 1rem 0 .4rem; }
+  .benchmark-shot { margin: 0; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: var(--bg); }
+  .benchmark-shot h4 { margin: 0; padding: .7rem .8rem .6rem; border-bottom: 1px solid var(--rule); background: var(--surface); font: 700 13px/1.25 var(--sans); color: var(--ink); text-transform: none; letter-spacing: 0; }
+  .benchmark-shot img { display: block; width: 100%; height: auto; }
+  .benchmark-shot figcaption { border-top: 1px solid var(--rule); padding: .55rem .7rem; font: 12px/1.4 var(--sans); color: var(--ink-soft); background: var(--surface); }
+  .role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .85rem; margin: 1.2rem 0 1.8rem; }
+  .role-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem 1.1rem; }
+  .role-card h3 { margin: 0 0 .45em; font: 700 14px/1.2 var(--sans); }
+  .role-card p { margin: 0 0 .7em; color: var(--ink-soft); font-size: .88rem; }
+  .role-card ul { margin: 0; padding-left: 1.1rem; color: var(--ink-soft); font-size: .86rem; }
 </style>
 </head>
 <body>
@@ -106,6 +116,49 @@
         </tr>
       </tbody>
     </table></div>
+  </div>
+
+  <div class="eval-track">
+    <h3>Public GLM-5.2 Signals</h3>
+    <p>Manually captured public screenshots for GLM-5.2 positioning. Treat these as market context only; the internal practical capability task results remain the adoption signal.</p>
+
+    <div class="benchmark-gallery">
+      <figure class="benchmark-shot">
+        <h4>GLM-5.2 Performance Evaluation</h4>
+        <a href="assets/glm52-performance-evaluation.png"><img src="assets/glm52-performance-evaluation.png" alt="Z.ai LLM performance evaluation comparing GLM-5.2 with GLM-5.1, Claude Opus 4.8, GPT-5.5, and Gemini 3.1 Pro across eight benchmarks"/></a>
+        <figcaption>Z.ai LLM performance evaluation across SWE-bench Pro, Terminal-Bench 2.1, NL2Repo, DeepSWE, ProgramBench, MCP-Atlas, Tool-Decathlon, and Humanity&rsquo;s Last Exam.</figcaption>
+      </figure>
+
+      <figure class="benchmark-shot">
+        <h4>Artificial Analysis Intelligence Index</h4>
+        <a href="assets/glm52-aa-intelligence-index.png"><img src="assets/glm52-aa-intelligence-index.png" alt="Artificial Analysis Intelligence Index showing GLM-5.2 max scoring 51 alongside Gemini 3.1 Pro Preview"/></a>
+        <figcaption>Artificial Analysis Intelligence Index: GLM-5.2 (max) appears near frontier models with an index score of 51, with Gemini 3.1 Pro Preview included for comparison.</figcaption>
+      </figure>
+
+      <figure class="benchmark-shot">
+        <h4>Cost per Intelligence Index Task</h4>
+        <a href="assets/glm52-aa-cost-per-intelligence-task.png"><img src="assets/glm52-aa-cost-per-intelligence-task.png" alt="Artificial Analysis cost per Intelligence Index task chart showing GLM-5.2 max cost compared with Gemini, DeepSeek, Kimi, GPT, Qwen, and Claude models"/></a>
+        <figcaption>Artificial Analysis cost per Intelligence Index task: GLM-5.2 (max) is shown below GPT, Qwen, and Claude models, with Gemini 3.1 Pro Preview included in the cost comparison.</figcaption>
+      </figure>
+
+      <figure class="benchmark-shot">
+        <h4>Intelligence vs. Price</h4>
+        <a href="assets/glm52-aa-intelligence-vs-price.png"><img src="assets/glm52-aa-intelligence-vs-price.png" alt="Artificial Analysis intelligence versus price chart placing GLM-5.2 max in the attractive quadrant"/></a>
+        <figcaption>Artificial Analysis intelligence vs. price: GLM-5.2 (max) sits in the high-intelligence, lower-price quadrant.</figcaption>
+      </figure>
+
+      <figure class="benchmark-shot">
+        <h4>Context Window Comparison</h4>
+        <a href="assets/glm52-aa-context-window.png"><img src="assets/glm52-aa-context-window.png" alt="Artificial Analysis context window leaderboard showing GLM-5.2 max and Gemini 3.1 Pro Preview with 1M context"/></a>
+        <figcaption>Artificial Analysis context window comparison: GLM-5.2 (max) and Gemini 3.1 Pro Preview are shown with 1M token context windows.</figcaption>
+      </figure>
+
+      <figure class="benchmark-shot">
+        <h4>Output Speed</h4>
+        <a href="assets/glm52-aa-output-speed.png"><img src="assets/glm52-aa-output-speed.png" alt="Artificial Analysis output speed chart comparing GLM-5.2 max with Gemini 3.1 Pro Preview, GPT, Claude, DeepSeek, MiniMax, and Qwen models"/></a>
+        <figcaption>Artificial Analysis output speed: GLM-5.2 (max) is shown at 173 output tokens per second, with Gemini 3.1 Pro Preview included in the throughput comparison.</figcaption>
+      </figure>
+    </div>
   </div>
 
   <div class="eval-track">
@@ -220,6 +273,98 @@
 </section>
 
 <section class="eval">
+  <h2>Practical Capability</h2>
+
+  <p>This layer asks teammates to replay the daily work patterns they already know well and judge whether the self-hosted LLM is capable enough for real team use. Each task should be run against the candidate stack and, where possible, against the current Claude Code baseline using the same repository, prompt, time box, and acceptance criteria.</p>
+
+  <h3>Role-based Task Categories</h3>
+
+  <div class="role-grid">
+    <div class="role-card">
+      <h3>Backend Engineer</h3>
+      <p>API, service, integration, and data-model changes.</p>
+      <ul>
+        <li>Implement endpoint or business rule changes</li>
+        <li>Fix production-like bugs with logs and tests</li>
+        <li>Refactor multi-file service logic without behavior drift</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3>Frontend Engineer</h3>
+      <p>UI behavior, state, accessibility, and integration tasks.</p>
+      <ul>
+        <li>Build or modify a workflow screen</li>
+        <li>Fix component state, validation, or API wiring</li>
+        <li>Preserve design-system and responsive behavior</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3>Data Developer</h3>
+      <p>SQL, ETL, data quality, and analytics pipeline work.</p>
+      <ul>
+        <li>Create or modify transformations and checks</li>
+        <li>Debug schema, freshness, or reconciliation failures</li>
+        <li>Explain data lineage and edge-case handling</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3>QA Engineer</h3>
+      <p>Test design, defect reproduction, and regression confidence.</p>
+      <ul>
+        <li>Generate meaningful unit, API, or E2E tests</li>
+        <li>Reproduce a bug and verify the proposed fix</li>
+        <li>Identify missing edge cases and false positives</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3>Business Analyst</h3>
+      <p>Requirement clarification, acceptance criteria, and traceability.</p>
+      <ul>
+        <li>Convert requirement notes into user stories</li>
+        <li>Draft acceptance criteria and test scenarios</li>
+        <li>Detect ambiguity, conflicts, and missing business rules</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3>DevOps / Platform</h3>
+      <p>CI/CD, infrastructure, runtime, and operational tasks.</p>
+      <ul>
+        <li>Fix pipeline, deployment, or environment failures</li>
+        <li>Improve scripts, config, observability, or runbooks</li>
+        <li>Preserve security and rollback requirements</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Score Model</h3>
+
+  <p>After rerunning a familiar daily task, the teammate scores the specific result produced by the self-hosted LLM. Use a 1&ndash;5 score for each dimension and write one short note explaining the score. The unit of judgment is the task output, not the reviewer&rsquo;s overall feeling about the model.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Dimension</th><th>Weight</th><th>What the Teammate Judges</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Task completion</strong></td><td><span class="s-total">30%</span></td><td>Did the output satisfy the requested task and acceptance criteria?</td></tr>
+      <tr><td><strong>Correctness</strong></td><td><span class="s-total">25%</span></td><td>Is the result technically and contextually correct for this system and domain?</td></tr>
+      <tr><td><strong>Validation evidence</strong></td><td><span class="s-total">20%</span></td><td>Does the result include or preserve enough evidence to prove it works?</td></tr>
+      <tr><td><strong>Integration fit</strong></td><td><span class="s-total">15%</span></td><td>Does the output fit the existing codebase, workflow, and artifact conventions?</td></tr>
+      <tr><td><strong>Review effort</strong></td><td><span class="s-total">10%</span></td><td>How much human correction is needed before the result can be accepted?</td></tr>
+    </tbody>
+  </table></div>
+
+</section>
+
+<section class="eval">
+  <h2>Go / No-Go Criteria</h2>
+
+  <p>The decision should be based on the full replacement stack: model, harness, and serving stack.</p>
+
+  <ul>
+    <li><strong>Go</strong>: baseline capability is close enough, serving is stable, Long-Horizon results are acceptable, and human review does not find critical workflow regressions.</li>
+    <li><strong>No-Go</strong>: benchmark results are materially weaker, serving is unstable, or Long-Horizon review shows repeated context loss, workflow breakage, or poor reviewability.</li>
+  </ul>
+</section>
+
+<section class="eval">
   <div class="crumb">Appendix</div>
   <h2>Key Benchmark Differences</h2>
 
@@ -277,7 +422,7 @@
 
 <footer class="foot">
   <span>Self-Hosting LLM</span>
-  <span>Last updated 2026-06-29</span>
+  <span>Last updated 2026-07-01</span>
 </footer>
 
 </div>
