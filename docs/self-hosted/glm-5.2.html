@@ -3,35 +3,50 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Serving GLM-5.2-NVFP4 on AWS KServe &mdash; Self-Hosting LLM</title>
+<title>Serving GLM5.2-FP4 with vLLM + KServe &mdash; Self-Hosting LLM</title>
 <link rel="stylesheet" href="../style.css"/>
 <style>
-.formula-box { background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--sky); padding: 1rem 1.4rem; margin: 1.2rem 0; border-radius: 4px; }
-.formula-box pre { background: none; border: none; padding: 0; margin: 0; font: 13px/1.6 var(--mono); color: var(--ink); }
-.tier-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.2rem; margin-bottom: 1rem; }
-.tier-card h4 { margin: 0 0 .5em; font: 600 15px/1.2 var(--sans); text-transform: none; letter-spacing: 0; color: var(--ink); }
-.tier-card .tier-price { font: 600 13px/1 var(--sans); color: var(--clay); margin-bottom: .6em; }
-.tier-card ul { margin: .4em 0; padding-left: 1.2em; font-size: .88rem; color: var(--ink-soft); }
-.tier-card li { margin-bottom: .2em; }
-.arch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem; margin: 1.1rem 0 1.6rem; }
-.arch-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem; }
-.arch-card .label { font: 600 11px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--g500); margin-bottom: .45em; }
-.arch-card p { font-size: .88rem; color: var(--ink-soft); margin: 0; }
-.svg-diagram { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: .75rem; margin: 1.2rem 0 1.8rem; overflow-x: auto; }
-.svg-diagram svg { display: block; width: 100%; min-width: 760px; height: auto; }
-.svg-diagram text { font-family: var(--sans); fill: var(--ink); }
-.svg-diagram .small { fill: var(--ink-soft); font-size: 12px; }
-.svg-diagram .label { fill: var(--g500); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.svg-diagram .title { font-size: 15px; font-weight: 750; }
-.svg-diagram .node { fill: var(--bg); stroke: var(--rule); stroke-width: 1.2; }
-.svg-diagram .aws-box { fill: rgba(106,140,175,.05); stroke: var(--sky); stroke-width: 1.4; }
-.svg-diagram .eks-box { fill: rgba(120,140,93,.06); stroke: var(--olive); stroke-width: 1.4; }
-.svg-diagram .clay { stroke: var(--clay); }
-.svg-diagram .sky { stroke: var(--sky); }
-.svg-diagram .olive { stroke: var(--olive); }
-.svg-diagram .muted { stroke: var(--g300); }
-.svg-diagram .arrow { stroke: var(--g500); stroke-width: 1.6; fill: none; marker-end: url(#arrowhead); }
-.svg-diagram .dash { stroke-dasharray: 5 5; }
+.intro { font-size: 1.02rem; color: var(--ink-soft); max-width: 760px; }
+.setup-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; margin: 1.4rem 0 1.7rem; }
+.setup-item { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: .95rem 1rem; }
+.setup-item .label { font: 700 11px/1 var(--sans); color: var(--g500); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .45rem; }
+.setup-item strong { display: block; font: 700 15px/1.25 var(--sans); color: var(--ink); }
+.setup-item span { display: block; margin-top: .35rem; font: 13px/1.35 var(--sans); color: var(--ink-soft); }
+.diagram-shell { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; margin: 1.2rem 0 1.6rem; padding: .8rem; overflow-x: auto; }
+.diagram-shell svg { display: block; width: 100%; min-width: 980px; height: auto; }
+.diagram-shell text { font-family: var(--sans); fill: var(--ink); }
+.diagram-shell .small { fill: var(--ink-soft); font-size: 12px; }
+.diagram-shell .micro { fill: var(--g500); font-size: 10.5px; letter-spacing: .02em; }
+.diagram-shell .label { fill: var(--g500); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.diagram-shell .title { font-size: 15px; font-weight: 800; }
+.diagram-shell .box { fill: var(--bg); stroke: var(--rule); stroke-width: 1.2; }
+.diagram-shell .aws { fill: rgba(106,140,175,.045); stroke: var(--sky); stroke-width: 1.4; }
+.diagram-shell .eks { fill: rgba(120,140,93,.055); stroke: var(--olive); stroke-width: 1.4; }
+.diagram-shell .kserve { fill: rgba(106,140,175,.12); stroke: var(--sky); stroke-width: 1.3; }
+.diagram-shell .vllm { fill: rgba(217,119,87,.12); stroke: var(--clay); stroke-width: 1.3; }
+.diagram-shell .gpu { fill: rgba(120,140,93,.14); stroke: var(--olive); stroke-width: 1.3; }
+.diagram-shell .store { fill: rgba(181,175,168,.14); stroke: var(--g300); stroke-width: 1.3; }
+.diagram-shell .arrow { stroke: var(--g500); stroke-width: 1.8; fill: none; marker-end: url(#arrowhead); }
+.diagram-shell .dash { stroke-dasharray: 5 5; }
+.legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .75rem; margin: 1rem 0 1.6rem; }
+.legend-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem; }
+.legend-card h3 { margin: 0 0 .45rem; font: 700 14px/1.2 var(--sans); }
+.legend-card p { margin: 0; color: var(--ink-soft); font-size: .9rem; }
+.flow-note { background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--clay); border-radius: 4px; padding: 1rem 1.2rem; margin: 1.2rem 0; }
+.source-note { background: rgba(106,140,175,.08); border: 1px solid var(--rule); border-radius: 6px; padding: .95rem 1.1rem; margin: 1rem 0 1.6rem; color: var(--ink-soft); font-size: .92rem; }
+.source-note strong { color: var(--ink); }
+.step-list { counter-reset: startup; display: grid; gap: .7rem; margin: 1rem 0 1.5rem; }
+.step-item { counter-increment: startup; display: grid; grid-template-columns: 2.2rem 1fr; gap: .8rem; align-items: start; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: .9rem 1rem; }
+.step-item::before { content: counter(startup); display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 50%; background: rgba(217,119,87,.12); color: var(--clay); font: 800 13px/1 var(--sans); }
+.step-item strong { display: block; font: 700 14px/1.25 var(--sans); margin-bottom: .2rem; }
+.step-item span { color: var(--ink-soft); font-size: .9rem; }
+.math-box { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem 1.15rem; margin: 1rem 0 1.5rem; }
+.math-box code { white-space: nowrap; }
+.math-box p { margin: .55rem 0; color: var(--ink-soft); }
+.math-box .formula { font: 700 14px/1.45 var(--mono); color: var(--ink); }
+@media (max-width: 760px) {
+  .setup-strip { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -39,7 +54,7 @@
 
 <header class="top">
   <h1><a href="index.html">Self-Hosting LLM</a></h1>
-  <div class="meta">Section 7 of 7</div>
+  <div class="meta">Section 8 of 8</div>
 </header>
 
 <nav class="rail"><div class="inner">
@@ -49,8 +64,9 @@
   <a href="evaluation.html">Evaluation</a>
   <a href="infra.html">Infrastructure</a>
   <a href="serving.html">Serving</a>
+  <a href="assessment.html">Serving Assessment</a>
   <a href="deepseek-v4.html">Serving DeepSeek V4 Pro</a>
-  <a href="glm-5.2.html" class="active">Serving GLM-5.2-NVFP4 on AWS KServe</a>
+  <a href="glm-5.2.html" class="active">Serving GLM5.2-FP4</a>
 </div></nav>
 
 </div>
@@ -58,283 +74,467 @@
 <div class="wrap">
 
 <section class="eval">
-  <div class="crumb">Section 7</div>
-  <h2>Serving GLM-5.2-NVFP4 on AWS KServe</h2>
+  <div class="crumb">Current Team Setup</div>
+  <h2>Serving GLM5.2-FP4 with vLLM on AWS KServe</h2>
+  <p class="intro">This page is now a diagram-first walkthrough of our current self-hosting shape: a GLM5.2-FP4 model served by vLLM, managed by KServe, running on one AWS GPU worker with 8 RTX 6000 GPUs.</p>
 
-  <p>A concrete design for serving <strong><a href="https://huggingface.co/nvidia/GLM-5.2-NVFP4" target="_blank">nvidia/GLM-5.2-NVFP4</a></strong> on <strong>AWS EKS with KServe</strong>. This replaces the prior Alibaba Cloud sovereign deployment with a Kubernetes-native AWS reference architecture: GPU node groups, KServe-managed endpoints, SGLang or vLLM runtimes, private model storage, gateway routing, and production observability for a 50-developer coding platform.</p>
-
-  <div class="callout">
-    <strong>Positioning:</strong> GLM-5.2-NVFP4 is the NVIDIA Model Optimizer quantized checkpoint for GLM-5.2. It keeps the base model&rsquo;s 753B MoE shape, 40B active parameters, 1M context target, sparse-attention architecture, MIT license, and global deployment terms, while using NVFP4 quantization to make Blackwell-class inference practical for production serving.
+  <div class="setup-strip">
+    <div class="setup-item">
+      <div class="label">Model</div>
+      <strong>GLM5.2-FP4</strong>
+      <span>Quantized large model loaded once per serving replica.</span>
+    </div>
+    <div class="setup-item">
+      <div class="label">Runtime</div>
+      <strong>vLLM</strong>
+      <span>OpenAI-compatible API, batching, KV cache, tensor parallel serving.</span>
+    </div>
+    <div class="setup-item">
+      <div class="label">Hardware</div>
+      <strong>AWS 8-GPU node</strong>
+      <span>Team shorthand: 8 x RTX 6000. Public EC2 equivalent to verify: g6e.48xlarge with 8 x L40S.</span>
+    </div>
   </div>
 
-  <h3>Model Profile: NVIDIA GLM-5.2-NVFP4</h3>
-
-  <div class="tbl"><table>
-    <thead><tr><th>Attribute</th><th>Value</th><th>AWS KServe Implication</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Checkpoint</strong></td><td><code>nvidia/GLM-5.2-NVFP4</code></td><td>Use Hugging Face model sync into private S3 or FSx cache; avoid runtime internet pulls in production</td></tr>
-      <tr><td><strong>Base model</strong></td><td>GLM-5.2, <code>GlmMoeDsaForCausalLM</code></td><td>Requires runtimes with <code>glm_moe_dsa</code> support and <code>trust_remote_code</code> enabled</td></tr>
-      <tr><td><strong>Scale</strong></td><td>753B total parameters, 40B active</td><td>MoE routing lowers active compute per token, but the resident weight set still drives GPU memory sizing</td></tr>
-      <tr><td><strong>Quantization</strong></td><td>NVFP4 1.0 via NVIDIA Model Optimizer</td><td>Target Blackwell GPUs first; keep FP8 checkpoint as fallback if NVFP4 runtime support is unavailable</td></tr>
-      <tr><td><strong>Context</strong></td><td>Up to 1M tokens</td><td>Set production defaults at 128K or 256K; expose 1M only through a separate long-context pool</td></tr>
-      <tr><td><strong>Supported runtimes</strong></td><td>SGLang and vLLM</td><td>Package one KServe runtime for SGLang and one for vLLM so the platform can benchmark both under identical traffic</td></tr>
-      <tr><td><strong>Runtime notes</strong></td><td>SGLang uses <code>modelopt_fp4</code>; vLLM uses expert parallelism and FP8 KV cache</td><td>Keep SGLang as the primary serving path and vLLM as a compatibility lane</td></tr>
-      <tr><td><strong>License</strong></td><td>MIT</td><td>Commercial and non-commercial use permitted; still run internal safety and licensing review</td></tr>
-      <tr><td><strong>Evaluation signal</strong></td><td>NVFP4 is close to the FP8 baseline across GPQA Diamond, SciCode, IFBench, AA-LCR, and tau2-Bench Telecom</td><td>Run the same benchmark pack after deployment; do not assume quantized quality on internal coding tasks</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>Why KServe on AWS</h3>
-
-  <p>KServe gives the platform team a clean Kubernetes control plane for model endpoints while keeping the heavy inference path in GPU-optimized containers. On AWS, the natural stack is EKS, GPU node groups, Karpenter, FSx for Lustre or S3-backed weight distribution, private subnets, and an internal ingress in front of OpenAI-compatible model servers.</p>
-
-  <div class="arch-grid">
-    <div class="arch-card"><div class="label">Control Plane</div><p>EKS hosts KServe, Gateway API or Istio, NVIDIA GPU Operator, Karpenter, Prometheus, and the LiteLLM gateway.</p></div>
-    <div class="arch-card"><div class="label">Serving Plane</div><p>KServe <code>InferenceService</code> resources launch SGLang or vLLM pods with full-GPU allocation and model-specific runtime flags.</p></div>
-    <div class="arch-card"><div class="label">Storage Plane</div><p>Weights are mirrored from Hugging Face into private S3, then staged to FSx for Lustre or node-local NVMe for fast cold starts.</p></div>
-    <div class="arch-card"><div class="label">Access Plane</div><p>LiteLLM exposes one OpenAI-compatible endpoint, handles auth and budgets, and routes requests to KServe services by task type.</p></div>
+  <div class="source-note">
+    <strong>AWS naming note:</strong> AWS sells GPU capacity as EC2 instance types, not racks. In the public EC2 catalog, the closest 8-GPU inference shape is <code>g6e.48xlarge</code>: 8 NVIDIA L40S GPUs, 384 GB total GPU memory, 192 vCPUs, 1,536 GiB RAM, up to 400 Gbps network, and 7.6 TB local NVMe. If the team says "8 x RTX 6000," confirm whether that means private/custom RTX 6000 capacity or shorthand for the L40S-based G6e node.
   </div>
 
-  <h3>Architecture Diagram</h3>
-
-  <div class="svg-diagram" role="img" aria-label="AWS KServe architecture diagram for GLM-5.2-NVFP4 serving">
-    <svg viewBox="0 0 1120 700" xmlns="http://www.w3.org/2000/svg">
+  <h3>Request Flow</h3>
+  <div class="diagram-shell" role="img" aria-label="Diagram showing GLM5.2-FP4 request flow through KServe and vLLM on AWS EKS with eight RTX 6000 GPUs">
+    <svg viewBox="0 0 1180 680" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
           <polygon points="0 0, 10 3.5, 0 7" fill="#78706A"/>
         </marker>
       </defs>
 
-      <rect x="20" y="20" width="1080" height="650" rx="14" class="aws-box"/>
-      <text x="44" y="50" class="label">AWS Private VPC</text>
-      <text x="44" y="72" class="small">Private subnets, VPC endpoints, no public inference pods</text>
+      <rect x="24" y="26" width="1132" height="610" rx="16" class="aws"/>
+      <text x="50" y="58" class="label">AWS account / private network</text>
+      <text x="50" y="80" class="small">The model endpoint should live behind private routing, auth, and observability.</text>
 
-      <rect x="315" y="105" width="745" height="385" rx="12" class="eks-box"/>
-      <text x="338" y="135" class="label">Amazon EKS + KServe</text>
-      <text x="338" y="157" class="small">Kubernetes lifecycle, rollout, health checks, autoscaling hooks</text>
+      <rect x="318" y="108" width="790" height="420" rx="14" class="eks"/>
+      <text x="344" y="140" class="label">Amazon EKS cluster</text>
+      <text x="344" y="162" class="small">Kubernetes schedules the serving workload; KServe gives it model-endpoint semantics.</text>
 
-      <rect x="58" y="132" width="190" height="88" rx="8" class="node clay"/>
-      <circle cx="88" cy="164" r="13" fill="rgba(217,119,87,.18)" stroke="#D97757"/>
-      <path d="M82 165h12M88 159v12" stroke="#D97757" stroke-width="2"/>
-      <text x="112" y="158" class="title">Developers</text>
-      <text x="112" y="181" class="small">IDE agents, CI jobs</text>
-      <text x="112" y="199" class="small">OpenAI API clients</text>
+      <rect x="58" y="186" width="190" height="96" rx="9" class="box"/>
+      <text x="86" y="220" class="title">Users / Tools</text>
+      <text x="86" y="246" class="small">IDE agent</text>
+      <text x="86" y="266" class="small">CLI agent or app</text>
 
-      <rect x="58" y="278" width="190" height="104" rx="8" class="node clay"/>
-      <rect x="78" y="304" width="28" height="28" rx="5" fill="rgba(217,119,87,.12)" stroke="#D97757"/>
-      <path d="M84 318h16M92 310v16" stroke="#D97757" stroke-width="2"/>
-      <text x="122" y="306" class="title">LiteLLM Gateway</text>
-      <text x="122" y="329" class="small">OIDC, budgets</text>
-      <text x="122" y="347" class="small">audit metadata</text>
-      <text x="122" y="365" class="small">task routing</text>
+      <rect x="58" y="354" width="190" height="104" rx="9" class="box"/>
+      <text x="86" y="388" class="title">API Gateway</text>
+      <text x="86" y="414" class="small">auth, rate limits</text>
+      <text x="86" y="434" class="small">OpenAI-compatible route</text>
 
-      <rect x="350" y="205" width="185" height="100" rx="8" class="node sky"/>
-      <circle cx="382" cy="236" r="14" fill="rgba(106,140,175,.15)" stroke="#6A8CAF"/>
-      <path d="M374 236h16M382 228v16" stroke="#6A8CAF" stroke-width="2"/>
-      <text x="408" y="230" class="title">Private Ingress</text>
-      <text x="408" y="253" class="small">Internal ALB/NLB</text>
-      <text x="408" y="271" class="small">TLS + private DNS</text>
+      <rect x="364" y="216" width="188" height="112" rx="9" class="kserve"/>
+      <text x="392" y="250" class="title">KServe</text>
+      <text x="392" y="276" class="small">InferenceService</text>
+      <text x="392" y="296" class="small">revision, rollout</text>
+      <text x="392" y="316" class="small">health probes</text>
 
-      <rect x="590" y="130" width="190" height="100" rx="8" class="node sky"/>
-      <path d="M616 157h34v24h-34zM623 164h20M623 172h14" fill="none" stroke="#6A8CAF" stroke-width="1.8"/>
-      <text x="668" y="154" class="title">KServe Control</text>
-      <text x="668" y="177" class="small">Inference endpoints</text>
-      <text x="668" y="195" class="small">canary rollout</text>
-      <text x="668" y="213" class="small">health checks</text>
+      <rect x="614" y="216" width="202" height="112" rx="9" class="vllm"/>
+      <text x="642" y="250" class="title">vLLM Server</text>
+      <text x="642" y="276" class="small">loads GLM5.2-FP4</text>
+      <text x="642" y="296" class="small">continuous batching</text>
+      <text x="642" y="316" class="small">KV cache management</text>
 
-      <rect x="590" y="285" width="190" height="118" rx="8" class="node olive"/>
-      <rect x="614" y="315" width="34" height="32" rx="5" fill="rgba(120,140,93,.14)" stroke="#788C5D"/>
-      <path d="M621 326h20M621 337h20" stroke="#788C5D" stroke-width="2"/>
-      <text x="668" y="310" class="title">GLM-5.2-NVFP4</text>
-      <text x="668" y="333" class="small">SGLang primary</text>
-      <text x="668" y="351" class="small">vLLM fallback</text>
-      <text x="668" y="369" class="small">Blackwell GPU pool</text>
-      <text x="668" y="387" class="small">128K-1M context lanes</text>
+      <rect x="872" y="176" width="188" height="192" rx="9" class="gpu"/>
+      <text x="900" y="210" class="title">AWS GPU Node</text>
+      <text x="900" y="236" class="small">8 x RTX 6000</text>
+      <text x="900" y="256" class="small">one vLLM replica</text>
+      <text x="900" y="276" class="small">tensor parallel = 8</text>
+      <g transform="translate(900 300)">
+        <rect x="0" y="0" width="34" height="22" rx="4" class="box"/>
+        <rect x="40" y="0" width="34" height="22" rx="4" class="box"/>
+        <rect x="80" y="0" width="34" height="22" rx="4" class="box"/>
+        <rect x="120" y="0" width="34" height="22" rx="4" class="box"/>
+        <rect x="0" y="32" width="34" height="22" rx="4" class="box"/>
+        <rect x="40" y="32" width="34" height="22" rx="4" class="box"/>
+        <rect x="80" y="32" width="34" height="22" rx="4" class="box"/>
+        <rect x="120" y="32" width="34" height="22" rx="4" class="box"/>
+        <text x="8" y="15" class="micro">G0</text><text x="48" y="15" class="micro">G1</text>
+        <text x="88" y="15" class="micro">G2</text><text x="128" y="15" class="micro">G3</text>
+        <text x="8" y="47" class="micro">G4</text><text x="48" y="47" class="micro">G5</text>
+        <text x="88" y="47" class="micro">G6</text><text x="128" y="47" class="micro">G7</text>
+      </g>
 
-      <rect x="830" y="285" width="185" height="118" rx="8" class="node olive"/>
-      <circle cx="860" cy="323" r="15" fill="rgba(120,140,93,.14)" stroke="#788C5D"/>
-      <path d="M852 323h16M860 315v16" stroke="#788C5D" stroke-width="2"/>
-      <text x="886" y="310" class="title">Assist Models</text>
-      <text x="886" y="333" class="small">autocomplete</text>
-      <text x="886" y="351" class="small">embeddings</text>
-      <text x="886" y="369" class="small">rerank + short edits</text>
+      <rect x="364" y="414" width="188" height="82" rx="9" class="store"/>
+      <text x="392" y="446" class="title">Model Storage</text>
+      <text x="392" y="472" class="small">S3 / EBS / FSx</text>
+      <text x="392" y="492" class="small">GLM5.2-FP4 weights</text>
 
-      <rect x="350" y="545" width="185" height="88" rx="8" class="node muted"/>
-      <path d="M379 570c-18 0-18 26 0 26h50c18 0 18-26 0-26-5-18-34-18-39 0z" fill="rgba(181,175,168,.15)" stroke="#B5AFA8" stroke-width="1.8"/>
-      <text x="408" y="570" class="title">S3 Model Store</text>
-      <text x="408" y="593" class="small">HF mirror, encrypted</text>
-      <text x="408" y="611" class="small">source of truth</text>
+      <rect x="614" y="414" width="202" height="82" rx="9" class="store"/>
+      <text x="642" y="446" class="title">Telemetry</text>
+      <text x="642" y="472" class="small">TTFT, tokens/sec</text>
+      <text x="642" y="492" class="small">GPU memory, errors</text>
 
-      <rect x="590" y="545" width="185" height="88" rx="8" class="node muted"/>
-      <rect x="615" y="570" width="34" height="28" rx="4" fill="rgba(181,175,168,.15)" stroke="#B5AFA8"/>
-      <path d="M620 579h24M620 589h24" stroke="#B5AFA8" stroke-width="1.8"/>
-      <text x="668" y="570" class="title">FSx / NVMe Cache</text>
-      <text x="668" y="593" class="small">hot weights</text>
-      <text x="668" y="611" class="small">fast restart</text>
+      <path d="M248 234H318Q344 234 364 250" class="arrow"/>
+      <path d="M153 282V354" class="arrow"/>
+      <path d="M248 406H306Q332 406 364 294" class="arrow"/>
+      <path d="M552 272H614" class="arrow"/>
+      <path d="M816 272H872" class="arrow"/>
+      <path d="M458 414V328" class="arrow dash"/>
+      <path d="M715 328V414" class="arrow dash"/>
 
-      <rect x="830" y="545" width="185" height="88" rx="8" class="node muted"/>
-      <path d="M852 594h12v-18h-12zM870 594h12v-30h-12zM888 594h12v-42h-12z" fill="rgba(181,175,168,.18)" stroke="#B5AFA8" stroke-width="1.6"/>
-      <text x="914" y="570" class="title">Observability</text>
-      <text x="914" y="593" class="small">CloudWatch</text>
-      <text x="914" y="611" class="small">Prometheus + DCGM</text>
+      <text x="266" y="222" class="small">prompt request</text>
+      <text x="266" y="392" class="small">authenticated call</text>
+      <text x="566" y="260" class="small">routes to pod</text>
+      <text x="828" y="260" class="small">uses all GPUs</text>
+      <text x="474" y="380" class="small">load weights</text>
+      <text x="730" y="380" class="small">emit metrics</text>
 
-      <path d="M248 176H315Q335 176 335 216V248H350" class="arrow"/>
-      <path d="M153 220V278" class="arrow"/>
-      <path d="M248 330H320Q340 330 340 255H350" class="arrow"/>
-      <path d="M535 255H560Q580 255 580 180H590" class="arrow"/>
-      <path d="M535 255H560Q580 255 580 344H590" class="arrow"/>
-      <path d="M780 180H810Q830 180 830 344" class="arrow dash"/>
-      <path d="M780 344H830" class="arrow"/>
-      <path d="M442 545V470Q442 450 590 392" class="arrow dash"/>
-      <path d="M535 589H590" class="arrow"/>
-      <path d="M682 545V403" class="arrow"/>
-      <path d="M780 344Q825 448 922 545" class="arrow dash"/>
-      <path d="M923 403V545" class="arrow dash"/>
-
-      <text x="265" y="165" class="small">requests</text>
-      <text x="264" y="318" class="small">auth + route</text>
-      <text x="808" y="168" class="small">rollout policy</text>
-      <text x="472" y="520" class="small">model artifacts</text>
-      <text x="706" y="493" class="small">hot weights</text>
-      <text x="830" y="470" class="small">metrics</text>
+      <path d="M872 368Q740 574 176 574Q90 574 90 458" class="arrow"/>
+      <text x="360" y="598" class="small">generated tokens stream back through vLLM, KServe, gateway, then to the user</text>
     </svg>
   </div>
 
-  <div class="tbl"><table>
-    <thead><tr><th>Layer</th><th>AWS Component</th><th>Recommended Configuration</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Kubernetes</strong></td><td>Amazon EKS</td><td>Private cluster endpoint, managed node groups for system pods, Karpenter for GPU capacity</td></tr>
-      <tr><td><strong>GPU workers</strong></td><td>Blackwell-class NVIDIA GPU nodes where available</td><td>One node pool for GLM-5.2-NVFP4, separate smaller pools for autocomplete and embedding models</td></tr>
-      <tr><td><strong>Runtime</strong></td><td>SGLang or vLLM container</td><td>SGLang first for prefix reuse and long coding contexts; vLLM as the compatibility baseline</td></tr>
-      <tr><td><strong>Serving API</strong></td><td>KServe RawDeployment mode</td><td>Avoid serverless scale-to-zero for the primary giant model; use KServe revisions and canary traffic instead</td></tr>
-      <tr><td><strong>Model cache</strong></td><td>S3 + FSx for Lustre</td><td>S3 is the durable source; FSx is the hot shared cache mounted into inference pods</td></tr>
-      <tr><td><strong>Ingress</strong></td><td>Internal NLB / ALB</td><td>Private endpoint only; no direct public access to inference pods</td></tr>
-      <tr><td><strong>Gateway</strong></td><td>LiteLLM on EKS</td><td>OAuth/OIDC, per-user token budgets, audit logs, model routing, and OpenAI-compatible API surface</td></tr>
-      <tr><td><strong>Observability</strong></td><td>CloudWatch + Prometheus + DCGM exporter</td><td>Track TTFT, output tok/s, queue depth, GPU memory, KV cache usage, and runtime errors</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>Deployment Shape</h3>
-
-  <div class="tier-card" style="border-left:3px solid var(--clay)">
-    <h4>Tier 1 &mdash; Production NVFP4 Pool</h4>
-    <div class="tier-price">Primary path for daily coding and long-context work</div>
-    <ul>
-      <li><strong>Hardware:</strong> Blackwell-class NVIDIA GPU nodes, sized so one replica owns a complete 8-GPU slice. Use capacity reservations for predictable business-hour availability.</li>
-      <li><strong>Runtime:</strong> SGLang with <code>--quantization modelopt_fp4</code>, <code>--tensor-parallel-size 8</code>, <code>--chunked-prefill-size 16384</code>, and <code>--mem-fraction-static 0.80</code>.</li>
-      <li><strong>Context policy:</strong> 128K default, 256K elevated tier, 1M reserved for explicit long-context jobs.</li>
-      <li><strong>Scaling:</strong> Keep at least one warm replica during working hours. Add replicas through Karpenter-backed node provisioning when queue depth and TTFT breach SLOs.</li>
-    </ul>
+  <div class="flow-note">
+    <strong>Read it left to right:</strong> a coding tool sends a prompt, the gateway authenticates it, KServe selects the GLM endpoint, vLLM runs the model across all 8 RTX 6000 GPUs, and generated tokens stream back through the same path.
   </div>
 
-  <div class="tier-card" style="border-left:3px solid var(--sky)">
-    <h4>Tier 2 &mdash; vLLM Compatibility Pool</h4>
-    <div class="tier-price">Fallback and benchmark baseline</div>
-    <ul>
-      <li><strong>Runtime:</strong> <code>vllm/vllm-openai:v0.23.0</code> with <code>--enable-expert-parallel</code>, <code>--kv-cache-dtype fp8_e4m3</code>, <code>--enable-auto-tool-choice</code>, and GLM parser flags.</li>
-      <li><strong>Use case:</strong> A/B quality checks, runtime regressions, model-card parity, and workloads where vLLM scheduling outperforms SGLang.</li>
-      <li><strong>Traffic:</strong> Start at 5% canary through KServe traffic splitting, then promote only after internal benchmark and latency SLOs match the SGLang pool.</li>
-    </ul>
+  <h3>Harness Loop and Token Streaming</h3>
+  <div class="diagram-shell" role="img" aria-label="Diagram showing how a harness repeatedly communicates with vLLM across reasoning and tool-use rounds">
+    <svg viewBox="0 0 1180 620" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead-loop" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#78706A"/>
+        </marker>
+      </defs>
+
+      <text x="40" y="42" class="label">Agent harness controls the loop</text>
+
+      <rect x="52" y="86" width="220" height="118" rx="10" class="box"/>
+      <text x="82" y="122" class="title">Harness / Agent</text>
+      <text x="82" y="148" class="small">keeps conversation state</text>
+      <text x="82" y="168" class="small">decides when to call tools</text>
+      <text x="82" y="188" class="small">sends next model request</text>
+
+      <path d="M272 145H360" class="arrow" marker-end="url(#arrowhead-loop)"/>
+      <text x="290" y="130" class="micro">HTTP request</text>
+
+      <rect x="360" y="86" width="220" height="118" rx="10" class="kserve"/>
+      <text x="390" y="122" class="title">Gateway / KServe</text>
+      <text x="390" y="148" class="small">auth + route</text>
+      <text x="390" y="168" class="small">stable model endpoint</text>
+      <text x="390" y="188" class="small">streaming connection</text>
+
+      <path d="M580 145H668" class="arrow" marker-end="url(#arrowhead-loop)"/>
+
+      <rect x="668" y="86" width="220" height="118" rx="10" class="vllm"/>
+      <text x="698" y="122" class="title">vLLM Engine</text>
+      <text x="698" y="148" class="small">prefill prompt once</text>
+      <text x="698" y="168" class="small">decode token by token</text>
+      <text x="698" y="188" class="small">stream token deltas</text>
+
+      <path d="M668 198H274" class="arrow" marker-end="url(#arrowhead-loop)"/>
+      <text x="420" y="224" class="micro">SSE chunks: token, token, token, tool-call JSON, stop</text>
+
+      <rect x="52" y="304" width="220" height="110" rx="10" class="store"/>
+      <text x="82" y="338" class="title">Local Tools</text>
+      <text x="82" y="364" class="small">read files, run tests</text>
+      <text x="82" y="384" class="small">search, shell, browser</text>
+      <text x="82" y="404" class="small">return observations</text>
+
+      <path d="M162 204V304" class="arrow" marker-end="url(#arrowhead-loop)"/>
+      <text x="176" y="260" class="micro">if model asks for a tool</text>
+
+      <path d="M272 358H420V240H162V204" class="arrow dash" marker-end="url(#arrowhead-loop)"/>
+      <text x="304" y="340" class="micro">tool result appended to messages</text>
+
+      <rect x="420" y="304" width="698" height="230" rx="14" class="eks"/>
+      <text x="448" y="336" class="label">One agent task often becomes many model requests</text>
+
+      <rect x="458" y="374" width="158" height="78" rx="9" class="vllm"/>
+      <text x="484" y="406" class="title">Round 1</text>
+      <text x="484" y="430" class="small">plan / ask tool</text>
+
+      <path d="M616 413H686" class="arrow" marker-end="url(#arrowhead-loop)"/>
+
+      <rect x="686" y="374" width="158" height="78" rx="9" class="store"/>
+      <text x="712" y="406" class="title">Tool Run</text>
+      <text x="712" y="430" class="small">harness executes</text>
+
+      <path d="M844 413H914" class="arrow" marker-end="url(#arrowhead-loop)"/>
+
+      <rect x="914" y="374" width="158" height="78" rx="9" class="vllm"/>
+      <text x="940" y="406" class="title">Round 2</text>
+      <text x="940" y="430" class="small">new prompt + result</text>
+
+      <path d="M993 452V490H538V452" class="arrow dash" marker-end="url(#arrowhead-loop)"/>
+      <text x="640" y="512" class="small">Repeat until final answer, max turns, error, or user stop.</text>
+    </svg>
   </div>
 
-  <div class="tier-card" style="border-left:3px solid var(--olive)">
-    <h4>Tier 3 &mdash; Small-Model Assist Pool</h4>
-    <div class="tier-price">Cost control for autocomplete and short requests</div>
-    <ul>
-      <li><strong>Model:</strong> Qwen Coder, DeepSeek Coder, or another smaller open-weight coding model deployed as a separate KServe service.</li>
-      <li><strong>Routing:</strong> LiteLLM sends inline autocomplete, short explanations, embeddings, and classification tasks here instead of waking GLM-5.2.</li>
-      <li><strong>Scaling:</strong> Allow scale-to-zero or aggressive spot capacity because requests are stateless and cheap to retry.</li>
-    </ul>
+  <div class="math-box">
+    <p><strong>Key idea:</strong> vLLM does not run the agent loop and does not execute tools. It receives one request, generates tokens, and streams them back. The harness reads the stream, decides whether the output is final text or a tool call, runs any tool itself, appends the tool result to the conversation, then sends another request to vLLM.</p>
+    <p>Inside one request, vLLM first does <strong>prefill</strong>: process the whole prompt and build KV cache. Then it does <strong>decode</strong>: produce one token at a time. With streaming enabled, each decoded token or chunk is sent back over the open HTTP/SSE stream instead of waiting for the whole answer.</p>
   </div>
 
-  <div class="callout">
-    <strong>Recommendation for 50 developers:</strong> run one warm GLM-5.2-NVFP4 SGLang replica during core hours, keep vLLM as a 5% canary and emergency fallback, and route short tasks to a smaller model. This avoids burning giant-model GPU time on requests that do not need 753B MoE capacity.
+  <h3>Why Large Prompts Can Hit RPC Timeouts</h3>
+  <div class="math-box">
+    <p>A large prompt makes the first request expensive because vLLM must prefill the full prompt before normal token streaming feels smooth. In tensor-parallel serving, the engine process asks worker processes on the GPUs to run <code>execute_model</code>. If one prefill or mixed prefill/decode step takes longer than the worker RPC timeout, the controller can decide the worker is stuck and tear down the request or engine.</p>
+    <p>In the GLM5.2 v13 deployment note, the current compose block does not set the RPC timeout, so the effective value is vLLM's default: <code>300</code> seconds, unless the image or runtime environment overrides it elsewhere. Add <code>VLLM_EXECUTE_MODEL_TIMEOUT_SECONDS</code> under the container environment. A conservative first value is <code>900</code> seconds for long prompts; use <code>1800</code> only while debugging very large contexts.</p>
+    <p><code>VLLM_RPC_TIMEOUT</code> exists in older vLLM docs such as <code>v0.6.3.post1</code>, where it is a ZMQ client timeout in milliseconds for simple backend data operations and defaults to <code>10000</code>. It is not currently set in the GLM5.2 v13 deployment note. For the observed long-running model worker timeout, prefer <code>VLLM_EXECUTE_MODEL_TIMEOUT_SECONDS</code>; only add <code>VLLM_RPC_TIMEOUT</code> if logs or the custom image path specifically refer to the old ZMQ RPC timeout.</p>
+    <p>If the error says engine iteration timeout rather than execute-model RPC timeout, also raise <code>VLLM_ENGINE_ITERATION_TIMEOUT_S</code>. Keep gateway and harness read timeouts above the same value, otherwise LiteLLM, KServe ingress, or the client can give up before vLLM finishes.</p>
   </div>
 
-  <h3>AWS Reference Architecture</h3>
-
-  <div class="tbl"><table>
-    <thead><tr><th>Concern</th><th>Implementation</th><th>Reason</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Networking</strong></td><td>Private EKS cluster, private GPU subnets, internal load balancer, VPC endpoints for S3/ECR/CloudWatch/STS</td><td>Inference pods do not need public internet; prompts and code context stay inside the VPC</td></tr>
-      <tr><td><strong>Model loading</strong></td><td>Mirror the checkpoint to S3, hydrate FSx for Lustre before rollout, mount FSx into pods</td><td>Large checkpoints should not be downloaded from Hugging Face during pod startup</td></tr>
-      <tr><td><strong>GPU provisioning</strong></td><td>Karpenter NodePool with GPU taints, topology spread, and capacity reservations</td><td>KServe pods request whole GPU nodes; autoscaling must understand expensive, scarce capacity</td></tr>
-      <tr><td><strong>Runtime isolation</strong></td><td>Dedicated node pool and namespace for GLM-5.2, separate pool for small models</td><td>Prevents small traffic spikes from evicting or starving the giant model</td></tr>
-      <tr><td><strong>Traffic routing</strong></td><td>LiteLLM routes to KServe service DNS names, not directly to pod IPs</td><td>Centralizes auth, budgets, audit logs, retries, and model selection</td></tr>
-      <tr><td><strong>Release safety</strong></td><td>KServe canary split, shadow traffic, and benchmark gate before promotion</td><td>Quantized runtime changes can silently alter tool use, reasoning, and long-context recall</td></tr>
-      <tr><td><strong>Secrets</strong></td><td>IRSA, AWS Secrets Manager, and short-lived service account credentials</td><td>No static AWS keys or Hugging Face tokens in runtime configuration</td></tr>
-      <tr><td><strong>Audit</strong></td><td>Gateway logs request metadata, token counts, model, latency, and user identity</td><td>Needed for cost attribution and incident response without storing full source-code prompts by default</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>Sizing Model for a 50-Developer Team</h3>
-
-  <div class="formula-box">
-    <pre><strong>Daily workload assumptions</strong>
-Active developers during peak:        30
-Prompts per active developer/day:     45
-Average input tokens/request:         8K-12K
-Average output tokens/request:        1.5K-2K
-Peak concurrent long requests:        8-12
-Default production context:           128K
-Long-context lane:                    256K-1M by explicit routing
-
-Platform target:
-  p50 TTFT for 128K coding prompt:    &lt; 8s
-  p95 TTFT for 128K coding prompt:    &lt; 20s
-  per-user decode target:             35-60 tok/s
-  gateway availability target:        99.9%</pre>
+  <h3>If It Crashes After Tokens Already Stream</h3>
+  <div class="math-box">
+    <p>If the first token arrives quickly, the first prefill probably worked. A mid-run crash usually means a later phase became slow or unstable: a long decode step, a tool-call parse, a later harness round with much more accumulated context, or a mixed prefill/decode batch that exceeded a worker timeout.</p>
+    <p>Agent logs like "reasoning", "planning", or "searching files" are normally harness-side events. The harness may stop one stream, run a tool, append the tool result, and send a new request to vLLM. That later request can be much larger than the first request, even though the user only sent one original prompt.</p>
+    <p>For this failure shape, still raise <code>VLLM_EXECUTE_MODEL_TIMEOUT_SECONDS</code>, but also check the exact crash log. If the vLLM process stays alive and only the client disconnects, look at LiteLLM, KServe ingress, and harness read timeouts. If the vLLM worker dies, inspect CUDA OOM, NCCL/allreduce, speculative decoding, parser errors, or a kernel crash rather than assuming it is only a timeout.</p>
+    <p><strong>Concrete observed pattern:</strong> <code>TimeoutError: RPC call to sample_tokens timeout</code>, <code>num_computed_tokens=[36337]</code>, <code>kv_cache_usage=5.4%</code>, shared-memory broadcast timeout after 60s, then engine restart. Low KV cache usage means this was not a memory-full problem. It points to a worker latency spike or hang while processing a long-context request.</p>
+    <p><strong>Similar upstream issues:</strong> vLLM issue <a href="https://github.com/vllm-project/vllm/issues/40926" target="_blank">#40926</a> is the closest match: V1 engine, TP=8, GLM MoE/DSA/MLA, MTP speculative decoding, worker hang, <code>sample_tokens</code> RPC timeout, low KV usage, and <code>EngineDeadError</code>. Issue <a href="https://github.com/vllm-project/vllm/issues/41530" target="_blank">#41530</a> reports the same sample-token timeout shape on DeepSeek-V4-Pro. Issue <a href="https://github.com/vllm-project/vllm/issues/35465" target="_blank">#35465</a> shows the same shared-memory warning on the first streamed request after container startup, supporting the interpretation that cold compile/warmup paths can trigger this warning even before memory is stressed.</p>
+    <p><strong>What the warning means:</strong> vLLM's shared-memory broadcast code uses this warning when a reader or writer cannot get a ring-buffer block for a long time. The upstream source says this typically means another process is hanging or doing time-consuming work such as compilation, weight quantization, or KV-cache quantization.</p>
+    <p>If logs mention Triton JIT compilation during inference, the likely chain is: long context enters a less-warmed kernel path, Triton compiles while the request is live, a GPU worker stops responding long enough for the shared-memory/RPC timeout, and the engine restarts. Raising <code>VLLM_EXECUTE_MODEL_TIMEOUT_SECONDS</code> gives the worker more time, but the better production fix is to warm up or precompile the shapes/kernels before real harness traffic reaches the model.</p>
   </div>
 
-  <div class="tbl"><table>
-    <thead><tr><th>Pool</th><th>Replica Policy</th><th>Traffic</th><th>Scale Trigger</th></tr></thead>
-    <tbody>
-      <tr><td><strong>GLM-5.2-NVFP4 SGLang</strong></td><td>1 warm replica, up to 3</td><td>Daily coding, code review, long-context analysis</td><td>Queue depth, TTFT p95, GPU memory, and tokens/sec saturation</td></tr>
-      <tr><td><strong>GLM-5.2-NVFP4 vLLM</strong></td><td>0 warm replicas, 1 canary during upgrades</td><td>Canary, fallback, benchmark parity</td><td>Manual promotion or incident fallback</td></tr>
-      <tr><td><strong>Small coding model</strong></td><td>0-4 replicas</td><td>Autocomplete, small edits, short explanations</td><td>Request rate and p95 latency</td></tr>
-      <tr><td><strong>Embedding / rerank</strong></td><td>0-2 replicas</td><td>Repo retrieval and context packing</td><td>Batch queue and retrieval latency</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>Cost Levers</h3>
-
-  <p>Exact Blackwell pricing and regional availability should be validated in the AWS console before commitment. The key design decision is not a single monthly estimate; it is avoiding waste from cold starts, over-serving small requests, and leaving scarce GPUs idle.</p>
-
-  <div class="tbl"><table>
-    <thead><tr><th>Lever</th><th>Default</th><th>Effect</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Route short tasks away from GLM</strong></td><td>LiteLLM task router</td><td>Usually the largest cost reduction; autocomplete should not hit the giant model</td></tr>
-      <tr><td><strong>Business-hour warm pool</strong></td><td>Warm GLM replica 10-12 hours/day</td><td>Keeps latency acceptable without paying 24/7 for every replica</td></tr>
-      <tr><td><strong>Capacity reservations</strong></td><td>Reserve primary GPU capacity</td><td>Protects the production lane from GPU scarcity</td></tr>
-      <tr><td><strong>Spot only for small models</strong></td><td>Spot autocomplete and embedding pools</td><td>Good savings with low blast radius; avoid spot for the primary 8-GPU GLM replica</td></tr>
-      <tr><td><strong>FSx hot cache</strong></td><td>Pre-hydrate before rollout</td><td>Shortens restart and canary time; lowers risk during node replacement</td></tr>
-      <tr><td><strong>Context gating</strong></td><td>128K default, approval for 1M</td><td>Controls KV-cache pressure and prevents one request from harming the queue</td></tr>
-    </tbody>
-  </table></div>
-
-  <h3>Production Checklist</h3>
-
-  <div class="tbl"><table>
-    <thead><tr><th>Category</th><th>Task</th><th>Priority</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Model</strong></td><td>Mirror <code>nvidia/GLM-5.2-NVFP4</code> from Hugging Face to private S3 and verify checksums</td><td>P0</td></tr>
-      <tr><td><strong>Runtime</strong></td><td>Build pinned SGLang and vLLM images with the required <code>transformers</code>, CUDA, and ModelOpt support</td><td>P0</td></tr>
-      <tr><td><strong>KServe</strong></td><td>Install KServe in RawDeployment mode and validate canary traffic splitting</td><td>P0</td></tr>
-      <tr><td><strong>GPU</strong></td><td>Install NVIDIA GPU Operator, DCGM exporter, and node-feature-discovery</td><td>P0</td></tr>
-      <tr><td><strong>Storage</strong></td><td>Provision FSx for Lustre or equivalent hot cache and pre-hydrate model files before pod rollout</td><td>P0</td></tr>
-      <tr><td><strong>Gateway</strong></td><td>Deploy LiteLLM with OIDC, budgets, audit logs, and route rules for GLM vs small-model traffic</td><td>P0</td></tr>
-      <tr><td><strong>Security</strong></td><td>Private subnets, no public inference endpoint, VPC endpoints for AWS APIs, IRSA for pod permissions</td><td>P0</td></tr>
-      <tr><td><strong>Quality</strong></td><td>Run internal coding evals, SWE-bench-style tasks, long-context recall, and tool-calling tests before promotion</td><td>P0</td></tr>
-      <tr><td><strong>Observability</strong></td><td>Dashboards for TTFT, tokens/sec, GPU memory, KV cache, queue depth, error rate, and per-user spend</td><td>P0</td></tr>
-      <tr><td><strong>Reliability</strong></td><td>Test node replacement, FSx remounts, runtime crash recovery, and KServe rollback</td><td>P1</td></tr>
-      <tr><td><strong>Cost</strong></td><td>Enforce context tiers and small-model routing; review idle GPU hours weekly</td><td>P1</td></tr>
-    </tbody>
-  </table></div>
-
-  <div class="callout">
-    <strong>Bottom line:</strong> on AWS, GLM-5.2-NVFP4 should be treated as a scarce, high-value inference lane, not a general autocomplete backend. Use EKS + KServe for lifecycle and rollout control, SGLang as the primary NVFP4 runtime, vLLM as the compatibility lane, S3/FSx for deterministic model loading, and LiteLLM for task routing. The winning architecture is a private, benchmark-gated KServe platform that only spends Blackwell GPU time when the request actually needs GLM-5.2.
+  <h3>Suggested Timeout Changes</h3>
+  <div class="math-box">
+    <p><strong>Good:</strong> set <code>VLLM_RPC_TIMEOUT=300000</code>. In vLLM <code>v0.6.3.post1</code>, this variable is measured in milliseconds and defaults to <code>10000</code>. Five minutes means <code>300000</code>, not <code>300</code>.</p>
+    <p><strong>Rename:</strong> I do not find <code>VLLM_ENGINE_MAX_WAIT_TIME</code> in vLLM env docs or the GLM5.2 v13 note. The real vLLM knob for the 60s engine-iteration limit is <code>VLLM_ENGINE_ITERATION_TIMEOUT_S=300</code>.</p>
+    <p><strong>Reduce, do not immediately force to one:</strong> lower <code>MAX_NUM_SEQS</code> from <code>32</code> to <code>8</code> or <code>4</code> first. Use <code>1</code> only for a narrow repro, because it serializes traffic and hides batching behavior.</p>
+    <p><strong>Good for debugging:</strong> add <code>--enforce-eager</code>. This avoids CUDA graph execution paths and can reduce graph-capture instability, but it may lower throughput and does not remove every Triton JIT compile path.</p>
+    <p><strong>Kubernetes:</strong> <code>livenessProbe.timeoutSeconds=60</code> and <code>initialDelaySeconds=300</code> are reasonable. For a giant model, prefer adding a <code>startupProbe</code> too, so slow model load and warmup do not look like liveness failure.</p>
   </div>
 
+  <h3>Workaround Ladder for the MTP Hang</h3>
+  <div class="math-box">
+    <p><strong>Most reliable workaround:</strong> disable MTP by setting <code>MTP_TOKENS=0</code>. In upstream issue #40926, turning MTP off was the only path reported as stable indefinitely. This is the first production-stability test to run if throughput can be sacrificed.</p>
+    <p><strong>Partial mitigation:</strong> disable FlashInfer autotune if that flag exists in the image. In #40926, <code>--no-enable-flashinfer-autotune</code> improved mean time to failure, but did not fully fix the hang.</p>
+    <p><strong>Reduce pressure:</strong> lower <code>MAX_NUM_SEQS</code> from <code>32</code> to <code>8</code> or <code>4</code>, and keep the timeout increases. This reduces mixed scheduling pressure but may reduce peak throughput.</p>
+    <p><strong>Debug only:</strong> use <code>--enforce-eager</code> or reduce TP to test whether CUDA graph or TP communication is part of the trigger. These are diagnostic levers, not ideal production settings.</p>
+    <p><strong>If it hangs again:</strong> capture a worker stack dump at the moment of the warning, for example with <code>py-spy dump --pid &lt;worker-pid&gt;</code>, before auto-restart clears the evidence.</p>
+  </div>
+
+  <h3>Throughput Target for 50 Teammates</h3>
+  <div class="math-box">
+    <p>Plan capacity by peak concurrent generations, not by total headcount. For a 50-person engineering team, a normal peak assumption is about <code>10-15</code> simultaneous active generations, unless every teammate is running autonomous agents at the same time.</p>
+    <p>A usable interactive target is <code>20-40 tok/s</code> per active stream. A comfortable target is <code>40-60 tok/s</code> per active stream. That means the serving pool should aim for roughly <code>300-600 aggregate decode tok/s</code> as a minimum, and <code>600-1000 tok/s</code> for a smoother 50-person coding-agent experience.</p>
+    <p>Long-context prefill is separate from decode throughput. For coding agents, also watch p95 TTFT: large prompts should ideally start streaming within <code>15-30s</code>, otherwise users experience the system as stalled even if decode tok/s is acceptable.</p>
+  </div>
+
+  <h3>Realtime Monitoring</h3>
+  <div class="math-box">
+    <p><strong>Quick checks:</strong> use <code>kubectl -n kserve top pods</code> for CPU/memory, <code>kubectl -n kserve logs -f &lt;pod&gt;</code> for vLLM warnings, and <code>nvidia-smi dmon</code> or DCGM on the GPU node for live GPU utilization, memory, power, and temperature.</p>
+    <p><strong>Production path:</strong> scrape vLLM's <code>/metrics</code> endpoint with Prometheus, run NVIDIA DCGM Exporter as a DaemonSet for GPU metrics, and visualize both in Grafana. If traffic goes through LiteLLM or another gateway, monitor that layer too because it sees user, model, latency, error, and token accounting.</p>
+    <p><strong>vLLM metrics to watch:</strong> request queue depth, running requests, waiting requests, prompt tokens/sec, generation tokens/sec, time to first token, time per output token, KV cache usage, prefix-cache hit rate, request failures, and engine restarts.</p>
+    <p><strong>GPU metrics to watch:</strong> per-GPU utilization, memory used/free, power draw, temperature, PCIe/NVLink throughput if available, ECC/Xid errors, and GPU imbalance across the 8 cards. For MoE/TP issues, one hot GPU or one idle GPU can reveal placement or worker stalls.</p>
+    <p><strong>Alerts:</strong> page on engine restarts, <code>sample_tokens</code> RPC timeouts, repeated shared-memory broadcast warnings, p95 TTFT above <code>30s</code>, sustained queue growth, GPU memory above <code>95%</code>, GPU utilization near zero while requests are queued, or 5xx/error-rate spikes at the gateway.</p>
+  </div>
+
+  <h3>What Happens When vLLM Starts</h3>
+  <div class="step-list">
+    <div class="step-item">
+      <div><strong>Container boots inside the KServe pod</strong><span>KServe creates the pod, mounts model storage, injects runtime arguments, and waits for vLLM health probes to pass.</span></div>
+    </div>
+    <div class="step-item">
+      <div><strong>vLLM reads model metadata</strong><span>It loads the config, tokenizer, generation settings, quantization format, and model architecture code needed for GLM5.2-FP4.</span></div>
+    </div>
+    <div class="step-item">
+      <div><strong>GPU workers are initialized</strong><span>With 8 x RTX 6000, vLLM starts distributed workers and prepares tensor-parallel communication across all eight GPUs.</span></div>
+    </div>
+    <div class="step-item">
+      <div><strong>The model weights are loaded</strong><span>Yes: the serving replica must load the GLM5.2-FP4 checkpoint shards across GPU memory. Even if the model is MoE, the resident expert weights still need to be available for routing at inference time.</span></div>
+    </div>
+    <div class="step-item">
+      <div><strong>KV cache and scheduler memory are reserved</strong><span>vLLM decides how much remaining GPU memory is available for prompt cache, active requests, batching, and generation.</span></div>
+    </div>
+    <div class="step-item">
+      <div><strong>The endpoint becomes ready</strong><span>Only after startup succeeds does KServe send traffic to the pod. First user requests then pay normal prefill and decode cost, not model-load cost.</span></div>
+    </div>
+  </div>
+
+  <h3>How Model Weights Are Stored</h3>
+  <div class="diagram-shell" role="img" aria-label="Diagram showing model weight storage lifecycle from durable storage to GPU memory">
+    <svg viewBox="0 0 1180 420" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead-storage" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#78706A"/>
+        </marker>
+      </defs>
+
+      <text x="40" y="42" class="label">Persistent storage vs runtime memory</text>
+
+      <rect x="48" y="86" width="185" height="104" rx="9" class="store"/>
+      <text x="76" y="120" class="title">S3 / Registry</text>
+      <text x="76" y="146" class="small">durable copy</text>
+      <text x="76" y="166" class="small">checkpoint shards</text>
+
+      <path d="M233 138H300" class="arrow" marker-end="url(#arrowhead-storage)"/>
+      <text x="246" y="124" class="micro">sync / mount</text>
+
+      <rect x="300" y="86" width="185" height="104" rx="9" class="store"/>
+      <text x="328" y="120" class="title">FSx / EBS / NVMe</text>
+      <text x="328" y="146" class="small">node-local or shared</text>
+      <text x="328" y="166" class="small">fast startup cache</text>
+
+      <path d="M485 138H552" class="arrow" marker-end="url(#arrowhead-storage)"/>
+      <text x="500" y="124" class="micro">read files</text>
+
+      <rect x="552" y="86" width="185" height="104" rx="9" class="box"/>
+      <text x="580" y="120" class="title">CPU RAM</text>
+      <text x="580" y="146" class="small">temporary staging</text>
+      <text x="580" y="166" class="small">metadata + buffers</text>
+
+      <path d="M737 138H804" class="arrow" marker-end="url(#arrowhead-storage)"/>
+      <text x="748" y="124" class="micro">copy shards</text>
+
+      <rect x="804" y="62" width="286" height="152" rx="9" class="gpu"/>
+      <text x="832" y="96" class="title">GPU VRAM</text>
+      <text x="832" y="122" class="small">runtime copy used for inference</text>
+      <text x="832" y="142" class="small">weights sharded across 8 GPUs</text>
+      <text x="832" y="162" class="small">remaining memory becomes KV cache</text>
+      <text x="832" y="182" class="small">cleared when pod exits</text>
+
+      <rect x="78" y="274" width="114" height="54" rx="8" class="store"/>
+      <text x="102" y="306" class="small">permanent</text>
+      <rect x="336" y="274" width="114" height="54" rx="8" class="store"/>
+      <text x="366" y="306" class="small">cached</text>
+      <rect x="588" y="274" width="114" height="54" rx="8" class="box"/>
+      <text x="612" y="306" class="small">temporary</text>
+      <rect x="874" y="274" width="146" height="54" rx="8" class="gpu"/>
+      <text x="902" y="306" class="small">hot serving copy</text>
+
+      <text x="78" y="360" class="small">The model is stored as files first. vLLM creates an in-memory serving copy only while the pod is running.</text>
+      <text x="78" y="384" class="small">GPU memory is fastest and scarce; disk/object storage is durable but too slow for token-by-token inference.</text>
+    </svg>
+  </div>
+
+  <div class="math-box">
+    <p><strong>Simple wording:</strong> S3/FSx/EBS/NVMe store the checkpoint files. GPU VRAM stores the live, sharded copy that vLLM uses to calculate tokens. CPU RAM may briefly stage metadata and file reads during startup, but normal inference should run from GPU memory.</p>
+  </div>
+
+  <h3>Where Does a 735B Model Fit?</h3>
+  <div class="math-box">
+    <p class="formula">FP4 weight memory is roughly: parameters x 0.5 bytes</p>
+    <p>Using 735B parameters as the rough model size, raw FP4 weights are about <code>735B x 0.5 = 367.5 GB</code> before extra scale metadata, runtime buffers, CUDA workspace, and KV cache.</p>
+    <p>The model is not copied in full onto every GPU. With tensor parallelism, vLLM shards the checkpoint across all 8 GPUs. On an 8 x 48 GB node, the cluster has about <code>384 GB</code> total GPU memory, so the raw FP4 weights alone almost fill the box.</p>
+    <p>This is why the deployment is tight: after weights load, vLLM still needs memory for KV cache and active requests. If startup fails or the usable context is tiny, the usual fixes are stronger quantization/runtime support, CPU or NVMe offload, lower max context/concurrency, expert parallelism, or a larger-memory GPU shape.</p>
+  </div>
+
+  <h3>Does MoE Mean Only a Few GPUs Work?</h3>
+  <div class="math-box">
+    <p>MoE means each token activates only a small subset of expert networks, so the <em>compute per token</em> is much smaller than running every expert. It does not mean only two GPUs should be busy.</p>
+    <p>In a serving runtime, there are two separate placement ideas. <strong>Tensor parallelism</strong> slices each selected expert's math across GPUs, so one expert call can still use all eight GPUs. <strong>Expert parallelism</strong> places different experts on different GPUs, so tokens are routed to the GPU that owns the chosen expert.</p>
+    <p>If routing becomes very skewed and the runtime places whole experts on individual GPUs, then yes, some GPUs can become hotter than others. Production MoE serving watches for this with per-GPU utilization, expert load, queue time, and tokens/sec. The fix is usually better expert-parallel placement, larger batches, load-balancing-aware routing, or a different parallelism layout.</p>
+    <p>For our first mental model: MoE saves compute by activating fewer experts per token, while vLLM still tries to keep the 8-GPU node useful through batching and parallel execution.</p>
+  </div>
+
+  <div class="diagram-shell" role="img" aria-label="Diagram comparing tensor parallelism and expert parallelism for MoE serving">
+    <svg viewBox="0 0 1180 620" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead-parallel" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#78706A"/>
+        </marker>
+      </defs>
+
+      <text x="40" y="42" class="label">MoE router chooses experts first</text>
+      <rect x="48" y="74" width="164" height="76" rx="9" class="box"/>
+      <text x="76" y="106" class="title">Input Token</text>
+      <text x="76" y="130" class="small">one prompt token</text>
+      <path d="M212 112H278" class="arrow" marker-end="url(#arrowhead-parallel)"/>
+      <rect x="278" y="74" width="164" height="76" rx="9" class="vllm"/>
+      <text x="306" y="106" class="title">MoE Router</text>
+      <text x="306" y="130" class="small">selects Expert B + F</text>
+      <path d="M442 112H508" class="arrow" marker-end="url(#arrowhead-parallel)"/>
+      <rect x="508" y="54" width="130" height="48" rx="8" class="gpu"/>
+      <text x="540" y="84" class="small">Expert B</text>
+      <rect x="508" y="122" width="130" height="48" rx="8" class="gpu"/>
+      <text x="540" y="152" class="small">Expert F</text>
+      <text x="674" y="104" class="small">Only selected experts compute for this token.</text>
+      <text x="674" y="128" class="small">The rest of the model can stay idle for this token.</text>
+
+      <rect x="42" y="222" width="520" height="338" rx="14" class="eks"/>
+      <text x="68" y="254" class="label">Layer 1: Tensor parallelism</text>
+      <text x="68" y="278" class="small">Slice the selected expert's matrix math across GPUs.</text>
+
+      <rect x="84" y="320" width="148" height="82" rx="9" class="vllm"/>
+      <text x="112" y="352" class="title">Expert B</text>
+      <text x="112" y="376" class="small">selected by router</text>
+
+      <path d="M232 362H300" class="arrow" marker-end="url(#arrowhead-parallel)"/>
+
+      <g transform="translate(300 306)">
+        <rect x="0" y="0" width="92" height="48" rx="7" class="gpu"/>
+        <text x="18" y="29" class="small">GPU 0</text>
+        <rect x="108" y="0" width="92" height="48" rx="7" class="gpu"/>
+        <text x="126" y="29" class="small">GPU 1</text>
+        <rect x="0" y="64" width="92" height="48" rx="7" class="gpu"/>
+        <text x="18" y="93" class="small">GPU 2</text>
+        <rect x="108" y="64" width="92" height="48" rx="7" class="gpu"/>
+        <text x="126" y="93" class="small">GPU 3</text>
+        <rect x="0" y="128" width="92" height="48" rx="7" class="gpu"/>
+        <text x="18" y="157" class="small">GPU 4</text>
+        <rect x="108" y="128" width="92" height="48" rx="7" class="gpu"/>
+        <text x="126" y="157" class="small">GPU 5</text>
+        <rect x="0" y="192" width="92" height="48" rx="7" class="gpu"/>
+        <text x="18" y="221" class="small">GPU 6</text>
+        <rect x="108" y="192" width="92" height="48" rx="7" class="gpu"/>
+        <text x="126" y="221" class="small">GPU 7</text>
+      </g>
+
+      <text x="84" y="454" class="small">Think: one selected expert is too large or too fast-path critical,</text>
+      <text x="84" y="476" class="small">so its calculation is split into pieces and all GPUs help.</text>
+      <text x="84" y="512" class="small">Result: a single routed expert can still create 8-GPU activity.</text>
+
+      <rect x="618" y="222" width="520" height="338" rx="14" class="aws"/>
+      <text x="644" y="254" class="label">Layer 2: Expert parallelism</text>
+      <text x="644" y="278" class="small">Place different experts on different GPUs, then route tokens to expert owners.</text>
+
+      <rect x="654" y="320" width="118" height="62" rx="8" class="gpu"/>
+      <text x="680" y="346" class="small">GPU 0</text>
+      <text x="680" y="366" class="micro">Experts A,B</text>
+      <rect x="792" y="320" width="118" height="62" rx="8" class="box"/>
+      <text x="818" y="346" class="small">GPU 1</text>
+      <text x="818" y="366" class="micro">Experts C,D</text>
+      <rect x="930" y="320" width="118" height="62" rx="8" class="gpu"/>
+      <text x="956" y="346" class="small">GPU 2</text>
+      <text x="956" y="366" class="micro">Experts E,F</text>
+
+      <rect x="654" y="416" width="118" height="62" rx="8" class="box"/>
+      <text x="680" y="442" class="small">GPU 3</text>
+      <text x="680" y="462" class="micro">Experts G,H</text>
+      <rect x="792" y="416" width="118" height="62" rx="8" class="box"/>
+      <text x="818" y="442" class="small">GPU 4</text>
+      <text x="818" y="462" class="micro">Experts I,J</text>
+      <rect x="930" y="416" width="118" height="62" rx="8" class="box"/>
+      <text x="956" y="442" class="small">GPU 5</text>
+      <text x="956" y="462" class="micro">Experts K,L</text>
+
+      <path d="M712 306V282H850V306" class="arrow" marker-end="url(#arrowhead-parallel)"/>
+      <path d="M988 306V282H850V306" class="arrow" marker-end="url(#arrowhead-parallel)"/>
+      <text x="724" y="518" class="small">Token picked Expert B + F, so this token touches GPU 0 and GPU 2.</text>
+      <text x="724" y="540" class="small">Across many tokens and users, batching should spread work across owners.</text>
+    </svg>
+  </div>
+
+  <div class="math-box">
+    <p><strong>Concrete example:</strong> Expert 1 is made of weight tensors, mostly large matrices. With pure tensor parallelism, Expert 1's tensors are split into slices across multiple GPUs, so each GPU stores part of Expert 1 and computes part of the matrix operation.</p>
+    <p>With pure expert parallelism, Expert 1 may be assigned to one GPU or one GPU group, while Expert 2 lives somewhere else. With combined expert + tensor parallelism, Expert 1 is assigned to a group of GPUs, then its tensors are sliced inside that group.</p>
+    <p>So the answer is: <strong>Expert 1's tensor can be distributed across different GPUs, but only if the serving layout uses tensor parallelism for that expert.</strong></p>
+  </div>
+
+  <h3>What Each Layer Owns</h3>
+  <div class="legend-grid">
+    <div class="legend-card">
+      <h3>KServe</h3>
+      <p>Owns the Kubernetes model endpoint: deployment, service naming, health checks, rollout, and the stable address clients call inside the cluster.</p>
+    </div>
+    <div class="legend-card">
+      <h3>vLLM</h3>
+      <p>Owns inference behavior: loading GLM5.2-FP4, splitting work across 8 GPUs, batching requests, managing KV cache, and streaming tokens.</p>
+    </div>
+    <div class="legend-card">
+      <h3>8 x RTX 6000</h3>
+      <p>Owns the expensive compute. For this setup, think of one GLM serving replica as consuming the whole 8-GPU node.</p>
+    </div>
+    <div class="legend-card">
+      <h3>Gateway</h3>
+      <p>Owns user-facing controls: auth, quotas, logging, routing, and a stable OpenAI-compatible API surface for internal tools.</p>
+    </div>
+  </div>
 </section>
 
 <div class="page-nav">
@@ -344,7 +544,7 @@ Platform target:
 
 <footer class="foot">
   <span>Self-Hosting LLM</span>
-  <span>Last updated 2026-06-28</span>
+  <span>Last updated 2026-07-02</span>
 </footer>
 
 </div>

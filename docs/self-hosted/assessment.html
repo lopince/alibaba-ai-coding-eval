@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Serving Assessment &mdash; Self-Hosting LLM</title>
+<link rel="stylesheet" href="../style.css"/>
+<style>
+  .formula-box { background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--sky); padding: 1rem 1.4rem; margin: 1.2rem 0; border-radius: 4px; }
+  .formula-box pre { background: none; border: none; padding: 0; margin: 0; font: 14px/1.7 var(--mono); color: var(--ink); }
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .85rem; margin: 1.2rem 0 1.8rem; }
+  .metric-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem 1.1rem; }
+  .metric-card h4 { margin: 0 0 .45em; font: 600 14px/1.2 var(--sans); text-transform: none; letter-spacing: 0; color: var(--ink); }
+  .metric-card p { color: var(--ink-soft); font-size: .9rem; margin: 0; }
+  .phase { display: inline-block; font: 600 11px/1 var(--sans); padding: .25em .6em; border-radius: 3px; text-transform: uppercase; letter-spacing: .06em; }
+  .phase.prefill { background: rgba(120,140,93,.12); color: var(--olive); }
+  .phase.decode { background: rgba(217,119,87,.12); color: var(--clay); }
+  .phase.ops { background: rgba(106,140,175,.12); color: var(--sky); }
+  .score-band { display: inline-block; font: 600 12px/1 var(--sans); padding: .25em .55em; border-radius: 3px; white-space: nowrap; }
+  .score-band.good { background: var(--pass-bg); color: var(--olive); }
+  .score-band.watch { background: rgba(106,140,175,.12); color: var(--sky); }
+  .score-band.risk { background: var(--fail-bg); color: var(--clay); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0 1.5rem; }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1><a href="index.html">Self-Hosting LLM</a></h1>
+  <div class="meta">Section 6 of 8</div>
+</header>
+
+<nav class="rail"><div class="inner">
+  <a href="index.html">Overview</a>
+  <a href="models.html">Models</a>
+  <a href="benchmark.html">Benchmark</a>
+  <a href="evaluation.html">Evaluation</a>
+  <a href="infra.html">Infrastructure</a>
+  <a href="serving.html">Serving</a>
+  <a href="assessment.html" class="active">Serving Assessment</a>
+  <a href="deepseek-v4.html">Serving DeepSeek V4 Pro</a>
+  <a href="glm-5.2.html">Serving GLM-5.2 on Alibaba Cloud</a>
+</div></nav>
+
+<p class="tldr">A practical capacity assessment for self-hosted coding platforms: translate team size into active generations, token demand, latency targets, KV-cache pressure, and GPU headroom before deciding how many users a deployment can serve.</p>
+
+<section class="eval" id="framing">
+  <div class="crumb">Core Question</div>
+  <h2>Estimate Capacity by Workload, Not Headcount</h2>
+
+  <p>The number of people a self-hosted platform can serve is not the same as registered users. From the inference engine perspective, the unit that matters is <strong>simultaneous active generations</strong>: requests currently doing prefill, decode, or waiting in the queue.</p>
+
+  <div class="callout">
+    A 100-person engineering team may only create 5&ndash;20 simultaneous inference jobs during normal work, but a coding-agent rollout can spike much higher if tools launch background analysis, test-fix loops, or multi-agent sessions. Capacity planning should model the workload shape first, then map it to GPU throughput.
+  </div>
+
+  <div class="two-col">
+    <div class="metric-card">
+      <h4>Interactive Chat / Coding</h4>
+      <p>Shorter turns, human-paced requests, strict time-to-first-token expectations. Usually decode latency dominates user perception.</p>
+    </div>
+    <div class="metric-card">
+      <h4>Agentic Coding</h4>
+      <p>Long prompts, long outputs, tool loops, and repo context. Prefill cost and KV cache pressure can dominate the platform.</p>
+    </div>
+  </div>
+</section>
+
+<section class="eval" id="metrics">
+  <div class="crumb">Metrics</div>
+  <h2>Inference Metrics to Collect</h2>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Metric</th><th>Phase</th><th>Why It Matters</th><th>Capacity Signal</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Requests per second / minute</strong></td><td><span class="phase ops">Traffic</span></td><td>Measures arrival rate into the inference queue.</td><td>Rising queue time at stable GPU utilization means admission control or more replicas are needed.</td></tr>
+      <tr><td><strong>Prompt tokens per second</strong></td><td><span class="phase prefill">Prefill</span></td><td>Long codebase context makes prompt processing expensive.</td><td>High TTFT with long prompts means prefill is saturated.</td></tr>
+      <tr><td><strong>Output tokens per second</strong></td><td><span class="phase decode">Decode</span></td><td>Generation holds GPU slots for the life of the response.</td><td>Low decode tokens/sec per request or rising p95 latency means memory bandwidth or batching is constrained.</td></tr>
+      <tr><td><strong>Time to first token</strong></td><td><span class="phase prefill">Prefill</span></td><td>Primary responsiveness metric for humans.</td><td>Track p50, p95, and p99. Average latency hides overload.</td></tr>
+      <tr><td><strong>End-to-end latency</strong></td><td><span class="phase decode">Decode</span></td><td>Captures full generation time for long coding answers.</td><td>Use p95 against workload-specific SLOs, not one global target.</td></tr>
+      <tr><td><strong>Concurrent sequences</strong></td><td><span class="phase ops">Scheduler</span></td><td>Shows how many live requests fit in the engine.</td><td>Bounded by batching policy, max model length, and available KV cache.</td></tr>
+      <tr><td><strong>KV cache utilization</strong></td><td><span class="phase decode">Memory</span></td><td>Long context sessions consume memory linearly.</td><td>When KV cache approaches capacity, new requests queue or evict; p95 latency jumps.</td></tr>
+      <tr><td><strong>GPU memory and HBM bandwidth</strong></td><td><span class="phase decode">Hardware</span></td><td>Decode is usually memory-bandwidth-bound.</td><td>High memory pressure with modest compute utilization is still a real bottleneck.</td></tr>
+      <tr><td><strong>Batch size / waiting tokens</strong></td><td><span class="phase ops">Scheduler</span></td><td>Continuous batching improves throughput but can hurt latency.</td><td>Too small wastes GPU; too large increases queue wait and tail latency.</td></tr>
+      <tr><td><strong>Error, timeout, and cancellation rate</strong></td><td><span class="phase ops">Reliability</span></td><td>Overload often appears as dropped streams before obvious GPU failure.</td><td>Cancellations rising with latency is a user-visible saturation signal.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="eval" id="worksheet">
+  <div class="crumb">Worksheet</div>
+  <h2>Capacity Sizing Formulas</h2>
+
+  <p>Start with workload assumptions, then compare required token capacity against measured engine throughput from a benchmark run using the same model, quantization, context length, and latency target.</p>
+
+  <div class="formula-box"><pre>active_generations =
+  team_size * daily_active_ratio * peak_overlap_ratio * requests_per_active_user
+
+required_decode_tokens_per_sec =
+  active_generations * average_output_tokens / acceptable_generation_seconds
+
+required_prefill_tokens_per_sec =
+  request_arrival_rate_per_sec * average_input_tokens
+
+effective_capacity =
+  measured_engine_tokens_per_sec * target_utilization * safety_factor</pre></div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Input</th><th>Typical Starting Assumption</th><th>How to Improve It</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Daily active ratio</strong></td><td>50&ndash;80% of engineering seats</td><td>Use IDE/CLI telemetry or gateway auth logs.</td></tr>
+      <tr><td><strong>Peak overlap ratio</strong></td><td>10&ndash;25% for human chat, higher for agents</td><td>Measure peak 15-minute windows, not daily average.</td></tr>
+      <tr><td><strong>Average input tokens</strong></td><td>4K&ndash;16K for chat; 32K&ndash;128K for repo-aware agents</td><td>Bucket by workflow: autocomplete, chat, review, agent task.</td></tr>
+      <tr><td><strong>Average output tokens</strong></td><td>500&ndash;2K for chat; 2K&ndash;8K for agent tasks</td><td>Track completed and cancelled streams separately.</td></tr>
+      <tr><td><strong>Target utilization</strong></td><td>60&ndash;75% for interactive workloads</td><td>Leave headroom for p95 latency and burst absorption.</td></tr>
+      <tr><td><strong>Safety factor</strong></td><td>0.6&ndash;0.8 for first production rollout</td><td>Tighten after two weeks of real traffic.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="eval" id="readiness">
+  <div class="crumb">Decision Rubric</div>
+  <h2>Serving Readiness Bands</h2>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Signal</th><th><span class="score-band good">Ready</span></th><th><span class="score-band watch">Watch</span></th><th><span class="score-band risk">Risk</span></th></tr></thead>
+    <tbody>
+      <tr><td><strong>TTFT p95</strong></td><td>&lt;3s for normal coding prompts</td><td>3&ndash;8s</td><td>&gt;8s or unstable</td></tr>
+      <tr><td><strong>Queue wait p95</strong></td><td>&lt;10% of total latency</td><td>10&ndash;30%</td><td>&gt;30%</td></tr>
+      <tr><td><strong>KV cache usage</strong></td><td>&lt;70% at peak</td><td>70&ndash;85%</td><td>&gt;85% with evictions or rejected requests</td></tr>
+      <tr><td><strong>GPU memory headroom</strong></td><td>Enough for burst batch + longest allowed context</td><td>Frequent near-full memory</td><td>OOMs, forced max-context cuts, or restarts</td></tr>
+      <tr><td><strong>Decode throughput</strong></td><td>Meets p95 output SLO under peak load</td><td>Meets average but not peak</td><td>Long outputs regularly timeout or get cancelled</td></tr>
+      <tr><td><strong>Observability</strong></td><td>Per-model, per-route, per-phase metrics</td><td>GPU-only metrics</td><td>No request-level or token-level visibility</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout warn">
+    The most common mistake is sizing from vendor tokens/sec numbers alone. Always benchmark with your real prompt lengths, max context policy, engine flags, quantization, batching settings, and expected latency SLO.
+  </div>
+</section>
+
+<section class="eval" id="runbook">
+  <div class="crumb">Runbook</div>
+  <h2>Assessment Steps</h2>
+
+  <ol>
+    <li><strong>Segment workflows:</strong> autocomplete, chat, code review, repo Q&amp;A, and autonomous coding tasks.</li>
+    <li><strong>Capture token distributions:</strong> p50/p95 input tokens, output tokens, and request arrival rate for each workflow.</li>
+    <li><strong>Benchmark engine capacity:</strong> run vLLM/SGLang with the exact model, quantization, max context, and batch policy planned for production.</li>
+    <li><strong>Set SLOs:</strong> define TTFT p95, end-to-end p95, timeout budget, and maximum queue wait by workflow.</li>
+    <li><strong>Model bursts:</strong> use peak 15-minute windows and agent fan-out, not daily average usage.</li>
+    <li><strong>Add controls:</strong> per-user rate limits, max output tokens, context caps, priority queues, and fallback routing for expensive requests.</li>
+    <li><strong>Reassess after launch:</strong> update assumptions using production traces from the gateway and inference engine.</li>
+  </ol>
+</section>
+
+<div class="page-nav">
+  <a href="serving.html">&larr; Serving</a>
+  <a href="deepseek-v4.html" class="next">Serving DeepSeek V4 Pro &rarr;</a>
+</div>
+
+<footer class="foot">
+  <span>Self-Hosting LLM</span>
+  <span>Last updated 2026-07-05</span>
+</footer>
+
+</div>
+</body>
+</html>
