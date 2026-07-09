@@ -1,0 +1,4 @@
+interface:
+  display_name: "Self Host LLM Eval"
+  short_description: "Evaluate Python, Kotlin/Java, and docs outputs from self-hosted LLMs."
+  default_prompt: "Evaluate a generated candidate against a trusted reference using the self-host LLM evaluation workflow. Confirm the pair, ask me to select validation checks, run baseline and candidate checks, then produce Tier 1/2/3 metrics with evidence."

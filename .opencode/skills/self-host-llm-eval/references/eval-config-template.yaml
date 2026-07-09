@@ -1,0 +1,33 @@
+# Copy into eval-runs/<run-id>/config.yaml and fill before scoring.
+run_id: ""
+reference: ""
+candidate: ""
+task_family: "python" # python | kotlin-java | docs
+task_type: "code_generation" # code_generation | bug_fix | refactor | test_generation | documentation_generation
+scope: ""
+
+pair_confirmed_by_user: false
+validation_set_confirmed_by_user: false
+
+validation:
+  selected:
+    - id: ""
+      kind: "unit-test" # unit-test | compile | lint | doc-check | llm-judge | custom
+      path: ""
+      command: ""
+      reason: ""
+
+baseline:
+  command: ""
+  passing_checks: []
+
+candidate_eval:
+  command: ""
+
+metadata:
+  self_host_model: ""
+  judge_model: ""
+  prompt: ""
+  started_at: ""
+  cost: null
+  attempts: null
