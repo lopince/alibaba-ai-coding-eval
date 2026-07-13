@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Serving GLM5.2-FP4 with vLLM + KServe &mdash; Self-Hosting LLM</title>
+<title>GLM-5.2-NVFP4: Benefits and Quality Gap &mdash; Self-Hosting LLM</title>
 <link rel="stylesheet" href="../style.css"/>
 <style>
 .intro { font-size: 1.02rem; color: var(--ink-soft); max-width: 760px; }
@@ -44,8 +44,43 @@
 .math-box code { white-space: nowrap; }
 .math-box p { margin: .55rem 0; color: var(--ink-soft); }
 .math-box .formula { font: 700 14px/1.45 var(--mono); color: var(--ink); }
+.model-hero { position: relative; overflow: hidden; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 2rem; margin: 0 0 1.5rem; }
+.model-hero::after { content: "4"; position: absolute; right: 1rem; top: -2.5rem; font: 800 15rem/1 var(--sans); color: rgba(217,119,87,.055); pointer-events: none; }
+.model-kicker { position: relative; z-index: 1; font: 700 11px/1 var(--sans); color: var(--clay); text-transform: uppercase; letter-spacing: .12em; margin-bottom: .8rem; }
+.model-hero h2 { position: relative; z-index: 1; max-width: 700px; margin-bottom: .6rem; font-size: clamp(1.7rem, 4vw, 2.65rem); letter-spacing: -.035em; }
+.model-hero .lead { position: relative; z-index: 1; max-width: 700px; margin: 0; color: var(--ink-soft); font-size: 1.06rem; }
+.hero-tags { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.25rem; }
+.hero-tags span { border: 1px solid var(--rule); border-radius: 999px; padding: .35rem .7rem; font: 600 12px/1 var(--sans); background: var(--bg); }
+.decision-line { display: grid; grid-template-columns: 1.2fr 1fr; gap: 1rem; margin: 1rem 0 1.7rem; }
+.decision-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 7px; padding: 1.2rem 1.3rem; }
+.decision-card.primary { border-left: 4px solid var(--olive); }
+.decision-card.caution { border-left: 4px solid var(--clay); }
+.decision-card .eyebrow { font: 700 11px/1 var(--sans); color: var(--g500); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .55rem; }
+.decision-card strong { display: block; font: 700 16px/1.3 var(--sans); margin-bottom: .4rem; }
+.decision-card p { margin: 0; color: var(--ink-soft); font-size: .91rem; }
+.delta { font: 700 12px/1 var(--mono); white-space: nowrap; }
+.delta.down { color: var(--clay); }
+.delta.up { color: var(--olive); }
+.score-note { font-size: .86rem; color: var(--ink-soft); margin-top: -.7rem; }
+.benefit-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; margin: 1rem 0 1.5rem; }
+.benefit { background: var(--surface); border: 1px solid var(--rule); border-radius: 7px; padding: 1.1rem; }
+.benefit .number { font: 800 1.65rem/1 var(--sans); color: var(--clay); margin-bottom: .5rem; }
+.benefit strong { display: block; font: 700 14px/1.25 var(--sans); margin-bottom: .35rem; }
+.benefit p { margin: 0; color: var(--ink-soft); font-size: .88rem; }
+.fit-meter { margin: 1rem 0 1.5rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 7px; padding: 1.2rem 1.3rem; }
+.fit-meter-head { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; margin-bottom: .7rem; font-family: var(--sans); }
+.fit-meter-head strong { font-size: 14px; }
+.fit-meter-head span { color: var(--ink-soft); font-size: 12px; }
+.fit-track { display: flex; height: 28px; overflow: hidden; border-radius: 4px; background: var(--bg); border: 1px solid var(--rule); }
+.fit-weights { width: 49%; background: rgba(217,119,87,.72); }
+.fit-headroom { flex: 1; background: rgba(120,140,93,.3); }
+.fit-legend { display: flex; flex-wrap: wrap; gap: .6rem 1.3rem; margin-top: .65rem; color: var(--ink-soft); font: 12px/1.4 var(--sans); }
+.fit-legend span::before { content: ""; display: inline-block; width: .65rem; height: .65rem; border-radius: 2px; margin-right: .4rem; vertical-align: -.05rem; }
+.fit-legend .weights::before { background: rgba(217,119,87,.72); }
+.fit-legend .headroom::before { background: rgba(120,140,93,.3); }
 @media (max-width: 760px) {
-  .setup-strip { grid-template-columns: 1fr; }
+  .setup-strip, .decision-line, .benefit-grid { grid-template-columns: 1fr; }
+  .model-hero { padding: 1.4rem; }
 }
 </style>
 </head>
@@ -66,7 +101,7 @@
   <a href="serving.html">Serving</a>
   <a href="assessment.html">Serving Assessment</a>
   <a href="deepseek-v4.html">Serving DeepSeek V4 Pro</a>
-  <a href="glm-5.2.html" class="active">Serving GLM5.2-FP4</a>
+  <a href="glm-5.2.html" class="active">GLM-5.2-NVFP4</a>
 </div></nav>
 
 </div>
@@ -74,14 +109,81 @@
 <div class="wrap">
 
 <section class="eval">
+  <div class="model-hero">
+    <div class="model-kicker">The checkpoint we evaluated</div>
+    <h2>GLM-5.2-NVFP4: near-FP8 quality with a 4-bit serving path</h2>
+    <p class="lead">NVIDIA&rsquo;s deployment-optimized release of Z.ai&rsquo;s GLM-5.2 keeps the same 753B-parameter, 40B-active Mixture-of-Experts architecture and 1M-token context target, while quantizing selected expert computations to NVFP4 for Blackwell GPUs.</p>
+    <div class="hero-tags">
+      <span>753B total / 40B active</span>
+      <span>1M context</span>
+      <span>MIT license</span>
+      <span>vLLM + SGLang</span>
+      <span>NVIDIA Blackwell</span>
+    </div>
+  </div>
+
+  <div class="decision-line">
+    <div class="decision-card primary">
+      <div class="eyebrow">Why we used it</div>
+      <strong>The practical benefit is serving efficiency, not a different model personality.</strong>
+      <p>Four-bit expert weights and activations reduce memory traffic and the dominant weight footprint. That makes this enormous MoE model more practical to place and serve on supported Blackwell systems, with more room for KV cache and batching than higher-precision checkpoints.</p>
+    </div>
+    <div class="decision-card caution">
+      <div class="eyebrow">What not to claim</div>
+      <strong>&ldquo;Full model&rdquo; needs two definitions.</strong>
+      <p>The original Z.ai checkpoint is BF16. NVIDIA&rsquo;s published accuracy baseline is the official FP8 checkpoint, not BF16. The measured gap below is therefore <strong>NVFP4 vs FP8</strong>; a direct NVFP4-vs-BF16 gap has not been published on this five-test suite.</p>
+    </div>
+  </div>
+
+  <h3>What Changed &mdash; and What Did Not</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Dimension</th><th>Original GLM-5.2 (BF16)</th><th>GLM-5.2-FP8</th><th>Our GLM-5.2-NVFP4</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Model capability</strong></td><td>Reference/base checkpoint</td><td>Same trained model, 8-bit inference format</td><td>Same trained model, 4-bit optimized inference format</td></tr>
+      <tr><td><strong>Architecture</strong></td><td>753B total, 40B active MoE</td><td>Unchanged</td><td>Unchanged</td></tr>
+      <tr><td><strong>Context target</strong></td><td>Up to 1M tokens</td><td>Up to 1M tokens</td><td>Up to 1M tokens</td></tr>
+      <tr><td><strong>Precision</strong></td><td>BF16 weights</td><td>FP8 checkpoint</td><td>NVFP4 for weights and activations in MoE-expert linear operators; shared expert remains unquantized</td></tr>
+      <tr><td><strong>Idealized bytes per quantized value</strong></td><td>2 bytes</td><td>1 byte</td><td>0.5 byte, plus scales and unquantized tensors</td></tr>
+      <tr><td><strong>Hardware fit</strong></td><td>Broad but very large footprint</td><td>Modern FP8-capable accelerators</td><td>NVIDIA Blackwell; Linux with vLLM or SGLang</td></tr>
+      <tr><td><strong>Best reason to choose</strong></td><td>Maximum fidelity / research reference</td><td>Quality-efficiency middle ground</td><td>Lowest supported serving footprint with NVIDIA&rsquo;s ready-made checkpoint</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="benefit-grid">
+    <div class="benefit"><div class="number">4-bit</div><strong>Less weight traffic</strong><p>Lower-precision expert math reduces the bandwidth pressure that dominates large-model decode.</p></div>
+    <div class="benefit"><div class="number">1M</div><strong>Long context retained</strong><p>Quantization does not change the advertised context target or sparse-attention architecture.</p></div>
+    <div class="benefit"><div class="number">5 / 5</div><strong>Published checks stay close</strong><p>Every NVIDIA-reported result lands within 0.86 points of its FP8 baseline.</p></div>
+  </div>
+
+  <h3>The Measured Quality Gap</h3>
+  <p class="bench-links"><strong>Source:</strong> NVIDIA, <a href="https://huggingface.co/nvidia/GLM-5.2-NVFP4#evaluation" target="_blank" rel="noopener noreferrer">GLM-5.2-NVFP4 model card &mdash; Evaluation</a>. NVIDIA reports these NVFP4 results against <a href="https://huggingface.co/zai-org/GLM-5.2-FP8" target="_blank" rel="noopener noreferrer">Z.ai&rsquo;s GLM-5.2-FP8 checkpoint</a>. The model card states that AA-LCR was measured with SGLang and the other four benchmarks with vLLM.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Benchmark</th><th>FP8 baseline</th><th>NVFP4</th><th>Delta</th><th>What it tests</th></tr></thead>
+    <tbody>
+      <tr><td><strong>GPQA Diamond</strong></td><td>89.52</td><td>89.39</td><td><span class="delta down">&minus;0.13</span></td><td>Graduate-level reasoning</td></tr>
+      <tr><td><strong>SciCode</strong></td><td>49.85</td><td>49.04</td><td><span class="delta down">&minus;0.81</span></td><td>Scientific coding</td></tr>
+      <tr><td><strong>IFBench</strong></td><td>74.95</td><td>75.81</td><td><span class="delta up">+0.86</span></td><td>Instruction following</td></tr>
+      <tr><td><strong>AA-LCR</strong></td><td>69.38</td><td>70.13</td><td><span class="delta up">+0.75</span></td><td>Long-context recall</td></tr>
+      <tr><td><strong>&tau;&sup2;-Bench Telecom</strong></td><td>97.90</td><td>98.25</td><td><span class="delta up">+0.35</span></td><td>Agentic tool use and policy adherence</td></tr>
+    </tbody>
+  </table></div>
+  <p class="score-note"><strong>Interpretation:</strong> the largest observed regression is 0.81 points and the largest improvement is 0.86 points. The simple mean delta is +0.20 points, but this should be read as practical parity on this limited suite&mdash;not proof that quantization improves the model. NVIDIA benchmarked with <code>temperature=1.0</code> and <code>top_p=0.95</code>; sampling variance, runtime differences, and workload-specific sensitivity still matter.</p>
+
+  <div class="callout">
+    <strong>Bottom line:</strong> choose NVFP4 when your production stack is NVIDIA Blackwell and deployment density, memory headroom, or decode throughput matters. Prefer FP8 or BF16 when you need the broadest hardware/runtime compatibility, are fine-tuning or researching numerical behavior, or your own coding-agent evaluation shows a material regression. For adoption, our internal repository tasks remain more important than five public aggregate scores.
+  </div>
+
+  <p class="bench-links">Primary sources: <a href="https://huggingface.co/nvidia/GLM-5.2-NVFP4">NVIDIA GLM-5.2-NVFP4 model card</a> &middot; <a href="https://huggingface.co/zai-org/GLM-5.2-FP8">Z.ai GLM-5.2-FP8</a> &middot; <a href="https://huggingface.co/zai-org/GLM-5.2">Z.ai GLM-5.2 base checkpoint</a></p>
+
+  <h3>How We Serve This Version</h3>
   <div class="crumb">Current Team Setup</div>
-  <h2>Serving GLM5.2-FP4 with vLLM on AWS KServe</h2>
-  <p class="intro">This page is now a diagram-first walkthrough of our current self-hosting shape: a GLM5.2-FP4 model served by vLLM, managed by KServe, running on one AWS GPU worker with 8 RTX 6000 GPUs.</p>
+  <h2>Serving GLM-5.2-NVFP4 with vLLM on AWS KServe</h2>
+  <p class="intro">The rest of this page is a diagram-first walkthrough of our current self-hosting shape: the GLM-5.2-NVFP4 checkpoint served by vLLM, managed by KServe, and running on one AWS GPU worker with 8 GPUs.</p>
 
   <div class="setup-strip">
     <div class="setup-item">
       <div class="label">Model</div>
-      <strong>GLM5.2-FP4</strong>
+      <strong>GLM-5.2-NVFP4</strong>
       <span>Quantized large model loaded once per serving replica.</span>
     </div>
     <div class="setup-item">
@@ -91,17 +193,56 @@
     </div>
     <div class="setup-item">
       <div class="label">Hardware</div>
-      <strong>AWS 8-GPU node</strong>
-      <span>Team shorthand: 8 x RTX 6000. Public EC2 equivalent to verify: g6e.48xlarge with 8 x L40S.</span>
+      <strong>AWS g7e.48xlarge</strong>
+      <span>8 x RTX PRO 6000 Blackwell Server Edition, with 768 GB aggregate GPU memory.</span>
     </div>
   </div>
 
   <div class="source-note">
-    <strong>AWS naming note:</strong> AWS sells GPU capacity as EC2 instance types, not racks. In the public EC2 catalog, the closest 8-GPU inference shape is <code>g6e.48xlarge</code>: 8 NVIDIA L40S GPUs, 384 GB total GPU memory, 192 vCPUs, 1,536 GiB RAM, up to 400 Gbps network, and 7.6 TB local NVMe. If the team says "8 x RTX 6000," confirm whether that means private/custom RTX 6000 capacity or shorthand for the L40S-based G6e node.
+    <strong>Instance-name and compatibility note:</strong> the AWS name is <code>g7e.48xlarge</code> (not <code>G7e.x48large</code>). Its RTX PRO 6000 Blackwell Server Edition GPUs match NVIDIA&rsquo;s stated Blackwell requirement for this checkpoint. The older RTX 6000 Ada and the L40S-based <code>g6e.48xlarge</code> are not equivalent NVFP4 hosts.
   </div>
 
+  <h3>How g7e.48xlarge Fits GLM-5.2-NVFP4</h3>
+  <p>The largest G7e shape is a practical single-node host for this checkpoint. It combines the required GPU generation with enough aggregate VRAM to hold the quantized model and leave meaningful—but workload-dependent—space for runtime allocations and KV cache.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Resource</th><th>g7e.48xlarge</th><th>Why it matters for NVFP4</th></tr></thead>
+    <tbody>
+      <tr><td><strong>GPU</strong></td><td>8 x NVIDIA RTX PRO 6000 Blackwell Server Edition</td><td>Directly matches the Blackwell microarchitecture listed by NVIDIA for the NVFP4 checkpoint.</td></tr>
+      <tr><td><strong>GPU memory</strong></td><td>96 GB per GPU / 768 GB aggregate</td><td>Supports one checkpoint sharded across all eight GPUs, with substantially more capacity than an 8 x 48 GB node.</td></tr>
+      <tr><td><strong>CPU / system RAM</strong></td><td>192 vCPUs / 2,048 GiB</td><td>Ample host memory for checkpoint staging, tokenizer workers, KServe sidecars, and operational tooling.</td></tr>
+      <tr><td><strong>Local storage</strong></td><td>4 x 3.8 TB NVMe (15.2 TB total)</td><td>Enough capacity for a node-local checkpoint cache, reducing restart and model-load dependence on remote storage.</td></tr>
+      <tr><td><strong>Network / EBS</strong></td><td>Up to 1,600 Gbps network / 100 Gbps EBS</td><td>Useful for fast checkpoint distribution and multi-node operations, although the recommended first deployment keeps one model replica within one node.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="fit-meter" aria-label="Simplified comparison of idealized raw FP4 weight memory and aggregate g7e.48xlarge GPU memory">
+    <div class="fit-meter-head"><strong>Simplified VRAM fit</strong><span>376.5 GB idealized raw FP4 weights / 768 GB aggregate GPU memory</span></div>
+    <div class="fit-track"><div class="fit-weights" title="Idealized raw FP4 weights: 376.5 GB"></div><div class="fit-headroom" title="Theoretical remainder before real overheads"></div></div>
+    <div class="fit-legend"><span class="weights">~49% idealized raw FP4 weights</span><span class="headroom">~51% theoretical remainder before overheads</span></div>
+  </div>
+
+  <div class="decision-line">
+    <div class="decision-card primary">
+      <div class="eyebrow">Recommended serving shape</div>
+      <strong>One model replica per g7e.48xlarge node</strong>
+      <p>Use all 8 GPUs with <code>--tensor-parallel-size 8</code> and <code>--enable-expert-parallel</code>, matching NVIDIA&rsquo;s published vLLM recipe. In KServe, treat the entire node as the scheduling unit and request all eight GPUs for the model pod.</p>
+    </div>
+    <div class="decision-card caution">
+      <div class="eyebrow">Capacity caveat</div>
+      <strong>768 GB does not mean 391.5 GB is freely usable KV cache.</strong>
+      <p>The 376.5 GB figure assumes every one of 753B parameters occupies exactly four bits. NVIDIA leaves the shared expert and other tensors at higher precision, while quantization scales, CUDA graphs, communication buffers, and runtime workspace consume additional VRAM. Measure the loaded model footprint before setting context and concurrency targets.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Fit verdict:</strong> <code>g7e.48xlarge</code> is the right G-series shape for a production trial of GLM-5.2-NVFP4: correct Blackwell hardware, eight GPUs for the reference parallel layout, and enough aggregate memory for a realistic single-node deployment. It should not be interpreted as a guarantee of 1M context at high concurrency. Start with the team&rsquo;s normal coding-agent context distribution, measure loaded-weight VRAM and p95 TTFT, then increase <code>max-model-len</code> and <code>max-num-seqs</code> under load.
+  </div>
+
+  <p class="bench-links">Hardware sources: <a href="https://aws.amazon.com/ec2/instance-types/g7e/" target="_blank" rel="noopener noreferrer">AWS EC2 G7e product page</a> &middot; <a href="https://docs.aws.amazon.com/ec2/latest/instancetypes/ac.html" target="_blank" rel="noopener noreferrer">AWS accelerated-computing instance specifications</a> &middot; Deployment recipe: <a href="https://huggingface.co/nvidia/GLM-5.2-NVFP4#vllm" target="_blank" rel="noopener noreferrer">NVIDIA GLM-5.2-NVFP4 vLLM instructions</a></p>
+
   <h3>Request Flow</h3>
-  <div class="diagram-shell" role="img" aria-label="Diagram showing GLM5.2-FP4 request flow through KServe and vLLM on AWS EKS with eight RTX 6000 GPUs">
+  <div class="diagram-shell" role="img" aria-label="Diagram showing GLM-5.2-NVFP4 request flow through KServe and vLLM on AWS EKS with eight Blackwell GPUs">
     <svg viewBox="0 0 1180 680" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -135,13 +276,13 @@
 
       <rect x="614" y="216" width="202" height="112" rx="9" class="vllm"/>
       <text x="642" y="250" class="title">vLLM Server</text>
-      <text x="642" y="276" class="small">loads GLM5.2-FP4</text>
+      <text x="642" y="276" class="small">loads GLM-5.2-NVFP4</text>
       <text x="642" y="296" class="small">continuous batching</text>
       <text x="642" y="316" class="small">KV cache management</text>
 
       <rect x="872" y="176" width="188" height="192" rx="9" class="gpu"/>
-      <text x="900" y="210" class="title">AWS GPU Node</text>
-      <text x="900" y="236" class="small">8 x RTX 6000</text>
+      <text x="900" y="210" class="title">g7e.48xlarge</text>
+      <text x="900" y="236" class="small">8 x 96 GB Blackwell</text>
       <text x="900" y="256" class="small">one vLLM replica</text>
       <text x="900" y="276" class="small">tensor parallel = 8</text>
       <g transform="translate(900 300)">
@@ -162,7 +303,7 @@
       <rect x="364" y="414" width="188" height="82" rx="9" class="store"/>
       <text x="392" y="446" class="title">Model Storage</text>
       <text x="392" y="472" class="small">S3 / EBS / FSx</text>
-      <text x="392" y="492" class="small">GLM5.2-FP4 weights</text>
+      <text x="392" y="492" class="small">NVFP4 checkpoint</text>
 
       <rect x="614" y="414" width="202" height="82" rx="9" class="store"/>
       <text x="642" y="446" class="title">Telemetry</text>
@@ -190,7 +331,7 @@
   </div>
 
   <div class="flow-note">
-    <strong>Read it left to right:</strong> a coding tool sends a prompt, the gateway authenticates it, KServe selects the GLM endpoint, vLLM runs the model across all 8 RTX 6000 GPUs, and generated tokens stream back through the same path.
+    <strong>Read it left to right:</strong> a coding tool sends a prompt, the gateway authenticates it, KServe selects the GLM endpoint, vLLM runs the model across all 8 Blackwell GPUs, and generated tokens stream back through the same path.
   </div>
 
   <h3>Harness Loop and Token Streaming</h3>
@@ -330,13 +471,13 @@
       <div><strong>Container boots inside the KServe pod</strong><span>KServe creates the pod, mounts model storage, injects runtime arguments, and waits for vLLM health probes to pass.</span></div>
     </div>
     <div class="step-item">
-      <div><strong>vLLM reads model metadata</strong><span>It loads the config, tokenizer, generation settings, quantization format, and model architecture code needed for GLM5.2-FP4.</span></div>
+      <div><strong>vLLM reads model metadata</strong><span>It loads the config, tokenizer, generation settings, ModelOpt NVFP4 format, and model architecture code needed for GLM-5.2-NVFP4.</span></div>
     </div>
     <div class="step-item">
-      <div><strong>GPU workers are initialized</strong><span>With 8 x RTX 6000, vLLM starts distributed workers and prepares tensor-parallel communication across all eight GPUs.</span></div>
+      <div><strong>GPU workers are initialized</strong><span>With 8 Blackwell GPUs, vLLM starts distributed workers and prepares tensor- and expert-parallel communication across all eight GPUs.</span></div>
     </div>
     <div class="step-item">
-      <div><strong>The model weights are loaded</strong><span>Yes: the serving replica must load the GLM5.2-FP4 checkpoint shards across GPU memory. Even if the model is MoE, the resident expert weights still need to be available for routing at inference time.</span></div>
+      <div><strong>The model weights are loaded</strong><span>Yes: the serving replica must load the GLM-5.2-NVFP4 checkpoint shards across GPU memory. Even if the model is MoE, the resident expert weights still need to be available for routing at inference time.</span></div>
     </div>
     <div class="step-item">
       <div><strong>KV cache and scheduler memory are reserved</strong><span>vLLM decides how much remaining GPU memory is available for prompt cache, active requests, batching, and generation.</span></div>
@@ -406,12 +547,12 @@
     <p><strong>Simple wording:</strong> S3/FSx/EBS/NVMe store the checkpoint files. GPU VRAM stores the live, sharded copy that vLLM uses to calculate tokens. CPU RAM may briefly stage metadata and file reads during startup, but normal inference should run from GPU memory.</p>
   </div>
 
-  <h3>Where Does a 735B Model Fit?</h3>
+  <h3>Where Does a 753B Model Fit?</h3>
   <div class="math-box">
     <p class="formula">FP4 weight memory is roughly: parameters x 0.5 bytes</p>
-    <p>Using 735B parameters as the rough model size, raw FP4 weights are about <code>735B x 0.5 = 367.5 GB</code> before extra scale metadata, runtime buffers, CUDA workspace, and KV cache.</p>
-    <p>The model is not copied in full onto every GPU. With tensor parallelism, vLLM shards the checkpoint across all 8 GPUs. On an 8 x 48 GB node, the cluster has about <code>384 GB</code> total GPU memory, so the raw FP4 weights alone almost fill the box.</p>
-    <p>This is why the deployment is tight: after weights load, vLLM still needs memory for KV cache and active requests. If startup fails or the usable context is tiny, the usual fixes are stronger quantization/runtime support, CPU or NVMe offload, lower max context/concurrency, expert parallelism, or a larger-memory GPU shape.</p>
+    <p>As a deliberately simplified lower-bound calculation, <code>753B x 0.5 = 376.5 GB</code>. The real checkpoint and live allocation are larger because NVIDIA quantizes only selected MoE-expert linear operators; the shared expert and other tensors remain at higher precision, and scales, runtime buffers, CUDA workspace, and KV cache also consume memory.</p>
+    <p>The model is not copied in full onto every GPU. vLLM shards the resident checkpoint across the 8-GPU serving group. Capacity planning must use the actual checkpoint files and observed startup allocation rather than treating 376.5 GB as the deployment requirement.</p>
+    <p>This is why NVFP4 is valuable: it lowers the dominant expert-weight cost while preserving the model architecture. If startup fails or usable context is too small, the usual levers are lower max context/concurrency, expert parallelism, CPU or NVMe offload, or a larger-memory Blackwell shape.</p>
   </div>
 
   <h3>Does MoE Mean Only a Few GPUs Work?</h3>
@@ -524,11 +665,11 @@
     </div>
     <div class="legend-card">
       <h3>vLLM</h3>
-      <p>Owns inference behavior: loading GLM5.2-FP4, splitting work across 8 GPUs, batching requests, managing KV cache, and streaming tokens.</p>
+      <p>Owns inference behavior: loading GLM-5.2-NVFP4, splitting work across 8 GPUs, batching requests, managing KV cache, and streaming tokens.</p>
     </div>
     <div class="legend-card">
-      <h3>8 x RTX 6000</h3>
-      <p>Owns the expensive compute. For this setup, think of one GLM serving replica as consuming the whole 8-GPU node.</p>
+      <h3>g7e.48xlarge</h3>
+      <p>Owns the expensive compute. For this setup, one GLM serving replica consumes the whole 8-GPU Blackwell node.</p>
     </div>
     <div class="legend-card">
       <h3>Gateway</h3>
@@ -544,7 +685,7 @@
 
 <footer class="foot">
   <span>Self-Hosting LLM</span>
-  <span>Last updated 2026-07-02</span>
+  <span>Last updated 2026-07-13</span>
 </footer>
 
 </div>
