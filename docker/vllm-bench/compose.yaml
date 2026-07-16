@@ -1,0 +1,48 @@
+services:
+  server:
+    build:
+      context: .
+      args:
+        VLLM_IMAGE: ${VLLM_IMAGE:-vllm/vllm-openai-cpu:latest-arm64}
+    image: local/vllm-bench:arm64
+    command:
+      - serve
+      - ${VLLM_MODEL:-Qwen/Qwen3-0.6B}
+      - --dtype=float32
+      - --host=0.0.0.0
+      - --port=8000
+    ports:
+      - "${VLLM_PORT:-8000}:8000"
+    environment:
+      HF_TOKEN: ${HF_TOKEN:-}
+      VLLM_CPU_KVCACHE_SPACE: ${VLLM_CPU_KVCACHE_SPACE:-2}
+    volumes:
+      - huggingface-cache:/root/.cache/huggingface
+    shm_size: 4gb
+    security_opt:
+      - seccomp=unconfined
+    cap_add:
+      - SYS_NICE
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  bench:
+    build:
+      context: .
+      args:
+        VLLM_IMAGE: ${VLLM_IMAGE:-vllm/vllm-openai-cpu:latest-arm64}
+    image: local/vllm-bench:arm64
+    profiles: ["tools"]
+    entrypoint: ["vllm", "bench"]
+    environment:
+      HF_TOKEN: ${HF_TOKEN:-}
+    volumes:
+      - huggingface-cache:/root/.cache/huggingface
+      - ./results:/results
+
+volumes:
+  huggingface-cache:

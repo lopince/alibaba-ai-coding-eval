@@ -1,0 +1,1329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>vLLM Long-Context Benchmark Report - Version 1</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #111827;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --card: #f9fafb;
+      --series-1: #2563eb;
+      --series-2: #16a34a;
+      --series-3: #d97706;
+      --series-4: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --fg: #e5e7eb;
+        --muted: #9ca3af;
+        --border: #374151;
+        --card: #111827;
+        --series-1: #60a5fa;
+        --series-2: #4ade80;
+        --series-3: #fbbf24;
+        --series-4: #f87171;
+      }
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 32px 0 12px;
+      font-size: 18px;
+    }
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+    .summary {
+      margin-top: 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .summary p:last-child {
+      margin-bottom: 0;
+    }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .meta div {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .meta span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .chart-wrap {
+      margin-top: 16px;
+      overflow-x: auto;
+    }
+    svg {
+      min-width: 760px;
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+    .axis,
+    .grid {
+      stroke: var(--border);
+      stroke-width: 1;
+    }
+    .grid {
+      opacity: 0.65;
+    }
+    .label,
+    .tick {
+      fill: var(--muted);
+      font-size: 12px;
+    }
+    .value {
+      fill: var(--fg);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .line {
+      fill: none;
+      stroke-width: 2.3;
+    }
+    .p50 { stroke: var(--series-1); }
+    .p75 { stroke: var(--series-2); }
+    .p90 { stroke: var(--series-3); }
+    .p95 { stroke: var(--series-4); }
+    .point {
+      stroke: var(--bg);
+      stroke-width: 2;
+      cursor: pointer;
+    }
+    .point.p50 { fill: var(--series-1); }
+    .point.p75 { fill: var(--series-2); }
+    .point.p90 { fill: var(--series-3); }
+    .point.p95 { fill: var(--series-4); }
+    .chart-tooltip {
+      position: fixed;
+      z-index: 20;
+      display: none;
+      min-width: 150px;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.94);
+      color: #f8fafc;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+      font-size: 13px;
+      line-height: 1.35;
+      pointer-events: none;
+    }
+    .chart-tooltip strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+    .legend {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-item input {
+      margin: 0;
+    }
+    .swatch {
+      width: 18px;
+      height: 3px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .memory-figure {
+      margin: 14px 0 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      padding: 14px;
+    }
+    .memory-figure svg {
+      min-width: 0;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .mem-title {
+      fill: var(--fg);
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .mem-label {
+      fill: var(--fg);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .mem-small {
+      fill: var(--muted);
+      font-size: 11px;
+    }
+    .mem-arrow {
+      stroke: var(--muted);
+      stroke-width: 1.4;
+      marker-end: url(#arrow);
+    }
+    .formula-block {
+      margin: 12px 0;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--fg);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: normal;
+    }
+    .formula-block div {
+      overflow-wrap: anywhere;
+    }
+    .toggle-panel {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 12px 0 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .toggle-panel label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle-panel input {
+      margin: 0;
+    }
+    .run-select {
+      max-width: 190px;
+      padding: 4px 6px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--fg);
+      font: inherit;
+      font-size: 13px;
+    }
+    .chart-hidden {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th,
+    td {
+      border-bottom: 1px solid var(--border);
+      padding: 9px 8px;
+      text-align: right;
+      white-space: nowrap;
+    }
+    th:first-child,
+    td:first-child,
+    th:nth-child(2),
+    td:nth-child(2) {
+      text-align: left;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .table-wrap table {
+      margin-top: 0;
+    }
+    .capacity-table th,
+    .capacity-table td {
+      white-space: normal;
+      vertical-align: top;
+      line-height: 1.35;
+    }
+    .capacity-table th:nth-child(3),
+    .capacity-table td:nth-child(3),
+    .capacity-table th:nth-child(4),
+    .capacity-table td:nth-child(4) {
+      min-width: 180px;
+      max-width: 300px;
+    }
+    .note {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>vLLM Long-Context Benchmark Report</h1>
+    <p>Version 1 result set for GLM-5.2 NVFP4 served by vLLM. This report is structured to hold the benchmark experiments, selected result tables, and latency curves in one place.</p>
+
+    <section class="summary" aria-label="Report summary">
+      <p><strong>Current contents:</strong> Experiment 1, a 64k-context concurrency sweep; Experiment 2, a fixed-C10 context-length sweep; and Experiment 3, a single-user 650k-server context validation sweep. All use an 80% prefix-cache workload.</p>
+      <p><strong>Selected conclusion:</strong> C25 is the highest fully successful selected run; C30 is near the edge with one Bad Gateway and a larger tail.</p>
+    </section>
+
+    <section class="meta" aria-label="Benchmark settings">
+      <div><span>Model</span>nvidia/GLM-5.2-NVFP4</div>
+      <div><span>Endpoint shape</span>OpenAI-compatible completions API</div>
+      <div><span>Benchmark client</span>vllm bench serve</div>
+      <div><span>Primary metric</span>TTFT and E2E latency</div>
+      <div><span>Cache workload</span>prefix_repetition</div>
+      <div><span>Report version</span>version1</div>
+    </section>
+
+    <h2>Tradeoff of Concurrency and Context Size</h2>
+    <p>For long-context serving, concurrency is mainly a memory-fit problem first and a speed problem second. KV-cache memory decides how many live tokens can stay active; GPU cores, memory bandwidth, batching, and cache hit rate decide how fast those requests finish.</p>
+
+    <h2>1. Key Factors That Decide Concurrency</h2>
+    <ol>
+      <li><strong>Model shape.</strong> Layers, hidden size, attention head layout, KV-cache dtype, and quantization decide how much memory each live token costs.</li>
+      <li><strong>Inference engine behavior.</strong> vLLM improves throughput through continuous batching, prefix caching, chunked prefill, and a block-based KV cache manager.</li>
+      <li><strong>Hardware capacity.</strong> GPU memory decides how many live tokens fit. GPU cores/tensor cores and memory bandwidth decide how quickly prefill and decode run once those tokens fit.</li>
+      <li><strong>Traffic shape.</strong> Prompt length, output length, cache hit rate, and short/long request mix matter as much as static configuration.</li>
+      <li><strong>Serving objective.</strong> A throughput-optimized setup can use higher concurrency, while a low-latency setup usually needs a lower <code>max_num_seqs</code> and more headroom.</li>
+    </ol>
+
+    <h2>2. vLLM KV-Cache Pre-allocation</h2>
+    <p>At startup, vLLM loads the model, profiles non-KV memory, applies <code>gpu_memory_utilization</code>, and reserves the remaining usable memory as KV-cache blocks. Requests then consume those blocks as prompt and output tokens grow.</p>
+    <figure class="memory-figure" aria-label="vLLM GPU memory allocation diagram">
+      <svg viewBox="0 0 900 360" role="img" aria-label="Diagram showing vLLM GPU memory allocation into model weights, runtime overhead, and preallocated KV cache blocks">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="var(--muted)"></path>
+          </marker>
+        </defs>
+
+        <text class="mem-title" x="24" y="30">vLLM startup memory layout</text>
+        <text class="mem-small" x="24" y="52">GPU memory is split into model/runtime memory and a preallocated KV-cache pool. Requests consume KV blocks as prompt + output tokens grow.</text>
+
+        <rect x="24" y="78" width="852" height="54" rx="10" fill="none" stroke="var(--border)"></rect>
+        <rect x="24" y="78" width="352" height="54" rx="10" fill="#64748b" opacity="0.88"></rect>
+        <rect x="376" y="78" width="150" height="54" fill="#94a3b8" opacity="0.72"></rect>
+        <rect x="526" y="78" width="350" height="54" rx="10" fill="#2563eb" opacity="0.86"></rect>
+        <text class="mem-label" x="200" y="101" text-anchor="middle" fill="#fff">Model weights</text>
+        <text class="mem-small" x="200" y="119" text-anchor="middle" fill="#fff">quantized GLM-5.2 NVFP4</text>
+        <text class="mem-label" x="451" y="101" text-anchor="middle">Runtime overhead</text>
+        <text class="mem-small" x="451" y="119" text-anchor="middle">activations, buffers, CUDA</text>
+        <text class="mem-label" x="701" y="101" text-anchor="middle" fill="#fff">Preallocated KV cache pool</text>
+        <text class="mem-small" x="701" y="119" text-anchor="middle" fill="#fff">available token capacity</text>
+
+        <line class="mem-arrow" x1="701" y1="139" x2="701" y2="174"></line>
+        <text class="mem-label" x="701" y="197" text-anchor="middle">KV blocks allocated to active sequences</text>
+
+        <rect x="104" y="220" width="692" height="72" rx="12" fill="none" stroke="var(--border)"></rect>
+        <rect x="124" y="238" width="142" height="36" rx="8" fill="#16a34a" opacity="0.9"></rect>
+        <rect x="278" y="238" width="220" height="36" rx="8" fill="#f59e0b" opacity="0.9"></rect>
+        <rect x="510" y="238" width="92" height="36" rx="8" fill="#22c55e" opacity="0.85"></rect>
+        <rect x="614" y="238" width="116" height="36" rx="8" fill="#ef4444" opacity="0.85"></rect>
+        <text class="mem-small" x="195" y="260" text-anchor="middle" fill="#fff">Request A</text>
+        <text class="mem-small" x="388" y="260" text-anchor="middle" fill="#111827">Long request B</text>
+        <text class="mem-small" x="556" y="260" text-anchor="middle" fill="#fff">Req C</text>
+        <text class="mem-small" x="672" y="260" text-anchor="middle" fill="#fff">Output grows</text>
+
+        <text class="mem-small" x="104" y="317">Planning rule: full-context active requests ≈ floor(KV token budget / context length). MAX_NUM_SEQS can be higher for mixed traffic, but KV capacity limits how many very-long requests fit together.</text>
+      </svg>
+    </figure>
+    <p>The observed startup check said a 1,048,576-token maximum sequence needs 52.68 GiB KV, while the available KV at <code>gpu_memory_utilization=0.8</code> was 19.48 GiB. Assuming a 48 GiB GPU and <code>gpu_memory_utilization=0.95</code>, the estimated KV budget is ~26.68 GiB.</p>
+    <div class="formula-block" aria-label="KV cache planning formulas">
+      <div>KV/token = 52.68 GiB / 1,048,576 ≈ 52.68 KiB per live token</div>
+      <div>KV budget @0.95 ≈ 19.48 GiB + (0.95 - 0.8) × 48 GiB = 26.68 GiB</div>
+      <div>Live-token budget @0.95 ≈ 26.68 GiB / 52.68 KiB = 531,056 tokens</div>
+      <div>KV-safe concurrency = floor(live-token budget / context length)</div>
+    </div>
+    <p>The formula counts both prompt and generated tokens. In practice, reserve headroom for output growth, block rounding, and non-KV runtime pressure.</p>
+
+    <h2>3. What vLLM MAX_NUM_SEQS Means</h2>
+    <p><code>max_num_seqs</code> is the scheduler cap for active sequences. It is not a promise that every active request can simultaneously reach <code>max_model_len</code>. For example, <code>max_model_len=256k</code> and <code>max_num_seqs=64</code> can be configured, but 64 full 256k requests would require far more KV memory than this GPU has.</p>
+    <div class="formula-block" aria-label="MAX_NUM_SEQS example calculation">
+      <div>64 full 256k requests = 64 × 262,144 × 52.68 KiB ≈ 843 GiB KV</div>
+    </div>
+    <p>Therefore, set <code>max_model_len</code> for the largest request you must support, then choose <code>max_num_seqs</code> based on the expected traffic mix.</p>
+
+    <h2>4. Context Size to MAX_NUM_SEQS Planning Table</h2>
+    <p class="note"><strong>Assumptions for this table:</strong> single 48 GiB GPU, <code>gpu_memory_utilization=0.95</code>, estimated KV budget ~26.68 GiB, live-token budget ~531,056 tokens, KV cost ~52.68 KiB per token, and every active request reaches the listed context length. This is a worst-case full-context estimate, not a vLLM configuration limit.</p>
+    <div class="table-wrap">
+      <table class="capacity-table">
+        <thead>
+          <tr>
+            <th>Context size</th>
+            <th>理论上限 @0.95</th>
+            <th>Practical</th>
+            <th>Math</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1k</td>
+            <td>518</td>
+            <td>64-128+</td>
+            <td>floor(531,056 / 1,024) = 518</td>
+          </tr>
+          <tr>
+            <td>4k</td>
+            <td>129</td>
+            <td>64-128</td>
+            <td>floor(531,056 / 4,096) = 129</td>
+          </tr>
+          <tr>
+            <td>8k</td>
+            <td>64</td>
+            <td>64</td>
+            <td>floor(531,056 / 8,192) = 64</td>
+          </tr>
+          <tr>
+            <td>16k</td>
+            <td>32</td>
+            <td>24-32</td>
+            <td>floor(531,056 / 16,384) = 32</td>
+          </tr>
+          <tr>
+            <td>32k</td>
+            <td>16</td>
+            <td>8-16</td>
+            <td>floor(531,056 / 32,768) = 16</td>
+          </tr>
+          <tr>
+            <td>64k</td>
+            <td>8</td>
+            <td>~8 for full 64k; higher only for mixed/cache-heavy traffic</td>
+            <td>floor(531,056 / 65,536) = 8</td>
+          </tr>
+          <tr>
+            <td>128k</td>
+            <td>4</td>
+            <td>2-4</td>
+            <td>floor(531,056 / 131,072) = 4</td>
+          </tr>
+          <tr>
+            <td>250k</td>
+            <td>2</td>
+            <td>1-2</td>
+            <td>floor(531,056 / 250,000) = 2</td>
+          </tr>
+          <tr>
+            <td>256k</td>
+            <td>2</td>
+            <td>1-2 for full 256k; 64 only if traffic is mostly shorter/mixed</td>
+            <td>floor(531,056 / 262,144) = 2; 64 × 262,144 × 52.68 KiB ≈ 843 GiB</td>
+          </tr>
+          <tr>
+            <td>512k</td>
+            <td>1</td>
+            <td>1 only, very tight; needs ~26.34 GiB KV vs ~26.68 GiB estimated budget</td>
+            <td>floor(531,056 / 524,288) = 1; 524,288 × 52.68 KiB ≈ 26.34 GiB KV</td>
+          </tr>
+          <tr>
+            <td>1M</td>
+            <td>0</td>
+            <td>Cannot start unless available KV reaches ~52.68 GiB</td>
+            <td>floor(531,056 / 1,048,576) = 0; 1M needs ≈ 52.68 GiB KV</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The theory column uses the estimated <code>gpu_memory_utilization=0.95</code> KV budget: ~26.68 GiB or ~531,056 live tokens. It is the worst-case KV-safe limit if every active request reaches the listed context length. It is not the maximum value vLLM will allow for <code>max_num_seqs</code>; mixed traffic can set <code>max_num_seqs</code> higher, while the KV pool naturally limits how many very-long requests can run together.</p>
+
+    <h2>Experiment 1: 64k Context Concurrency Sweep</h2>
+    <p>Measures TTFT as concurrency increases with a 64k-token prompt, 80% shared prefix, 20% unique suffix, and 128 output tokens. The curve omits p99 so the main p50-p95 latency band remains readable.</p>
+
+    <section class="meta" aria-label="Experiment 1 settings">
+      <div><span>Total input</span>65,536 tokens</div>
+      <div><span>Shared prefix</span>52,429 tokens</div>
+      <div><span>Unique suffix</span>13,107 tokens</div>
+      <div><span>Cache target</span>80%</div>
+      <div><span>Output length</span>128 tokens</div>
+      <div><span>Selected runs</span>lowest-error version1 set</div>
+    </section>
+
+    <h2>Experiment 1 Curve: TTFT vs Concurrency</h2>
+    <div class="toggle-panel" data-chart-controls="experiment1-chart" aria-label="Experiment 1 percentile selector">
+      <label><input type="checkbox" value="p50" checked><span class="swatch" style="background:var(--series-1);"></span>p50</label>
+      <label><input type="checkbox" value="p75" checked><span class="swatch" style="background:var(--series-2);"></span>p75</label>
+      <label><input type="checkbox" value="p90" checked><span class="swatch" style="background:var(--series-3);"></span>p90</label>
+      <label><input type="checkbox" value="p95" checked><span class="swatch" style="background:var(--series-4);"></span>p95</label>
+    </div>
+    <div class="chart-wrap">
+      <svg id="experiment1-chart" viewBox="0 0 760 380" role="img" aria-label="Experiment 1 smooth TTFT curves by concurrency without p99">
+        <line class="grid" x1="52" y1="306" x2="740" y2="306"></line>
+        <line class="grid" x1="52" y1="242" x2="740" y2="242"></line>
+        <line class="grid" x1="52" y1="178" x2="740" y2="178"></line>
+        <line class="grid" x1="52" y1="114" x2="740" y2="114"></line>
+        <line class="grid" x1="52" y1="50" x2="740" y2="50"></line>
+
+        <line class="axis" x1="52" y1="306" x2="740" y2="306"></line>
+        <line class="axis" x1="52" y1="18" x2="52" y2="306"></line>
+
+        <text class="tick" x="44" y="310" text-anchor="end">0s</text>
+        <text class="tick" x="44" y="246" text-anchor="end">20s</text>
+        <text class="tick" x="44" y="182" text-anchor="end">40s</text>
+        <text class="tick" x="44" y="118" text-anchor="end">60s</text>
+        <text class="tick" x="44" y="54" text-anchor="end">80s</text>
+
+        <text class="tick" x="75" y="332" text-anchor="middle">1</text>
+        <text class="tick" x="286" y="332" text-anchor="middle">10</text>
+        <text class="tick" x="521" y="332" text-anchor="middle">20</text>
+        <text class="tick" x="638" y="332" text-anchor="middle">25</text>
+        <text class="tick" x="740" y="332" text-anchor="middle">30</text>
+        <text class="label" x="396" y="354" text-anchor="middle">Concurrency</text>
+        <text class="label" x="18" y="162" transform="rotate(-90 18 162)" text-anchor="middle">TTFT</text>
+
+        <path class="line p50 percentile-line" data-percentile="p50" d="M75 290.54 C157 286.9 204 280.4 286 274.42 C378 268.2 429 264 521 257.94 C570 255.8 589 256.2 638 256.0 C674 255.5 704 209 740 185.3"></path>
+        <path class="line p75 percentile-line" data-percentile="p75" d="M75 290.54 C157 286.8 204 280.2 286 274.31 C378 268 429 264 521 257.76 C570 252 589 218 638 210.5 C674 202 704 173 740 151.45"></path>
+        <path class="line p90 percentile-line" data-percentile="p90" d="M75 290.54 C157 286.8 204 280.2 286 274.28 C378 268 429 264 521 257.66 C570 247 589 190 638 184.03 C674 175 704 136 740 104.45"></path>
+        <path class="line p95 percentile-line" data-percentile="p95" d="M75 290.54 C157 286.8 204 280.2 286 274.19 C378 267.8 429 264 521 257.57 C570 243 589 170 638 154.37 C674 149 704 124 740 94.47"></path>
+
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Concurrency 1" data-value="TTFT p50: 4.83s" cx="75" cy="290.54" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Concurrency 10" data-value="TTFT p50: 9.88s" cx="286" cy="274.42" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Concurrency 20" data-value="TTFT p50: 13.35s" cx="521" cy="257.94" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Concurrency 25" data-value="TTFT p50: 13.89s" cx="638" cy="256" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Concurrency 30" data-value="TTFT p50: 33.53s" cx="740" cy="185.3" r="4"></circle>
+
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Concurrency 1" data-value="TTFT p75: 4.83s" cx="75" cy="290.54" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Concurrency 10" data-value="TTFT p75: 9.92s" cx="286" cy="274.31" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Concurrency 20" data-value="TTFT p75: 13.41s" cx="521" cy="257.76" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Concurrency 25" data-value="TTFT p75: 26.47s" cx="638" cy="210.5" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Concurrency 30" data-value="TTFT p75: 42.93s" cx="740" cy="151.45" r="4"></circle>
+
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Concurrency 1" data-value="TTFT p90: 4.83s" cx="75" cy="290.54" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Concurrency 10" data-value="TTFT p90: 9.93s" cx="286" cy="274.28" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Concurrency 20" data-value="TTFT p90: 13.44s" cx="521" cy="257.66" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Concurrency 25" data-value="TTFT p90: 33.88s" cx="638" cy="184.03" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Concurrency 30" data-value="TTFT p90: 55.99s" cx="740" cy="104.45" r="4"></circle>
+
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Concurrency 1" data-value="TTFT p95: 4.83s" cx="75" cy="290.54" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Concurrency 10" data-value="TTFT p95: 9.95s" cx="286" cy="274.19" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Concurrency 20" data-value="TTFT p95: 13.46s" cx="521" cy="257.57" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Concurrency 25" data-value="TTFT p95: 42.12s" cx="638" cy="154.37" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Concurrency 30" data-value="TTFT p95: 59.31s" cx="740" cy="94.47" r="4"></circle>
+      </svg>
+    </div>
+    <div class="legend" aria-hidden="true">
+      <span class="legend-item"><span class="swatch" style="background:var(--series-1);"></span>p50</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--series-2);"></span>p75</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--series-3);"></span>p90</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--series-4);"></span>p95</span>
+    </div>
+
+    <h2>Experiment 1 Data Table</h2>
+    <div class="table-wrap">
+      <table data-experiment-table="experiment1">
+        <thead>
+          <tr>
+            <th>Concurrency</th>
+            <th>Run</th>
+            <th>Success</th>
+            <th>Failed</th>
+            <th>TTFT p50</th>
+            <th>TTFT p75</th>
+            <th>TTFT p90</th>
+            <th>TTFT p95</th>
+            <th>E2E p50</th>
+            <th>E2E p95</th>
+            <th>Req/s</th>
+            <th>Output tok/s</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-key="1">
+            <td>1</td>
+            <td>c1-20260715-1</td>
+            <td>1</td>
+            <td>0</td>
+            <td>4.83s</td>
+            <td>4.83s</td>
+            <td>4.83s</td>
+            <td>4.83s</td>
+            <td>4.83s</td>
+            <td>4.83s</td>
+            <td>0.207</td>
+            <td>26.51</td>
+          </tr>
+          <tr data-key="10">
+            <td>10</td>
+            <td>c10-20260715-2</td>
+            <td>10</td>
+            <td>0</td>
+            <td>9.88s</td>
+            <td>9.92s</td>
+            <td>9.93s</td>
+            <td>9.95s</td>
+            <td>9.89s</td>
+            <td>9.95s</td>
+            <td>1.002</td>
+            <td>119.42</td>
+          </tr>
+          <tr data-key="20">
+            <td>20</td>
+            <td>c20-20260715-2</td>
+            <td>20</td>
+            <td>0</td>
+            <td>13.35s</td>
+            <td>13.41s</td>
+            <td>13.44s</td>
+            <td>13.46s</td>
+            <td>13.35s</td>
+            <td>13.46s</td>
+            <td>1.481</td>
+            <td>189.60</td>
+          </tr>
+          <tr data-key="25">
+            <td>25</td>
+            <td>c25-20260715-2</td>
+            <td>25</td>
+            <td>0</td>
+            <td>13.89s</td>
+            <td>26.47s</td>
+            <td>33.88s</td>
+            <td>42.12s</td>
+            <td>13.90s</td>
+            <td>42.12s</td>
+            <td>0.560</td>
+            <td>69.46</td>
+          </tr>
+          <tr data-key="30">
+            <td>30</td>
+            <td>c30-20260715-3</td>
+            <td>29</td>
+            <td>1</td>
+            <td>33.53s</td>
+            <td>42.93s</td>
+            <td>55.99s</td>
+            <td>59.31s</td>
+            <td>33.53s</td>
+            <td>59.32s</td>
+            <td>0.278</td>
+            <td>34.55</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The p99 data is intentionally excluded from the chart but retained in the raw result JSONs. C30 selected run had 29/30 successes and one Bad Gateway.</p>
+
+    <h2>Experiment 2: Fixed C10 Context-Length Sweep</h2>
+    <p>Measures TTFT as total context length increases while holding concurrency at 10. This version keeps the 80% shared-prefix workload, drops the failed 256k run, and includes the 250k boundary run.</p>
+
+    <section class="meta" aria-label="Experiment 2 settings">
+      <div><span>Concurrency</span>10</div>
+      <div><span>Cache target</span>80%</div>
+      <div><span>Output length</span>128 tokens</div>
+      <div><span>Context range</span>1k to 250k</div>
+      <div><span>Dropped point</span>256k, 0/10 success</div>
+      <div><span>Selected upper point</span>250k, 8/10 success</div>
+    </section>
+
+    <h2>Experiment 2 Curve: TTFT vs Context Length</h2>
+    <div class="toggle-panel" data-chart-controls="experiment2-chart" aria-label="Experiment 2 percentile selector">
+      <label><input type="checkbox" value="p50" checked><span class="swatch" style="background:var(--series-1);"></span>p50</label>
+      <label><input type="checkbox" value="p75" checked><span class="swatch" style="background:var(--series-2);"></span>p75</label>
+      <label><input type="checkbox" value="p90" checked><span class="swatch" style="background:var(--series-3);"></span>p90</label>
+      <label><input type="checkbox" value="p95" checked><span class="swatch" style="background:var(--series-4);"></span>p95</label>
+    </div>
+    <div class="chart-wrap">
+      <svg id="experiment2-chart" viewBox="0 0 820 390" role="img" aria-label="Experiment 2 smooth TTFT curves by context length without p99">
+        <line class="grid" x1="52" y1="306" x2="790" y2="306"></line>
+        <line class="grid" x1="52" y1="235" x2="790" y2="235"></line>
+        <line class="grid" x1="52" y1="164" x2="790" y2="164"></line>
+        <line class="grid" x1="52" y1="93" x2="790" y2="93"></line>
+        <line class="grid" x1="52" y1="22" x2="790" y2="22"></line>
+
+        <line class="axis" x1="52" y1="306" x2="790" y2="306"></line>
+        <line class="axis" x1="52" y1="18" x2="52" y2="306"></line>
+
+        <text class="tick" x="44" y="310" text-anchor="end">0s</text>
+        <text class="tick" x="44" y="239" text-anchor="end">60s</text>
+        <text class="tick" x="44" y="168" text-anchor="end">120s</text>
+        <text class="tick" x="44" y="97" text-anchor="end">180s</text>
+        <text class="tick" x="44" y="26" text-anchor="end">240s</text>
+
+        <text class="tick" x="75" y="332" text-anchor="middle">1k</text>
+        <text class="tick" x="170" y="332" text-anchor="middle">4k</text>
+        <text class="tick" x="265" y="332" text-anchor="middle">8k</text>
+        <text class="tick" x="360" y="332" text-anchor="middle">16k</text>
+        <text class="tick" x="455" y="332" text-anchor="middle">32k</text>
+        <text class="tick" x="550" y="332" text-anchor="middle">64k</text>
+        <text class="tick" x="645" y="332" text-anchor="middle">128k</text>
+        <text class="tick" x="740" y="332" text-anchor="middle">250k</text>
+        <text class="label" x="421" y="354" text-anchor="middle">Context length</text>
+        <text class="label" x="18" y="162" transform="rotate(-90 18 162)" text-anchor="middle">TTFT</text>
+
+        <path class="line p50 percentile-line" data-percentile="p50" d="M75 291.78 C110 291.6 135 291.7 170 291.59 C205 291.2 230 290.5 265 289.99 C300 288 325 285 360 282.97 C395 279 420 272 455 269.04 C490 245 515 150 550 132.05 C585 114 610 150 645 168.42 C680 146 705 93 740 70.25"></path>
+        <path class="line p75 percentile-line" data-percentile="p75" d="M75 289.10 C110 290.0 135 291.2 170 291.58 C205 291.0 230 290.3 265 289.96 C300 288 325 285 360 282.91 C395 279 420 272 455 268.95 C490 245 515 150 550 131.86 C585 114 610 150 645 168.04 C680 146 705 92 740 68.33"></path>
+        <path class="line p90 percentile-line" data-percentile="p90" d="M75 288.72 C110 289.8 135 291.1 170 291.58 C205 291.0 230 290.3 265 289.95 C300 288 325 285 360 282.91 C395 279 420 272 455 268.92 C490 245 515 150 550 131.77 C585 114 610 150 645 167.97 C680 146 705 92 740 68.13"></path>
+        <path class="line p95 percentile-line" data-percentile="p95" d="M75 288.72 C110 289.8 135 291.1 170 291.58 C205 291.0 230 290.3 265 289.94 C300 288 325 285 360 282.91 C395 279 420 272 455 268.89 C490 245 515 150 550 131.73 C585 114 610 150 645 167.93 C680 146 705 92 740 67.98"></path>
+
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 1k" data-value="TTFT p50: 10.00s" cx="75" cy="291.78" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 4k" data-value="TTFT p50: 10.13s" cx="170" cy="291.59" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 8k" data-value="TTFT p50: 11.26s" cx="265" cy="289.99" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 16k" data-value="TTFT p50: 16.19s" cx="360" cy="282.97" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 32k" data-value="TTFT p50: 25.99s" cx="455" cy="269.04" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 64k" data-value="TTFT p50: 122.33s" cx="550" cy="132.05" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 128k" data-value="TTFT p50: 96.73s" cx="645" cy="168.42" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 250k" data-value="TTFT p50: 165.76s" cx="740" cy="70.25" r="4"></circle>
+
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 1k" data-value="TTFT p75: 11.88s" cx="75" cy="289.10" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 4k" data-value="TTFT p75: 10.14s" cx="170" cy="291.58" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 8k" data-value="TTFT p75: 11.28s" cx="265" cy="289.96" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 16k" data-value="TTFT p75: 16.23s" cx="360" cy="282.91" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 32k" data-value="TTFT p75: 26.05s" cx="455" cy="268.95" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 64k" data-value="TTFT p75: 122.46s" cx="550" cy="131.86" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 128k" data-value="TTFT p75: 97.00s" cx="645" cy="168.04" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 250k" data-value="TTFT p75: 167.11s" cx="740" cy="68.33" r="4"></circle>
+
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 1k" data-value="TTFT p90: 12.15s" cx="75" cy="288.72" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 4k" data-value="TTFT p90: 10.14s" cx="170" cy="291.58" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 8k" data-value="TTFT p90: 11.28s" cx="265" cy="289.95" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 16k" data-value="TTFT p90: 16.23s" cx="360" cy="282.91" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 32k" data-value="TTFT p90: 26.07s" cx="455" cy="268.92" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 64k" data-value="TTFT p90: 122.52s" cx="550" cy="131.77" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 128k" data-value="TTFT p90: 97.05s" cx="645" cy="167.97" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 250k" data-value="TTFT p90: 167.25s" cx="740" cy="68.13" r="4"></circle>
+
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 1k" data-value="TTFT p95: 12.15s" cx="75" cy="288.72" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 4k" data-value="TTFT p95: 10.14s" cx="170" cy="291.58" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 8k" data-value="TTFT p95: 11.29s" cx="265" cy="289.94" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 16k" data-value="TTFT p95: 16.23s" cx="360" cy="282.91" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 32k" data-value="TTFT p95: 26.09s" cx="455" cy="268.89" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 64k" data-value="TTFT p95: 122.55s" cx="550" cy="131.73" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 128k" data-value="TTFT p95: 97.08s" cx="645" cy="167.93" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 250k" data-value="TTFT p95: 167.35s" cx="740" cy="67.98" r="4"></circle>
+      </svg>
+    </div>
+    <div class="legend" aria-hidden="true">
+      <span class="legend-item"><span class="swatch" style="background:var(--series-1);"></span>p50</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--series-2);"></span>p75</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--series-3);"></span>p90</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--series-4);"></span>p95</span>
+    </div>
+
+    <h2>Experiment 2 Data Table</h2>
+    <div class="table-wrap">
+      <table data-experiment-table="experiment2">
+        <thead>
+          <tr>
+            <th>Context</th>
+            <th>Run</th>
+            <th>Success</th>
+            <th>Failed</th>
+            <th>TTFT p50</th>
+            <th>TTFT p75</th>
+            <th>TTFT p90</th>
+            <th>TTFT p95</th>
+            <th>E2E p50</th>
+            <th>E2E p95</th>
+            <th>Req/s</th>
+            <th>Output tok/s</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-key="1k">
+            <td>1k</td>
+            <td>ctx1k-20260715-1</td>
+            <td>10</td>
+            <td>0</td>
+            <td>10.00s</td>
+            <td>11.88s</td>
+            <td>12.15s</td>
+            <td>12.15s</td>
+            <td>10.00s</td>
+            <td>12.15s</td>
+            <td>0.823</td>
+            <td>98.06</td>
+          </tr>
+          <tr data-key="4k">
+            <td>4k</td>
+            <td>ctx4k-20260715-1</td>
+            <td>10</td>
+            <td>0</td>
+            <td>10.13s</td>
+            <td>10.14s</td>
+            <td>10.14s</td>
+            <td>10.14s</td>
+            <td>10.13s</td>
+            <td>10.14s</td>
+            <td>0.986</td>
+            <td>123.68</td>
+          </tr>
+          <tr data-key="8k">
+            <td>8k</td>
+            <td>ctx8k-20260715-1</td>
+            <td>10</td>
+            <td>0</td>
+            <td>11.26s</td>
+            <td>11.28s</td>
+            <td>11.28s</td>
+            <td>11.29s</td>
+            <td>11.26s</td>
+            <td>11.29s</td>
+            <td>0.886</td>
+            <td>113.38</td>
+          </tr>
+          <tr data-key="16k">
+            <td>16k</td>
+            <td>ctx16k-20260715-1</td>
+            <td>10</td>
+            <td>0</td>
+            <td>16.19s</td>
+            <td>16.23s</td>
+            <td>16.23s</td>
+            <td>16.23s</td>
+            <td>16.19s</td>
+            <td>16.23s</td>
+            <td>0.615</td>
+            <td>78.77</td>
+          </tr>
+          <tr data-key="32k">
+            <td>32k</td>
+            <td>ctx32k-20260715-1</td>
+            <td>10</td>
+            <td>0</td>
+            <td>25.99s</td>
+            <td>26.05s</td>
+            <td>26.07s</td>
+            <td>26.09s</td>
+            <td>25.99s</td>
+            <td>26.09s</td>
+            <td>0.383</td>
+            <td>49.02</td>
+          </tr>
+          <tr data-key="64k">
+            <td>64k</td>
+            <td>ctx64k-20260716-1</td>
+            <td>10</td>
+            <td>0</td>
+            <td>122.33s</td>
+            <td>122.46s</td>
+            <td>122.52s</td>
+            <td>122.55s</td>
+            <td>122.33s</td>
+            <td>122.55s</td>
+            <td>0.082</td>
+            <td>10.44</td>
+          </tr>
+          <tr data-key="128k">
+            <td>128k</td>
+            <td>ctx128k-20260715-1</td>
+            <td>10</td>
+            <td>0</td>
+            <td>96.73s</td>
+            <td>97.00s</td>
+            <td>97.05s</td>
+            <td>97.08s</td>
+            <td>96.73s</td>
+            <td>97.08s</td>
+            <td>0.103</td>
+            <td>13.18</td>
+          </tr>
+          <tr data-key="250k">
+            <td>250k</td>
+            <td>ctx250k-20260715-1</td>
+            <td>8</td>
+            <td>2</td>
+            <td>165.76s</td>
+            <td>167.11s</td>
+            <td>167.25s</td>
+            <td>167.36s</td>
+            <td>165.76s</td>
+            <td>167.36s</td>
+            <td>0.048</td>
+            <td>6.11</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The original 64k point was replaced with retry1 because it looked like a warmed-cache outlier. The 250k point had 8/10 successes and two Bad Gateway failures; 256k failed 0/10 and is excluded from this version1 table.</p>
+
+    <h2>Experiment 3: 650k Max-Context Single-User Validation</h2>
+    <p>Validates whether the deployment can process very long contexts after the vLLM server was restarted with a 650k max context and max-num-seqs set to 1. Each context size ran 3 measured prompts with an 80% shared-prefix workload and short 16-token outputs.</p>
+
+    <section class="meta" aria-label="Experiment 3 settings">
+      <div><span>Server max context</span>650k tokens</div>
+      <div><span>Concurrency</span>1</div>
+      <div><span>Measured prompts</span>3 per context</div>
+      <div><span>Cache target</span>80%</div>
+      <div><span>Context range</span>128k to 512k</div>
+      <div><span>Output length</span>16 tokens</div>
+    </section>
+
+    <h2>Experiment 3 Curve: TTFT vs Context Length</h2>
+    <div class="toggle-panel" data-chart-controls="experiment3-chart" aria-label="Experiment 3 percentile selector">
+      <label><input type="checkbox" value="p50" checked><span class="swatch" style="background:var(--series-1);"></span>p50</label>
+      <label><input type="checkbox" value="p75" checked><span class="swatch" style="background:var(--series-2);"></span>p75</label>
+      <label><input type="checkbox" value="p90" checked><span class="swatch" style="background:var(--series-3);"></span>p90</label>
+      <label><input type="checkbox" value="p95" checked><span class="swatch" style="background:var(--series-4);"></span>p95</label>
+    </div>
+    <div class="chart-wrap">
+      <svg id="experiment3-chart" viewBox="0 0 820 390" role="img" aria-label="Experiment 3 smooth TTFT curves by context length without p99">
+        <line class="grid" x1="52" y1="306" x2="790" y2="306"></line>
+        <line class="grid" x1="52" y1="234" x2="790" y2="234"></line>
+        <line class="grid" x1="52" y1="162" x2="790" y2="162"></line>
+        <line class="grid" x1="52" y1="90" x2="790" y2="90"></line>
+        <line class="grid" x1="52" y1="18" x2="790" y2="18"></line>
+
+        <line class="axis" x1="52" y1="306" x2="790" y2="306"></line>
+        <line class="axis" x1="52" y1="18" x2="52" y2="306"></line>
+
+        <text class="tick" x="44" y="310" text-anchor="end">0s</text>
+        <text class="tick" x="44" y="238" text-anchor="end">20s</text>
+        <text class="tick" x="44" y="166" text-anchor="end">40s</text>
+        <text class="tick" x="44" y="94" text-anchor="end">60s</text>
+        <text class="tick" x="44" y="22" text-anchor="end">80s</text>
+
+        <text class="tick" x="75" y="332" text-anchor="middle">128k</text>
+        <text class="tick" x="295" y="332" text-anchor="middle">256k</text>
+        <text class="tick" x="515" y="332" text-anchor="middle">384k</text>
+        <text class="tick" x="740" y="332" text-anchor="middle">512k</text>
+        <text class="label" x="421" y="354" text-anchor="middle">Context length</text>
+        <text class="label" x="18" y="162" transform="rotate(-90 18 162)" text-anchor="middle">TTFT</text>
+
+        <path class="line p50 percentile-line" data-percentile="p50" d="M75 260.75 C160 247 210 224 295 209.12 C380 194 430 161 515 145.98 C605 130 665 88 740 68.98"></path>
+        <path class="line p75 percentile-line" data-percentile="p75" d="M75 260.39 C160 230 210 148 295 124.99 C380 102 430 139 515 144.43 C605 150 665 88 740 68.83"></path>
+        <path class="line p90 percentile-line" data-percentile="p90" d="M75 260.14 C160 222 210 88 295 74.48 C380 61 430 137 515 143.5 C605 150 665 88 740 68.72"></path>
+        <path class="line p95 percentile-line" data-percentile="p95" d="M75 260.06 C160 218 210 68 295 57.67 C380 47 430 137 515 143.17 C605 150 665 88 740 68.69"></path>
+
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 128k" data-value="TTFT p50: 12.57s" cx="75" cy="260.75" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 256k" data-value="TTFT p50: 26.91s" cx="295" cy="209.12" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 384k" data-value="TTFT p50: 44.45s" cx="515" cy="145.98" r="4"></circle>
+        <circle class="point p50 percentile-point" data-percentile="p50" data-title="Context 512k" data-value="TTFT p50: 65.84s" cx="740" cy="68.98" r="4"></circle>
+
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 128k" data-value="TTFT p75: 12.67s" cx="75" cy="260.39" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 256k" data-value="TTFT p75: 50.28s" cx="295" cy="124.99" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 384k" data-value="TTFT p75: 44.88s" cx="515" cy="144.43" r="4"></circle>
+        <circle class="point p75 percentile-point" data-percentile="p75" data-title="Context 512k" data-value="TTFT p75: 65.88s" cx="740" cy="68.83" r="4"></circle>
+
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 128k" data-value="TTFT p90: 12.74s" cx="75" cy="260.14" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 256k" data-value="TTFT p90: 64.31s" cx="295" cy="74.48" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 384k" data-value="TTFT p90: 45.14s" cx="515" cy="143.5" r="4"></circle>
+        <circle class="point p90 percentile-point" data-percentile="p90" data-title="Context 512k" data-value="TTFT p90: 65.91s" cx="740" cy="68.72" r="4"></circle>
+
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 128k" data-value="TTFT p95: 12.76s" cx="75" cy="260.06" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 256k" data-value="TTFT p95: 68.98s" cx="295" cy="57.67" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 384k" data-value="TTFT p95: 45.23s" cx="515" cy="143.17" r="4"></circle>
+        <circle class="point p95 percentile-point" data-percentile="p95" data-title="Context 512k" data-value="TTFT p95: 65.92s" cx="740" cy="68.69" r="4"></circle>
+      </svg>
+    </div>
+    <div class="legend" aria-hidden="true">
+      <span class="legend-item"><span class="swatch" style="background:var(--series-1);"></span>p50</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--series-2);"></span>p75</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--series-3);"></span>p90</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--series-4);"></span>p95</span>
+    </div>
+
+    <h2>Experiment 3 Data Table</h2>
+    <div class="table-wrap">
+      <table data-experiment-table="experiment3">
+        <thead>
+          <tr>
+            <th>Context</th>
+            <th>Run</th>
+            <th>Success</th>
+            <th>Failed</th>
+            <th>TTFT p50</th>
+            <th>TTFT p75</th>
+            <th>TTFT p90</th>
+            <th>TTFT p95</th>
+            <th>E2E p50</th>
+            <th>E2E p95</th>
+            <th>Req/s</th>
+            <th>Output tok/s</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-key="128k">
+            <td>128k</td>
+            <td>maxctx128k-20260716-1</td>
+            <td>3</td>
+            <td>0</td>
+            <td>12.57s</td>
+            <td>12.67s</td>
+            <td>12.74s</td>
+            <td>12.76s</td>
+            <td>12.57s</td>
+            <td>12.76s</td>
+            <td>0.106</td>
+            <td>1.70</td>
+          </tr>
+          <tr data-key="256k">
+            <td>256k</td>
+            <td>maxctx256k-20260716-1</td>
+            <td>3</td>
+            <td>0</td>
+            <td>26.91s</td>
+            <td>50.28s</td>
+            <td>64.31s</td>
+            <td>68.98s</td>
+            <td>26.91s</td>
+            <td>68.98s</td>
+            <td>0.024</td>
+            <td>0.38</td>
+          </tr>
+          <tr data-key="384k">
+            <td>384k</td>
+            <td>maxctx384k-20260716-1</td>
+            <td>3</td>
+            <td>0</td>
+            <td>44.45s</td>
+            <td>44.88s</td>
+            <td>45.14s</td>
+            <td>45.23s</td>
+            <td>44.45s</td>
+            <td>45.23s</td>
+            <td>0.032</td>
+            <td>0.51</td>
+          </tr>
+          <tr data-key="512k">
+            <td>512k</td>
+            <td>maxctx512k-20260716-1</td>
+            <td>3</td>
+            <td>0</td>
+            <td>65.84s</td>
+            <td>65.88s</td>
+            <td>65.91s</td>
+            <td>65.92s</td>
+            <td>65.84s</td>
+            <td>65.92s</td>
+            <td>0.019</td>
+            <td>0.31</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">All four context sizes completed 3/3 measured prompts. The 256k tail is visibly higher than 384k in this run, likely reflecting run-order/cache/backend variance rather than a monotonic context-length effect.</p>
+  </main>
+  <div class="chart-tooltip" id="chart-tooltip" role="status" aria-live="polite"></div>
+  <script>
+    const chartTooltip = document.getElementById("chart-tooltip");
+    const PERCENTILES = ["50", "75", "90", "95"];
+    const RUN_DATA = {
+      experiment1: {
+        "1": [
+          { id: "64k-prefix-cache80-c1-batched8192", label: "c1-20260715-1", success: 1, failed: 0, duration: 4.83, ttft: { 50: 4.83, 75: 4.83, 90: 4.83, 95: 4.83 }, e2e: { 50: 4.83, 95: 4.83 }, rps: 0.207, out: 26.51 },
+          { id: "c1-ossv2-cache80-20260716-1-batched8192", label: "c1-ossv2-20260716-1", success: 1, failed: 0, duration: 8.36, ttft: { 50: 8.36, 75: 8.36, 90: 8.36, 95: 8.36 }, e2e: { 50: 8.36, 95: 8.36 }, rps: 0.12, out: 15.3 },
+          { id: "c1-ossv2-cache80-20260716-2-batched8192", label: "c1-ossv2-20260716-2", success: 1, failed: 0, duration: 4.73, ttft: { 50: 4.72, 75: 4.72, 90: 4.72, 95: 4.72 }, e2e: { 50: 4.73, 95: 4.73 }, rps: 0.212, out: 27.08 },
+          { id: "c1-ossv2-cache80-20260716-3-batched8192", label: "c1-ossv2-20260716-3", success: 1, failed: 0, duration: 3.23, ttft: { 50: 2.18, 75: 2.18, 90: 2.18, 95: 2.18 }, e2e: { 50: 3.23, 95: 3.23 }, rps: 0.309, out: 20.41 }
+        ],
+        "10": [
+          { id: "64k-prefix-cache80-c10-batched8192", label: "c10-20260715-1", success: 10, failed: 0, duration: 43.17, ttft: { 50: 42.97, 75: 43.07, 90: 43.12, 95: 43.14 }, e2e: { 50: 42.97, 95: 43.14 }, rps: 0.232, out: 28.79 },
+          { id: "64k-prefix-cache80-c10-retry1-batched8192", label: "c10-20260715-2", success: 10, failed: 0, duration: 9.98, ttft: { 50: 9.88, 75: 9.92, 90: 9.93, 95: 9.95 }, e2e: { 50: 9.89, 95: 9.95 }, rps: 1.002, out: 119.42 },
+          { id: "c10-ossv2-cache80-20260716-1-batched8192", label: "c10-ossv2-20260716-1", success: 10, failed: 0, duration: 43.41, ttft: { 50: 42.94, 75: 43.06, 90: 43.39, 95: 43.39 }, e2e: { 50: 42.94, 95: 43.4 }, rps: 0.23, out: 27.62 },
+          { id: "c10-ossv2-cache80-20260716-2-batched8192", label: "c10-ossv2-20260716-2", success: 10, failed: 0, duration: 8.95, ttft: { 50: 8.77, 75: 8.87, 90: 8.93, 95: 8.93 }, e2e: { 50: 8.77, 95: 8.93 }, rps: 1.117, out: 142.99 },
+          { id: "c10-ossv2-cache80-20260716-3-batched8192", label: "c10-ossv2-20260716-3", success: 10, failed: 0, duration: 9.53, ttft: { 50: 4.7, 75: 4.71, 90: 4.71, 95: 4.71 }, e2e: { 50: 9.17, 95: 9.5 }, rps: 1.049, out: 134.33 }
+        ],
+        "20": [
+          { id: "64k-prefix-cache80-c20-batched8192", label: "c20-20260715-1", success: 20, failed: 0, duration: 50.95, ttft: { 50: 49.35, 75: 49.45, 90: 49.55, 95: 49.91 }, e2e: { 50: 49.35, 95: 49.92 }, rps: 0.393, out: 49.36 },
+          { id: "64k-prefix-cache80-c20-retry1-batched8192", label: "c20-20260715-2", success: 20, failed: 0, duration: 13.5, ttft: { 50: 13.35, 75: 13.41, 90: 13.44, 95: 13.46 }, e2e: { 50: 13.35, 95: 13.46 }, rps: 1.481, out: 189.6 },
+          { id: "c20-ossv2-cache80-20260716-1-batched8192", label: "c20-ossv2-20260716-1", success: 20, failed: 0, duration: 54.6, ttft: { 50: 52.69, 75: 54.58, 90: 54.59, 95: 54.59 }, e2e: { 50: 52.69, 95: 54.59 }, rps: 0.366, out: 42.54 },
+          { id: "c20-ossv2-cache80-20260716-2-batched8192", label: "c20-ossv2-20260716-2", success: 20, failed: 0, duration: 29.35, ttft: { 50: 13.68, 75: 15.09, 90: 24.18, 95: 26.26 }, e2e: { 50: 13.68, 95: 26.26 }, rps: 0.682, out: 87.2 },
+          { id: "c20-ossv2-cache80-20260716-3-batched8192", label: "c20-ossv2-20260716-3", success: 20, failed: 0, duration: 13.06, ttft: { 50: 6.41, 75: 6.44, 90: 6.45, 95: 6.45 }, e2e: { 50: 12.41, 95: 12.93 }, rps: 1.531, out: 174.39 }
+        ],
+        "25": [
+          { id: "64k-prefix-cache80-c25-batched8192", label: "c25-20260715-1", success: 24, failed: 1, duration: 32.38, ttft: { 50: 32.26, 75: 32.3, 90: 32.33, 95: 32.34 }, e2e: { 50: 32.26, 95: 32.34 }, rps: 0.741, out: 93.66 },
+          { id: "64k-prefix-cache80-c25-retry1-batched8192", label: "c25-20260715-2", success: 25, failed: 0, duration: 44.61, ttft: { 50: 13.89, 75: 26.47, 90: 33.88, 95: 42.12 }, e2e: { 50: 13.9, 95: 42.12 }, rps: 0.56, out: 69.46 },
+          { id: "c25-ossv2-cache80-20260716-1-batched8192", label: "c25-ossv2-20260716-1", success: 21, failed: 4, duration: 33.51, ttft: { 50: 32.97, 75: 33.21, 90: 33.3, 95: 33.43 }, e2e: { 50: 32.97, 95: 33.44 }, rps: 0.627, out: 76.54 },
+          { id: "c25-ossv2-cache80-20260716-2-batched8192", label: "c25-ossv2-20260716-2", success: 16, failed: 9, duration: 60.32, ttft: { 50: 55.55, 75: 56.24, 90: 57.24, 95: 58.55 }, e2e: { 50: 55.55, 95: 58.55 }, rps: 0.265, out: 30.44 },
+          { id: "c25-ossv2-cache80-20260716-3-batched8192", label: "c25-ossv2-20260716-3", success: 25, failed: 0, duration: 16.01, ttft: { 50: 6.93, 75: 8.06, 90: 8.09, 95: 8.09 }, e2e: { 50: 15.59, 95: 15.93 }, rps: 1.561, out: 197.7 }
+        ],
+        "30": [
+          { id: "64k-prefix-cache80-c30-batched8192", label: "c30-20260715-1", success: 28, failed: 2, duration: 91.05, ttft: { 50: 48.64, 75: 51.05, 90: 60.73, 95: 80.62 }, e2e: { 50: 48.64, 95: 80.62 }, rps: 0.308, out: 39.36 },
+          { id: "64k-prefix-cache80-c30-retry1-batched8192", label: "c30-20260715-2", success: 16, failed: 14, duration: 30.17, ttft: { 50: 29.44, 75: 29.5, 90: 29.81, 95: 30.09 }, e2e: { 50: 29.44, 95: 30.09 }, rps: 0.53, out: 66.58 },
+          { id: "64k-prefix-cache80-c30-retry2-batched8192", label: "c30-20260715-3", success: 29, failed: 1, duration: 104.23, ttft: { 50: 33.53, 75: 42.93, 90: 55.99, 95: 59.31 }, e2e: { 50: 33.53, 95: 59.32 }, rps: 0.278, out: 34.55 },
+          { id: "c30-ossv2-cache80-20260716-1-batched8192", label: "c30-ossv2-20260716-1", success: 28, failed: 2, duration: 36.73, ttft: { 50: 35.64, 75: 35.82, 90: 36.18, 95: 36.41 }, e2e: { 50: 35.65, 95: 36.41 }, rps: 0.762, out: 96.04 },
+          { id: "c30-ossv2-cache80-20260716-2-batched8192", label: "c30-ossv2-20260716-2", success: 30, failed: 0, duration: 26.96, ttft: { 50: 18.29, 75: 18.97, 90: 19.02, 95: 20.65 }, e2e: { 50: 18.29, 95: 20.66 }, rps: 1.113, out: 131.62 },
+          { id: "c30-ossv2-cache80-20260716-3-batched8192", label: "c30-ossv2-20260716-3", success: 30, failed: 0, duration: 17.28, ttft: { 50: 6.43, 75: 9.06, 90: 9.08, 95: 9.1 }, e2e: { 50: 16.61, 95: 17.17 }, rps: 1.736, out: 217.88 }
+        ]
+      },
+      experiment2: {
+        "1k": [
+          { id: "ctx1k-cache80-c10-batched8192", label: "ctx1k-20260715-1", success: 10, failed: 0, duration: 12.16, ttft: { 50: 10, 75: 11.88, 90: 12.15, 95: 12.15 }, e2e: { 50: 10, 95: 12.15 }, rps: 0.823, out: 98.06 },
+          { id: "ctx1k-ossv2-cache80-c10-20260716-1-batched8192", label: "ctx1k-ossv2-20260716-1", success: 10, failed: 0, duration: 7.61, ttft: { 50: 7.09, 75: 7.17, 90: 7.27, 95: 7.44 }, e2e: { 50: 7.09, 95: 7.44 }, rps: 1.314, out: 168.21 },
+          { id: "ctx1k-ossv2-cache80-c10-20260716-2-batched8192", label: "ctx1k-ossv2-20260716-2", success: 10, failed: 0, duration: 6.7, ttft: { 50: 2.35, 75: 2.35, 90: 2.35, 95: 2.35 }, e2e: { 50: 6.37, 95: 6.6 }, rps: 1.494, out: 191.18 },
+          { id: "ctx1k-ossv2-cache80-c10-20260716-3-batched8192", label: "ctx1k-ossv2-20260716-3", success: 10, failed: 0, duration: 6.91, ttft: { 50: 2.31, 75: 2.31, 90: 2.31, 95: 2.31 }, e2e: { 50: 6.36, 95: 6.79 }, rps: 1.448, out: 182.1 }
+        ],
+        "4k": [
+          { id: "ctx4k-cache80-c10-batched8192", label: "ctx4k-20260715-1", success: 10, failed: 0, duration: 10.15, ttft: { 50: 10.13, 75: 10.14, 90: 10.14, 95: 10.14 }, e2e: { 50: 10.13, 95: 10.14 }, rps: 0.986, out: 123.68 },
+          { id: "ctx4k-ossv2-cache80-c10-20260716-1-batched8192", label: "ctx4k-ossv2-20260716-1", success: 10, failed: 0, duration: 8.64, ttft: { 50: 8.33, 75: 8.44, 90: 8.48, 95: 8.56 }, e2e: { 50: 8.33, 95: 8.56 }, rps: 1.158, out: 140.8 },
+          { id: "ctx4k-ossv2-cache80-c10-20260716-2-batched8192", label: "ctx4k-ossv2-20260716-2", success: 10, failed: 0, duration: 8.39, ttft: { 50: 3.69, 75: 3.69, 90: 3.69, 95: 3.69 }, e2e: { 50: 7.88, 95: 8.32 }, rps: 1.192, out: 152.53 },
+          { id: "ctx4k-ossv2-cache80-c10-20260716-3-batched8192", label: "ctx4k-ossv2-20260716-3", success: 10, failed: 0, duration: 8.06, ttft: { 50: 3.61, 75: 3.62, 90: 3.66, 95: 3.66 }, e2e: { 50: 7.91, 95: 8.05 }, rps: 1.241, out: 158.8 }
+        ],
+        "8k": [
+          { id: "ctx8k-cache80-c10-batched8192", label: "ctx8k-20260715-1", success: 10, failed: 0, duration: 11.29, ttft: { 50: 11.26, 75: 11.28, 90: 11.28, 95: 11.29 }, e2e: { 50: 11.26, 95: 11.29 }, rps: 0.886, out: 113.38 },
+          { id: "ctx8k-ossv2-cache80-c10-20260716-1-batched8192", label: "ctx8k-ossv2-20260716-1", success: 10, failed: 0, duration: 11.68, ttft: { 50: 11.54, 75: 11.63, 90: 11.67, 95: 11.67 }, e2e: { 50: 11.54, 95: 11.67 }, rps: 0.856, out: 109.63 },
+          { id: "ctx8k-ossv2-cache80-c10-20260716-2-batched8192", label: "ctx8k-ossv2-20260716-2", success: 10, failed: 0, duration: 10.79, ttft: { 50: 4.96, 75: 6, 90: 6, 95: 6 }, e2e: { 50: 10.41, 95: 10.71 }, rps: 0.926, out: 109.96 },
+          { id: "ctx8k-ossv2-cache80-c10-20260716-3-batched8192", label: "ctx8k-ossv2-20260716-3", success: 10, failed: 0, duration: 10.69, ttft: { 50: 4.9, 75: 5.98, 90: 5.98, 95: 5.98 }, e2e: { 50: 10.33, 95: 10.67 }, rps: 0.935, out: 114.48 }
+        ],
+        "16k": [
+          { id: "ctx16k-cache80-c10-batched8192", label: "ctx16k-20260715-1", success: 10, failed: 0, duration: 16.25, ttft: { 50: 16.19, 75: 16.23, 90: 16.23, 95: 16.23 }, e2e: { 50: 16.19, 95: 16.23 }, rps: 0.615, out: 78.77 },
+          { id: "ctx16k-ossv2-cache80-c10-20260716-1-batched8192", label: "ctx16k-ossv2-20260716-1", success: 10, failed: 0, duration: 17.68, ttft: { 50: 17.41, 75: 17.58, 90: 17.62, 95: 17.65 }, e2e: { 50: 17.41, 95: 17.65 }, rps: 0.566, out: 71.73 },
+          { id: "ctx16k-ossv2-cache80-c10-20260716-2-batched8192", label: "ctx16k-ossv2-20260716-2", success: 10, failed: 0, duration: 15.77, ttft: { 50: 8.28, 75: 9.51, 90: 11.25, 95: 11.25 }, e2e: { 50: 15.5, 95: 15.74 }, rps: 0.634, out: 77.59 },
+          { id: "ctx16k-ossv2-cache80-c10-20260716-3-batched8192", label: "ctx16k-ossv2-20260716-3", success: 10, failed: 0, duration: 15.62, ttft: { 50: 8.21, 75: 9.39, 90: 11.23, 95: 11.24 }, e2e: { 50: 15.45, 95: 15.61 }, rps: 0.64, out: 76.58 }
+        ],
+        "32k": [
+          { id: "ctx32k-cache80-c10-batched8192", label: "ctx32k-20260715-1", success: 10, failed: 0, duration: 26.11, ttft: { 50: 25.99, 75: 26.05, 90: 26.07, 95: 26.09 }, e2e: { 50: 25.99, 95: 26.09 }, rps: 0.383, out: 49.02 },
+          { id: "ctx32k-ossv2-cache80-c10-20260716-1-batched8192", label: "ctx32k-ossv2-20260716-1", success: 10, failed: 0, duration: 29.8, ttft: { 50: 29.6, 75: 29.74, 90: 29.76, 95: 29.78 }, e2e: { 50: 29.6, 95: 29.78 }, rps: 0.336, out: 42.95 },
+          { id: "ctx32k-ossv2-cache80-c10-20260716-2-batched8192", label: "ctx32k-ossv2-20260716-2", success: 10, failed: 0, duration: 26.08, ttft: { 50: 14.93, 75: 17.65, 90: 20.78, 95: 21.23 }, e2e: { 50: 25.79, 95: 26.02 }, rps: 0.383, out: 49.08 },
+          { id: "ctx32k-ossv2-cache80-c10-20260716-3-batched8192", label: "ctx32k-ossv2-20260716-3", success: 10, failed: 0, duration: 26.32, ttft: { 50: 14.51, 75: 17.58, 90: 20.81, 95: 21.52 }, e2e: { 50: 25.78, 95: 26.28 }, rps: 0.38, out: 48.63 }
+        ],
+        "64k": [
+          { id: "ctx64k-cache80-c10-batched8192", label: "ctx64k-20260715-1", success: 10, failed: 0, duration: 9.91, ttft: { 50: 9.76, 75: 9.8, 90: 9.81, 95: 9.84 }, e2e: { 50: 9.76, 95: 9.84 }, rps: 1.009, out: 129.17 },
+          { id: "ctx64k-cache80-c10-retry1-batched8192", label: "ctx64k-20260716-1", success: 10, failed: 0, duration: 122.58, ttft: { 50: 122.33, 75: 122.46, 90: 122.52, 95: 122.55 }, e2e: { 50: 122.33, 95: 122.55 }, rps: 0.082, out: 10.44 },
+          { id: "ctx64k-ossv2-cache80-c10-20260716-1-batched8192", label: "ctx64k-ossv2-20260716-1", success: 10, failed: 0, duration: 55.31, ttft: { 50: 55.09, 75: 55.17, 90: 55.21, 95: 55.25 }, e2e: { 50: 55.09, 95: 55.25 }, rps: 0.181, out: 23.14 },
+          { id: "ctx64k-ossv2-cache80-c10-20260716-2-batched8192", label: "ctx64k-ossv2-20260716-2", success: 10, failed: 0, duration: 9.11, ttft: { 50: 4.49, 75: 4.49, 90: 4.5, 95: 4.5 }, e2e: { 50: 8.84, 95: 9.05 }, rps: 1.097, out: 133.02 },
+          { id: "ctx64k-ossv2-cache80-c10-20260716-3-batched8192", label: "ctx64k-ossv2-20260716-3", success: 10, failed: 0, duration: 47.6, ttft: { 50: 26.21, 75: 35.12, 90: 39.33, 95: 41.08 }, e2e: { 50: 47.17, 95: 47.47 }, rps: 0.21, out: 26.89 }
+        ],
+        "128k": [
+          { id: "ctx128k-cache80-c10-batched8192", label: "ctx128k-20260715-1", success: 10, failed: 0, duration: 97.12, ttft: { 50: 96.73, 75: 97, 90: 97.05, 95: 97.08 }, e2e: { 50: 96.73, 95: 97.08 }, rps: 0.103, out: 13.18 },
+          { id: "ctx128k-ossv2-cache80-c10-20260716-1-batched8192", label: "ctx128k-ossv2-20260716-1", success: 9, failed: 1, duration: 102.17, ttft: { 50: 101.53, 75: 101.72, 90: 102.04, 95: 102.1 }, e2e: { 50: 101.53, 95: 102.1 }, rps: 0.088, out: 11.27 },
+          { id: "ctx128k-ossv2-cache80-c10-20260716-2-batched8192", label: "ctx128k-ossv2-20260716-2", success: 10, failed: 0, duration: 111.24, ttft: { 50: 68.18, 75: 88.59, 90: 100.23, 95: 103.4 }, e2e: { 50: 110.47, 95: 111.19 }, rps: 0.09, out: 11.51 },
+          { id: "ctx128k-ossv2-cache80-c10-20260716-3-batched8192", label: "ctx128k-ossv2-20260716-3", success: 10, failed: 0, duration: 94.42, ttft: { 50: 52.48, 75: 70.92, 90: 82.04, 95: 85.99 }, e2e: { 50: 93.55, 95: 94.39 }, rps: 0.106, out: 13.16 }
+        ],
+        "250k": [
+          { id: "ctx250k-cache80-c10-batched8192", label: "ctx250k-20260715-1", success: 8, failed: 2, duration: 167.46, ttft: { 50: 165.76, 75: 167.11, 90: 167.25, 95: 167.35 }, e2e: { 50: 165.76, 95: 167.36 }, rps: 0.048, out: 6.11 },
+          { id: "ctx250k-ossv2-cache80-c10-20260716-1-batched8192", label: "ctx250k-ossv2-20260716-1", success: 7, failed: 3, duration: 203.34, ttft: { 50: 202.47, 75: 202.91, 90: 203.2, 95: 203.27 }, e2e: { 50: 202.48, 95: 203.27 }, rps: 0.034, out: 4.41 },
+          { id: "ctx250k-ossv2-cache80-c10-20260716-2-batched8192", label: "ctx250k-ossv2-20260716-2", success: 10, failed: 0, duration: 229.12, ttft: { 50: 140.27, 75: 184.3, 90: 210.19, 95: 217.62 }, e2e: { 50: 225.32, 95: 228.82 }, rps: 0.044, out: 5.59 },
+          { id: "ctx250k-ossv2-cache80-c10-20260716-3-batched8192", label: "ctx250k-ossv2-20260716-3", success: 10, failed: 0, duration: 228.3, ttft: { 50: 140.25, 75: 183.99, 90: 209.91, 95: 217.34 }, e2e: { 50: 225.31, 95: 227.93 }, rps: 0.044, out: 5.19 }
+        ]
+      },
+      experiment3: {
+        "128k": [{ id: "maxctx650k-cache80-c1-n3-128k", label: "maxctx128k-20260716-1", success: 3, failed: 0, duration: 28.27, ttft: { 50: 12.57, 75: 12.67, 90: 12.74, 95: 12.76 }, e2e: { 50: 12.57, 95: 12.76 }, rps: 0.106, out: 1.7 }],
+        "256k": [{ id: "maxctx650k-cache80-c1-n3-256k", label: "maxctx256k-20260716-1", success: 3, failed: 0, duration: 127.13, ttft: { 50: 26.91, 75: 50.28, 90: 64.31, 95: 68.98 }, e2e: { 50: 26.91, 95: 68.98 }, rps: 0.024, out: 0.38 }],
+        "384k": [{ id: "maxctx650k-cache80-c1-n3-384k", label: "maxctx384k-20260716-1", success: 3, failed: 0, duration: 93.86, ttft: { 50: 44.45, 75: 44.88, 90: 45.14, 95: 45.23 }, e2e: { 50: 44.45, 95: 45.23 }, rps: 0.032, out: 0.51 }],
+        "512k": [{ id: "maxctx650k-cache80-c1-n3-512k", label: "maxctx512k-20260716-1", success: 3, failed: 0, duration: 154.72, ttft: { 50: 65.84, 75: 65.88, 90: 65.91, 95: 65.92 }, e2e: { 50: 65.84, 95: 65.92 }, rps: 0.019, out: 0.31 }]
+      }
+    };
+    const DEFAULT_RUNS = {
+      experiment1: { "1": "c1-ossv2-cache80-20260716-3-batched8192", "10": "c10-ossv2-cache80-20260716-3-batched8192", "20": "c20-ossv2-cache80-20260716-3-batched8192", "25": "c25-ossv2-cache80-20260716-3-batched8192", "30": "c30-ossv2-cache80-20260716-3-batched8192" },
+      experiment2: { "1k": "ctx1k-ossv2-cache80-c10-20260716-3-batched8192", "4k": "ctx4k-ossv2-cache80-c10-20260716-3-batched8192", "8k": "ctx8k-ossv2-cache80-c10-20260716-3-batched8192", "16k": "ctx16k-ossv2-cache80-c10-20260716-3-batched8192", "32k": "ctx32k-ossv2-cache80-c10-20260716-3-batched8192", "64k": "ctx64k-ossv2-cache80-c10-20260716-3-batched8192", "128k": "ctx128k-ossv2-cache80-c10-20260716-3-batched8192", "250k": "ctx250k-ossv2-cache80-c10-20260716-3-batched8192" },
+      experiment3: { "128k": "maxctx650k-cache80-c1-n3-128k", "256k": "maxctx650k-cache80-c1-n3-256k", "384k": "maxctx650k-cache80-c1-n3-384k", "512k": "maxctx650k-cache80-c1-n3-512k" }
+    };
+    const CHART_CONFIG = {
+      experiment1: { chartId: "experiment1-chart", keys: ["1", "10", "20", "25", "30"], x: { "1": 75, "10": 286, "20": 521, "25": 638, "30": 740 }, yMax: 90 },
+      experiment2: { chartId: "experiment2-chart", keys: ["1k", "4k", "8k", "16k", "32k", "64k", "128k", "250k"], x: { "1k": 75, "4k": 170, "8k": 265, "16k": 360, "32k": 455, "64k": 550, "128k": 645, "250k": 740 }, yMax: 240 },
+      experiment3: { chartId: "experiment3-chart", keys: ["128k", "256k", "384k", "512k"], x: { "128k": 75, "256k": 295, "384k": 515, "512k": 740 }, yMax: 80 }
+    };
+
+    const hideChartTooltip = () => {
+      chartTooltip.style.display = "none";
+    };
+
+    const showChartTooltip = (event, point) => {
+      chartTooltip.innerHTML = `<strong>${point.dataset.title}</strong>${point.dataset.value}`;
+      chartTooltip.style.left = `${Math.min(event.clientX + 14, window.innerWidth - 190)}px`;
+      chartTooltip.style.top = `${Math.max(event.clientY - 18, 12)}px`;
+      chartTooltip.style.display = "block";
+    };
+
+    const formatSeconds = (value) => `${Number(value).toFixed(2)}s`;
+    const formatNumber = (value, digits = 3) => Number(value).toFixed(digits).replace(/\.?0+$/, "");
+    const yFor = (seconds, yMax) => Math.max(18, Math.min(306, 306 - (seconds / yMax) * 288));
+
+    const smoothPath = (points) => {
+      if (points.length === 0) {
+        return "";
+      }
+      if (points.length === 1) {
+        return `M${points[0].x} ${points[0].y}`;
+      }
+      let d = `M${points[0].x} ${points[0].y}`;
+      for (let i = 0; i < points.length - 1; i += 1) {
+        const p0 = points[Math.max(0, i - 1)];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[Math.min(points.length - 1, i + 2)];
+        const cp1x = p1.x + (p2.x - p0.x) / 6;
+        const cp1y = p1.y + (p2.y - p0.y) / 6;
+        const cp2x = p2.x - (p3.x - p1.x) / 6;
+        const cp2y = p2.y - (p3.y - p1.y) / 6;
+        d += ` C${cp1x.toFixed(1)} ${cp1y.toFixed(1)} ${cp2x.toFixed(1)} ${cp2y.toFixed(1)} ${p2.x} ${p2.y}`;
+      }
+      return d;
+    };
+
+    const getRun = (experiment, key) => {
+      const selectedId = document.querySelector(`[data-experiment-table="${experiment}"] tr[data-key="${key}"] .run-select`)?.value || DEFAULT_RUNS[experiment][key];
+      return RUN_DATA[experiment][key].find((run) => run.id === selectedId) || RUN_DATA[experiment][key][0];
+    };
+
+    const updateTableRow = (experiment, key) => {
+      const row = document.querySelector(`[data-experiment-table="${experiment}"] tr[data-key="${key}"]`);
+      const run = getRun(experiment, key);
+      if (!row || !run) {
+        return;
+      }
+      const cells = row.querySelectorAll("td");
+      cells[2].textContent = run.success;
+      cells[3].textContent = run.failed;
+      cells[4].textContent = formatSeconds(run.ttft[50]);
+      cells[5].textContent = formatSeconds(run.ttft[75]);
+      cells[6].textContent = formatSeconds(run.ttft[90]);
+      cells[7].textContent = formatSeconds(run.ttft[95]);
+      cells[8].textContent = formatSeconds(run.e2e[50]);
+      cells[9].textContent = formatSeconds(run.e2e[95]);
+      cells[10].textContent = formatNumber(run.rps, 3);
+      cells[11].textContent = formatNumber(run.out, 2);
+    };
+
+    const applyChartVisibility = (chart, panel) => {
+      panel.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+        chart.querySelectorAll(`[data-percentile="${input.value}"]`).forEach((element) => {
+          element.classList.toggle("chart-hidden", !input.checked);
+        });
+      });
+    };
+
+    const redrawChart = (experiment) => {
+      const config = CHART_CONFIG[experiment];
+      const chart = document.getElementById(config.chartId);
+      const panel = document.querySelector(`[data-chart-controls="${config.chartId}"]`);
+      if (!chart || !panel) {
+        return;
+      }
+
+      hideChartTooltip();
+      chart.querySelectorAll(".percentile-point").forEach((point) => point.remove());
+
+      PERCENTILES.forEach((percentile) => {
+        const percentileClass = `p${percentile}`;
+        const points = config.keys.map((key) => {
+          const run = getRun(experiment, key);
+          const seconds = run.ttft[percentile];
+          return { key, run, seconds, x: config.x[key], y: Number(yFor(seconds, config.yMax).toFixed(2)) };
+        });
+
+        const line = chart.querySelector(`.percentile-line[data-percentile="${percentileClass}"]`);
+        if (line) {
+          line.setAttribute("d", smoothPath(points));
+        }
+
+        points.forEach((point) => {
+          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("class", `point ${percentileClass} percentile-point`);
+          circle.setAttribute("data-percentile", percentileClass);
+          circle.setAttribute("data-title", `${experiment.replace("experiment", "Experiment ")} - ${point.key}`);
+          circle.setAttribute("data-value", `TTFT ${percentileClass}: ${formatSeconds(point.seconds)} (${point.run.label})`);
+          circle.setAttribute("cx", point.x);
+          circle.setAttribute("cy", point.y);
+          circle.setAttribute("r", "4");
+          chart.appendChild(circle);
+        });
+      });
+
+      applyChartVisibility(chart, panel);
+    };
+
+    const setupRunSelectors = () => {
+      Object.entries(RUN_DATA).forEach(([experiment, byKey]) => {
+        Object.keys(byKey).forEach((key) => {
+          const row = document.querySelector(`[data-experiment-table="${experiment}"] tr[data-key="${key}"]`);
+          if (!row) {
+            return;
+          }
+          const runs = byKey[key];
+          const sourceCell = row.querySelectorAll("td")[1];
+          if (runs.length > 1) {
+            const select = document.createElement("select");
+            select.className = "run-select";
+            select.setAttribute("aria-label", `Select run for ${experiment} ${key}`);
+            runs.forEach((run) => {
+              const option = document.createElement("option");
+              option.value = run.id;
+              option.textContent = run.label;
+              option.selected = run.id === DEFAULT_RUNS[experiment][key];
+              select.appendChild(option);
+            });
+            select.addEventListener("change", () => {
+              updateTableRow(experiment, key);
+              redrawChart(experiment);
+            });
+            sourceCell.replaceChildren(select);
+          } else {
+            sourceCell.textContent = runs[0].label;
+          }
+          updateTableRow(experiment, key);
+        });
+        redrawChart(experiment);
+      });
+    };
+
+    document.querySelectorAll("[data-chart-controls]").forEach((panel) => {
+      const chart = document.getElementById(panel.dataset.chartControls);
+
+      if (!chart) {
+        return;
+      }
+
+      const updateChart = () => {
+        hideChartTooltip();
+        applyChartVisibility(chart, panel);
+      };
+
+      chart.addEventListener("click", (event) => {
+        const point = event.target.closest(".percentile-point");
+
+        if (!point) {
+          hideChartTooltip();
+          return;
+        }
+
+        showChartTooltip(event, point);
+      });
+
+      panel.addEventListener("change", updateChart);
+      updateChart();
+    });
+
+    setupRunSelectors();
+
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".percentile-point")) {
+        hideChartTooltip();
+      }
+    });
+  </script>
+</body>
+</html>
