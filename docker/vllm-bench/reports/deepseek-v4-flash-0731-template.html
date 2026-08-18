@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeepSeek V4 Flash 0731 — vLLM Benchmark Template</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #111827;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --card: #f9fafb;
+      --series-1: #2563eb;
+      --series-2: #16a34a;
+      --series-3: #d97706;
+      --series-4: #dc2626;
+      --series-5: #7c3aed;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --fg: #e5e7eb;
+        --muted: #9ca3af;
+        --border: #374151;
+        --card: #111827;
+        --series-1: #60a5fa;
+        --series-2: #4ade80;
+        --series-3: #fbbf24;
+        --series-4: #f87171;
+        --series-5: #c084fc;
+      }
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 32px 0 12px;
+      font-size: 18px;
+    }
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+    .summary {
+      margin-top: 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .summary p:last-child {
+      margin-bottom: 0;
+    }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .meta div {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .meta span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .chart-wrap {
+      margin-top: 16px;
+      overflow-x: auto;
+    }
+    svg {
+      min-width: 760px;
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+    .axis,
+    .grid {
+      stroke: var(--border);
+      stroke-width: 1;
+    }
+    .grid {
+      opacity: 0.65;
+    }
+    .label,
+    .tick {
+      fill: var(--muted);
+      font-size: 12px;
+    }
+    .value {
+      fill: var(--fg);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .line {
+      fill: none;
+      stroke-width: 2.3;
+    }
+    .p50 { stroke: var(--series-1); }
+    .p75 { stroke: var(--series-2); }
+    .p90 { stroke: var(--series-3); }
+    .p95 { stroke: var(--series-4); }
+    .p99 { stroke: var(--series-5); }
+    .point {
+      stroke: var(--bg);
+      stroke-width: 2;
+      cursor: pointer;
+    }
+    .point.p50 { fill: var(--series-1); }
+    .point.p75 { fill: var(--series-2); }
+    .point.p90 { fill: var(--series-3); }
+    .point.p95 { fill: var(--series-4); }
+    .point.p99 { fill: var(--series-5); }
+    .chart-tooltip {
+      position: fixed;
+      z-index: 20;
+      display: none;
+      min-width: 150px;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.94);
+      color: #f8fafc;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+      font-size: 13px;
+      line-height: 1.35;
+      pointer-events: none;
+    }
+    .chart-tooltip strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+    .legend {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-item input {
+      margin: 0;
+    }
+    .swatch {
+      width: 18px;
+      height: 3px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .memory-figure {
+      margin: 14px 0 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      padding: 14px;
+    }
+    .memory-figure svg {
+      min-width: 0;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .mem-title {
+      fill: var(--fg);
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .mem-label {
+      fill: var(--fg);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .mem-small {
+      fill: var(--muted);
+      font-size: 11px;
+    }
+    .mem-arrow {
+      stroke: var(--muted);
+      stroke-width: 1.4;
+      marker-end: url(#arrow);
+    }
+    .formula-block {
+      margin: 12px 0;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--fg);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: normal;
+    }
+    .formula-block div {
+      overflow-wrap: anywhere;
+    }
+    .toggle-panel {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 12px 0 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .toggle-panel label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle-panel input {
+      margin: 0;
+    }
+    .run-select {
+      max-width: 190px;
+      padding: 4px 6px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--fg);
+      font: inherit;
+      font-size: 13px;
+    }
+    .chart-hidden {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th,
+    td {
+      border-bottom: 1px solid var(--border);
+      padding: 9px 8px;
+      text-align: right;
+      white-space: nowrap;
+    }
+    th:first-child,
+    td:first-child,
+    th:nth-child(2),
+    td:nth-child(2) {
+      text-align: left;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .table-wrap table {
+      margin-top: 0;
+    }
+    .capacity-table th,
+    .capacity-table td {
+      white-space: normal;
+      vertical-align: top;
+      line-height: 1.35;
+    }
+    .capacity-table th:nth-child(3),
+    .capacity-table td:nth-child(3),
+    .capacity-table th:nth-child(4),
+    .capacity-table td:nth-child(4) {
+      min-width: 180px;
+      max-width: 300px;
+    }
+    .note {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>DeepSeek V4 Flash 0731 — vLLM Benchmark Report</h1>
+    <p>Benchmark results for DeepSeek V4 Flash 0731 served by vLLM on four RTX PRO 6000 GPUs.</p>
+
+    <section class="summary" aria-label="Report summary">
+      <p><strong>Status:</strong> Experiment 1 complete; the first C10 Experiment 2 execution is recorded through near-1M.</p>
+      <p><strong>Experiment 1:</strong> The 512-token execution and 128-token rerun each cover C1 through C100. Three accepted waves per concurrency are pooled inside each execution.</p>
+    </section>
+
+    <section class="meta" aria-label="Benchmark settings">
+      <div><span>Model</span>deepseek-ai/DeepSeek-V4-Flash-0731<br><small>304B-parameter MoE &middot; FP8 &rarr; 167GB</small></div>
+      <div><span>Maximum context</span>1M context</div>
+      <div><span>Hardware</span>AWS g7e.24xlarge &middot; 4&times; RTX PRO 6000</div>
+      <div><span>Total GPU memory</span>384 GB</div>
+    </section>
+
+    <h2>Experiment 1: 64k Context TTFT Concurrency Sweep</h2>
+    <p>Measures TTFT as concurrency increases with a 64k-token prompt, 80% shared prefix, 20% unique suffix, and 128 output tokens. One prefix is reused across each request wave.</p>
+
+    <section class="meta" aria-label="Experiment 1 settings">
+      <div><span>Total input</span>65,536 tokens</div>
+      <div><span>Shared prefix</span>52,429 tokens (80%)</div>
+      <div><span>Unique suffix</span>13,107 tokens (20%)</div>
+      <div><span>Output length</span><strong id="experiment1-output-length">128 tokens</strong></div>
+      <div><span>Concurrency sweep</span>1, 10, 20, 30, 40, 50, 60, 80, 100</div>
+      <div><span>Internal sampling</span>3 accepted waves per concurrency</div>
+    </section>
+
+    <h2>Experiment 1 Curve: TTFT vs Concurrency</h2>
+    <div class="toggle-panel exp1-toggle" aria-label="Experiment 1 chart selectors">
+      <label>Run <select id="experiment1-run" class="run-select" aria-label="Select complete concurrency sweep"></select></label>
+      <label><input type="checkbox" data-percentile="p50" checked><span class="swatch" style="background:var(--series-1);"></span>p50</label>
+      <label><input type="checkbox" data-percentile="p75" checked><span class="swatch" style="background:var(--series-2);"></span>p75</label>
+      <label><input type="checkbox" data-percentile="p90" checked><span class="swatch" style="background:var(--series-3);"></span>p90</label>
+      <label><input type="checkbox" data-percentile="p95" checked><span class="swatch" style="background:var(--series-4);"></span>p95</label>
+      <label><input type="checkbox" data-percentile="p99"><span class="swatch" style="background:var(--series-5);"></span>p99</label>
+    </div>
+    <figure aria-label="Experiment 1 TTFT percentile chart">
+      <div class="chart-wrap">
+        <svg viewBox="0 0 900 390" role="img" aria-label="TTFT p50 through p95 by concurrency">
+          <g class="grid">
+            <line x1="75" y1="330" x2="835" y2="330"></line><line x1="75" y1="272" x2="835" y2="272"></line>
+            <line x1="75" y1="214" x2="835" y2="214"></line><line x1="75" y1="156" x2="835" y2="156"></line>
+            <line x1="75" y1="98" x2="835" y2="98"></line><line x1="75" y1="40" x2="835" y2="40"></line>
+          </g>
+          <g class="axis"><line x1="75" y1="40" x2="75" y2="330"></line><line x1="75" y1="330" x2="835" y2="330"></line></g>
+          <g class="ticks">
+            <text x="62" y="335" text-anchor="end">0s</text><text x="62" y="277" text-anchor="end">10s</text>
+            <text x="62" y="219" text-anchor="end">20s</text><text x="62" y="161" text-anchor="end">30s</text>
+            <text x="62" y="103" text-anchor="end">40s</text><text x="62" y="45" text-anchor="end">50s</text>
+            <text x="75" y="352" text-anchor="middle">1</text><text x="170" y="352" text-anchor="middle">10</text>
+            <text x="265" y="352" text-anchor="middle">20</text><text x="360" y="352" text-anchor="middle">30</text>
+            <text x="455" y="352" text-anchor="middle">40</text><text x="550" y="352" text-anchor="middle">50</text>
+            <text x="645" y="352" text-anchor="middle">60</text><text x="740" y="352" text-anchor="middle">80</text>
+            <text x="835" y="352" text-anchor="middle">100</text>
+          </g>
+          <text class="label" x="455" y="378" text-anchor="middle">Concurrency</text>
+          <text class="label" x="18" y="185" transform="rotate(-90 18 185)" text-anchor="middle">TTFT</text>
+          <polyline class="line p50 percentile-line" data-percentile="p50" points="75,307 170,290 265,272 360,255 455,238 550,226 645,207 740,154 835,151"></polyline>
+          <polyline class="line p75 percentile-line" data-percentile="p75" points="75,307 170,290 265,272 360,254 455,236 550,205 645,180 740,135 835,88"></polyline>
+          <polyline class="line p90 percentile-line" data-percentile="p90" points="75,307 170,290 265,272 360,254 455,222 550,204 645,178 740,109 835,86"></polyline>
+          <polyline class="line p95 percentile-line" data-percentile="p95" points="75,307 170,290 265,272 360,254 455,222 550,204 645,178 740,109 835,85"></polyline>
+          <polyline class="line p99 percentile-line chart-hidden" data-percentile="p99" points=""></polyline>
+        </svg>
+      </div>
+      <figcaption>Each point shows the selected completed run for that concurrency level. Use the table selectors to compare accepted waves.</figcaption>
+    </figure>
+
+    <h2>Experiment 1 Data Table</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Concurrency</th><th>Execution</th><th>Success</th><th>Failed</th><th>TTFT p50</th><th>TTFT p75</th><th>TTFT p90</th><th>TTFT p95</th><th>TTFT p99</th><th>E2E p95</th><th>Req/s</th><th>Output tok/s</th></tr></thead>
+        <tbody id="experiment1-results">
+          <tr><td colspan="12">Loading the selected execution...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><strong>Method:</strong> Each displayed execution pools request-level TTFT samples from its three accepted waves at every concurrency. Rejected retries are excluded; no per-wave median is used.</p>
+
+    <h2>Experiment 2: TTFT vs Context Length</h2>
+    <p class="note">Measures TTFT scaling from 8k to the safe near-1M input limit at fixed C10. The final input reserves 128 output tokens plus one guard token beneath the 1,000,000-token serving limit.</p>
+
+    <section class="meta" aria-label="Experiment 2 settings">
+      <div><span>Fixed concurrency</span>10</div>
+      <div><span>Context-length sweep</span>8k, 16k, 32k, 64k, 128k, 256k, 512k, near-1M</div>
+      <div><span>Output length</span>128 tokens</div>
+      <div><span>Prompt composition</span>80% prefix &middot; 20% suffix</div>
+      <div><span>Internal sampling</span>3 accepted waves per context</div>
+      <div><span>Cooldown</span>30 seconds between waves</div>
+    </section>
+
+    <h2>Experiment 2 Curve: TTFT vs Context Length</h2>
+    <div class="toggle-panel exp2-toggle" aria-label="Experiment 2 chart selectors">
+      <label>Execution <select id="experiment2-run" class="run-select" aria-label="Select Experiment 2 execution"></select></label>
+      <label><input type="checkbox" data-percentile="p50" checked><span class="swatch" style="background:var(--series-1);"></span>p50</label>
+      <label><input type="checkbox" data-percentile="p75" checked><span class="swatch" style="background:var(--series-2);"></span>p75</label>
+      <label><input type="checkbox" data-percentile="p90" checked><span class="swatch" style="background:var(--series-3);"></span>p90</label>
+      <label><input type="checkbox" data-percentile="p95" checked><span class="swatch" style="background:var(--series-4);"></span>p95</label>
+      <label><input type="checkbox" data-percentile="p99"><span class="swatch" style="background:var(--series-5);"></span>p99</label>
+    </div>
+    <figure aria-label="Experiment 2 TTFT percentile chart">
+      <div class="chart-wrap">
+        <svg id="experiment2-chart" viewBox="0 0 900 390" role="img" aria-label="TTFT percentiles by context length">
+          <g class="exp2-grid grid"></g>
+          <g class="axis"><line x1="75" y1="40" x2="75" y2="330"></line><line x1="75" y1="330" x2="835" y2="330"></line></g>
+          <g class="exp2-y-ticks ticks"></g>
+          <g class="exp2-x-ticks ticks"></g>
+          <text class="label" x="455" y="378" text-anchor="middle">Input context length</text>
+          <text class="label" x="18" y="185" transform="rotate(-90 18 185)" text-anchor="middle">TTFT</text>
+          <polyline class="line p50 percentile-line" data-percentile="p50"></polyline>
+          <polyline class="line p75 percentile-line" data-percentile="p75"></polyline>
+          <polyline class="line p90 percentile-line" data-percentile="p90"></polyline>
+          <polyline class="line p95 percentile-line" data-percentile="p95"></polyline>
+          <polyline class="line p99 percentile-line chart-hidden" data-percentile="p99"></polyline>
+        </svg>
+      </div>
+      <figcaption>Each context point pools request-level samples from its accepted waves. Near-1M currently contains one accepted wave; all other context levels contain three.</figcaption>
+    </figure>
+
+    <h2>Experiment 2 Data Table</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Context length</th><th>Accepted waves</th><th>Success</th><th>Failed</th><th>TTFT p50</th><th>TTFT p75</th><th>TTFT p90</th><th>TTFT p95</th><th>TTFT p99</th><th>E2E p95</th><th>Req/s</th><th>Output tok/s</th></tr></thead>
+        <tbody id="experiment2-results"><tr><td colspan="12">Loading the selected execution...</td></tr></tbody>
+      </table>
+    </div>
+    <p class="note"><strong>Result:</strong> C10 produced three accepted waves through 512k. Near-1M was unstable across earlier attempts, but one later retry completed 10/10 successfully and is retained as a single accepted wave.</p>
+  </main>
+  <script src="deepseek-v4-flash-0731-data.js"></script>
+  <script src="deepseek-v4-flash-0731-report.js"></script>
+</body>
+</html>
