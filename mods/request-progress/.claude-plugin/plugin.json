@@ -1,0 +1,7 @@
+{
+  "name": "request-progress",
+  "version": "0.1.0",
+  "description": "A band above the prompt with one row per request you send: a pixel-dither progress bar, elapsed time, and running / done / needs you / failed.",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}
