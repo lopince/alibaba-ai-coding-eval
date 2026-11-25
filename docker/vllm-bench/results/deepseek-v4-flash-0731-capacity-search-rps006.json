@@ -1,0 +1,75 @@
+{
+  "date": "20260818-082613",
+  "warmup_seconds": 120,
+  "duration_seconds": 180,
+  "request_rate": 0.06,
+  "concurrency_cap": 100,
+  "input_length": 65536,
+  "output_length": 4096,
+  "target_prefill_tokens_per_second": 3932.16,
+  "target_decode_tokens_per_second": 245.76,
+  "submitted": 18,
+  "completed": 10,
+  "failed": 1,
+  "cancelled_at_deadline": 7,
+  "peak_active": 8,
+  "errors": {
+    "http_502": 1
+  },
+  "windows": [
+    {
+      "start_second": 0,
+      "end_second": 30,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 1,
+      "failed": 0,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 30,
+      "end_second": 60,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 0,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 60,
+      "end_second": 90,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 0,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 90,
+      "end_second": 120,
+      "prefill_tokens_per_second": 2184.5333333333333,
+      "decode_tokens_per_second": 136.5,
+      "completed": 1,
+      "failed": 1,
+      "mean_ttft_seconds": 18.90210805099923
+    },
+    {
+      "start_second": 120,
+      "end_second": 150,
+      "prefill_tokens_per_second": 4369.066666666667,
+      "decode_tokens_per_second": 273.0,
+      "completed": 2,
+      "failed": 0,
+      "mean_ttft_seconds": 21.117790947006142
+    },
+    {
+      "start_second": 150,
+      "end_second": 180,
+      "prefill_tokens_per_second": 2184.5333333333333,
+      "decode_tokens_per_second": 136.53333333333333,
+      "completed": 1,
+      "failed": 0,
+      "mean_ttft_seconds": 18.917864050003118
+    }
+  ]
+}

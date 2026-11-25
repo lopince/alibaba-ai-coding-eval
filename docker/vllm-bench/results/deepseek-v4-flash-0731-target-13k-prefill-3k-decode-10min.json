@@ -1,0 +1,203 @@
+{
+  "date": "20260818-073817",
+  "warmup_seconds": 180,
+  "duration_seconds": 600,
+  "request_rate": 0.2,
+  "concurrency_cap": 100,
+  "input_length": 65536,
+  "output_length": 15020,
+  "target_prefill_tokens_per_second": 13107.2,
+  "target_decode_tokens_per_second": 3004.0,
+  "submitted": 156,
+  "completed": 0,
+  "failed": 156,
+  "cancelled_at_deadline": 0,
+  "peak_active": 69,
+  "errors": {
+    "http_500": 36,
+    "http_502": 56,
+    "http_503": 64
+  },
+  "windows": [
+    {
+      "start_second": 0,
+      "end_second": 30,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 0,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 30,
+      "end_second": 60,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 0,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 60,
+      "end_second": 90,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 0,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 90,
+      "end_second": 120,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 5,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 120,
+      "end_second": 150,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 0,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 150,
+      "end_second": 180,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 0,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 180,
+      "end_second": 210,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 18,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 210,
+      "end_second": 240,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 2,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 240,
+      "end_second": 270,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 6,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 270,
+      "end_second": 300,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 42,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 300,
+      "end_second": 330,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 0,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 330,
+      "end_second": 360,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 0,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 360,
+      "end_second": 390,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 19,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 390,
+      "end_second": 420,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 28,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 420,
+      "end_second": 450,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 6,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 450,
+      "end_second": 480,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 6,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 480,
+      "end_second": 510,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 6,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 510,
+      "end_second": 540,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 6,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 540,
+      "end_second": 570,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 6,
+      "mean_ttft_seconds": null
+    },
+    {
+      "start_second": 570,
+      "end_second": 600,
+      "prefill_tokens_per_second": 0.0,
+      "decode_tokens_per_second": 0.0,
+      "completed": 0,
+      "failed": 6,
+      "mean_ttft_seconds": null
+    }
+  ]
+}

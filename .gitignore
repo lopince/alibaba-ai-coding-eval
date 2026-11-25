@@ -7,3 +7,7 @@ eval-repos/memory-test-repo/
 # Local Qoder notes and vibe-coded screenshots (not part of the docs site)
 CLAUDE.md
 vibe_images/
+.DS_Store
+logs/
+screenlog.0
+tmp_proxies*.json
